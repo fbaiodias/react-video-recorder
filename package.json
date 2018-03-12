@@ -5,7 +5,9 @@
     "precommit": "lint-staged",
     "start": "npm run storybook",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "travis-deploy-once": "travis-deploy-once",
+    "semantic-release": "semantic-release"
   },
   "peerDependencies": {
     "react": "^16.2.0",
@@ -30,7 +32,9 @@
     "prettier-standard": "^8.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "standard": "^11.0.0"
+    "semantic-release": "^15.0.2",
+    "standard": "^11.0.0",
+    "travis-deploy-once": "^4.4.0"
   },
   "lint-staged": {
     "src/**/*.js": [
@@ -54,5 +58,10 @@
     "coverageReporters": [
       "html"
     ]
+  },
+  "version": "0.0.0-development",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fbaiodias/react-video-recorder.git"
   }
 }
