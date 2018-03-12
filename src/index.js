@@ -1,1 +1,1 @@
-module.exports = require('./camera')
+module.exports = require('./video-recorder')
