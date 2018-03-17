@@ -52,8 +52,12 @@ const CameraView = styled.div`
 `
 
 const Video = styled.video`
-  width: 100%;
-  max-height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-height: 100%;
+  min-width: 100%;
 `
 
 const isIOSSafari = () => {
