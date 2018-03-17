@@ -1,6 +1,12 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 
+import UnsupportedView from './defaults/unsupported-view'
+import ErrorView from './defaults/error-view'
+import DisconnectedView from './defaults/disconnected-view'
+import LoadingView from './defaults/loading-view'
+import renderActions from './defaults/render-actions'
+
 // data shows up on some browsers
 // approx every 2 seconds
 const chunkSizeInMS = 250
@@ -164,7 +170,6 @@ export default class VideoRecorder extends Component {
   }
 
   turnOnCamera (cameraType) {
-    console.log('Start initializing camera...')
     this.inactivityTimer = setInterval(
       this.checkInactivity,
       1000 // one second
@@ -190,10 +195,6 @@ export default class VideoRecorder extends Component {
   }
 
   handleSuccess (stream) {
-    console.log('Turning camera on')
-
-    console.log('Audio tracks', stream.getAudioTracks())
-    console.log('Video tracks', stream.getVideoTracks())
     this.stream = stream
     this.setState({
       isCameraOn: true,
@@ -201,11 +202,9 @@ export default class VideoRecorder extends Component {
     })
 
     if (window.URL) {
-      console.log('!')
       this.videoTag.srcObject = stream
     } else {
       this.videoTag.src = stream
-      console.log('2')
     }
 
     // there is probably a better way
@@ -234,7 +233,6 @@ export default class VideoRecorder extends Component {
   }
 
   onDataIssue (event) {
-    console.log(event.data, event.data.size)
     console.error("Couldn't get data from event", event)
     this.handleError(new Error("Couldn't get data from event"))
     return false
@@ -251,7 +249,6 @@ export default class VideoRecorder extends Component {
         type: getMimeType()
       })
       if (blob.size <= 0) return this.onDataIssue(event)
-      console.log('Recoreded', blob.size)
     }
 
     return true
@@ -276,8 +273,6 @@ export default class VideoRecorder extends Component {
   }
 
   handleStartRecording () {
-    console.log(this.stream, this.stream.active)
-
     captureThumb(this.videoTag).then(thumbnail => {
       this.thumbnail = thumbnail
 
@@ -296,13 +291,6 @@ export default class VideoRecorder extends Component {
         this.mediaRecorder.onerror = this.handleError
         this.mediaRecorder.ondataavailable = this.handleDataAvailable
         this.mediaRecorder.start(chunkSizeInMS) // collect 10ms of data
-
-        console.log(
-          'Created MediaRecorder',
-          this.mediaRecorder,
-          'with mimeType',
-          options.mimeType
-        )
 
         // mediaRecorder.ondataavailable should be called every 10ms,
         // as that's what we're passing to mediaRecorder.start() above
@@ -326,7 +314,6 @@ export default class VideoRecorder extends Component {
   }
 
   handleStop (event) {
-    console.log('Recorder stopped: ', event)
     const endedAt = new Date().getTime()
 
     if (!this.recordedBlobs || this.recordedBlobs.length <= 0) {
@@ -342,8 +329,6 @@ export default class VideoRecorder extends Component {
     const thumbnailBlob = this.thumbnail
     const startedAt = this.startedAt
     const duration = endedAt - startedAt
-
-    console.log('Calling Callback')
 
     // if this gets executed to soon, the last chunk of data is lost on FF
     this.mediaRecorder.ondataavailable = null
@@ -366,7 +351,6 @@ export default class VideoRecorder extends Component {
     const extension = video.type === 'video/quicktime' ? 'mov' : undefined
 
     getVideoInfo(video).then(({ duration, thumbnail }) => {
-      console.log('Calling Callback')
       this.props.onRecordingComplete(
         video,
         startedAt,
@@ -465,72 +449,10 @@ export default class VideoRecorder extends Component {
   }
 }
 
-const ActionsWrapper = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 20px;
-  padding-bottom: 30px;
-`
-
 VideoRecorder.defaultProps = {
-  UnsupportedView: () => (
-    <div>This browser is uncapable of recording video</div>
-  ),
-  ErrorView: () => (
-    <div>
-      Oh snap! Your browser failed to record your video.
-      <br />
-      <br />
-      Please restart it and try again 👍
-    </div>
-  ),
-  DisconnectedView: () => <div>Your camera is off</div>,
-  LoadingView: () => <div>Loading...</div>,
-  renderActions: ({
-    isVideoInputSupported,
-    isInlineRecordingSupported,
-    thereWasAnError,
-    isRecording,
-    isCameraOn,
-    streamIsReady,
-    isConnecting,
-
-    onTurnOnCamera,
-    onTurnOffCamera,
-    onOpenVideoInput,
-    onStartRecording,
-    onStopRecording
-  }) => {
-    const renderContent = () => {
-      if (!isInlineRecordingSupported && isVideoInputSupported) {
-        return <button onClick={onOpenVideoInput}>Record a video</button>
-      }
-
-      if (!isInlineRecordingSupported || thereWasAnError || isConnecting) {
-        return null
-      }
-
-      if (isRecording) {
-        return <button onClick={onStopRecording}>Stop recording</button>
-      }
-
-      if (isCameraOn && streamIsReady) {
-        return (
-          <div>
-            <button onClick={onTurnOffCamera}>Turn Camera Off</button>
-            <button onClick={onStartRecording}>Start recording</button>
-          </div>
-        )
-      }
-
-      return <button onClick={onTurnOnCamera}>Turn Camera On</button>
-    }
-
-    return <ActionsWrapper>{renderContent()}</ActionsWrapper>
-  }
+  UnsupportedView,
+  ErrorView,
+  DisconnectedView,
+  LoadingView,
+  renderActions
 }
