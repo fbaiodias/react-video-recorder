@@ -53,7 +53,7 @@ export default ({
       )
     }
 
-    return <Button onClick={onTurnOnCamera}>Answer this question</Button>
+    return <Button onClick={onTurnOnCamera}>🎥 Answer</Button>
   }
 
   return <ActionsWrapper>{renderContent()}</ActionsWrapper>
