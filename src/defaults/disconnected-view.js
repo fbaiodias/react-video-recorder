@@ -1,10 +1,16 @@
 import React from 'react'
 import SVGInline from 'react-svg-inline'
+import styled from 'styled-components'
+
+const SVGWrapper = styled.div`
+    max-height: 100%;
+    max-width: 100%;
+`
 
 export default () => (
-  <div>
+  <SVGWrapper>
     <SVGInline svg={icon} />
-  </div>
+  </SVGWrapper>
 )
 
 const icon = `
