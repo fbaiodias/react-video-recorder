@@ -2239,7 +2239,7 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
-classnames@^2.2.5:
+classnames@^2.2.1, classnames@^2.2.5:
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.5.tgz#fb3801d453467649ef3603c7d61a02bd129bde6d"
 
@@ -7544,6 +7544,13 @@ react-style-proptype@^3.0.0:
   resolved "https://registry.yarnpkg.com/react-style-proptype/-/react-style-proptype-3.2.0.tgz#be5de15358b890d83aecfaf6634cc033aa2b1483"
   dependencies:
     prop-types "^15.5.4"
+
+react-svg-inline@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-svg-inline/-/react-svg-inline-2.1.0.tgz#1ee3a1a2b2ca0b3629822cddd5327a1125c0184f"
+  dependencies:
+    classnames "^2.2.1"
+    prop-types "^15.5.8"
 
 react-test-renderer@^16.0.0-0:
   version "16.2.0"

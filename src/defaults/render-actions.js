@@ -1,6 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import Button from './button'
+import ButtonRec from './buttonRec'
+import ButtonStop from './buttonStop'
 
 const ActionsWrapper = styled.div`
   position: absolute;
@@ -39,19 +41,19 @@ export default ({
     }
 
     if (isRecording) {
-      return <Button onClick={onStopRecording}>Stop recording</Button>
+      return <ButtonStop onClick={onStopRecording} />
     }
 
     if (isCameraOn && streamIsReady) {
       return (
         <div>
-          <Button onClick={onTurnOffCamera}>Turn camera off</Button>
-          <Button onClick={onStartRecording}>Start recording</Button>
+          {/* <Button onClick={onTurnOffCamera} >.</Button> */}
+          <ButtonRec onClick={onStartRecording} />
         </div>
       )
     }
 
-    return <Button onClick={onTurnOnCamera}>Turn camera on</Button>
+    return <Button onClick={onTurnOnCamera}>Answer this question</Button>
   }
 
   return <ActionsWrapper>{renderContent()}</ActionsWrapper>
