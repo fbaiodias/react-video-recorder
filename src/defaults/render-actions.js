@@ -13,7 +13,7 @@ const ActionsWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding-top: 20px;
-  padding-bottom: 40px;
+  padding-bottom: 120px;
 `
 
 export default ({

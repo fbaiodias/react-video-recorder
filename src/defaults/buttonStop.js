@@ -15,8 +15,8 @@ const Button = styled.button`
 
 const DivBorder = styled.div`
   border: 6px solid rgba(255, 255, 255, 0.4);
-  height: 44px;
-  width: 44px;
+  height: 56px;
+  width: 56px;
   border-radius: 10px;
 `
 
