@@ -45,6 +45,7 @@ const Wrapper = styled.div`
   overflow: hidden;
   min-height: 119px;
   background-color: #000;
+  color: white;
 `
 
 const CameraView = styled.div`
@@ -123,9 +124,7 @@ export default class VideoRecorder extends Component {
       streamIsReady: false,
       isInlineRecordingSupported,
       isVideoInputSupported,
-      stream: undefined,
-      showInstallModal: false,
-      installClicked: false
+      stream: undefined
     }
 
     this.handleSuccess = this.handleSuccess.bind(this)
