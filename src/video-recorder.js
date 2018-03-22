@@ -44,6 +44,7 @@ const Wrapper = styled.div`
   height: 100%;
   overflow: hidden;
   min-height: 119px;
+  background-color: #000;
 `
 
 const CameraView = styled.div`
