@@ -1,16 +1,23 @@
+import React from 'react'
 import styled from 'styled-components'
 
 const Button = styled.button`
   background: ${props => props.backgroundColor};
   color: ${props => props.color};
-  border-radius: 6px;
-  margin: 5px;
-  width: 54px;
-  height: 54px;
+  border-radius: 4px;
+  width: 44px;
+  height: 44px;
   background: #e55226;
-  border: 6px solid white;
   outline: none;
+  border: none;
   cursor: pointer;
+`
+
+const DivBorder = styled.div`
+  border: 6px solid rgba(255, 255, 255, 0.4);
+  height: 44px;
+  width: 44px;
+  border-radius: 10px;
 `
 
 Button.defaultProps = {
@@ -18,4 +25,8 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default Button
+export default props => (
+  <DivBorder>
+    <Button {...props} />
+  </DivBorder>
+)
