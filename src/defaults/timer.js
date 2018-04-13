@@ -5,7 +5,18 @@ const Text = styled.div`
   position: absolute;
   top: 20px;
   right: 20px;
-  font-family: Helvetica, Arial;
+  font-family: Menlo, monospace;
+  font-size: 28px;
+  text-shadow: 1px 2px rgba(0, 0, 0, 0.5);
+`
+
+const RecIcon = styled.div`
+  width: 16px;
+  height: 16px;
+  background: #e55226;
+  border-radius: 50%;
+  float: left;
+  margin: 8px 8px;
 `
 
 class Timer extends Component {
@@ -58,7 +69,12 @@ class Timer extends Component {
 
   render () {
     const defaultText = this.props.defaultText || '--'
-    return <Text {...this.props}>{this.state.human || defaultText}</Text>
+    return (
+      <Text {...this.props}>
+        <RecIcon />
+        {this.state.human || defaultText}
+      </Text>
+    )
   }
 }
 
