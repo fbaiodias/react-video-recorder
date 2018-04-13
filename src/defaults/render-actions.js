@@ -13,7 +13,7 @@ const ActionsWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding-top: 20px;
-  padding-bottom: 120px;
+  padding-bottom: 100px;
 `
 
 export default ({
@@ -53,7 +53,7 @@ export default ({
       )
     }
 
-    return <Button onClick={onTurnOnCamera}>🎥 Answer</Button>
+    return <Button onClick={onTurnOnCamera}>Turn my camera ON</Button>
   }
 
   return <ActionsWrapper>{renderContent()}</ActionsWrapper>

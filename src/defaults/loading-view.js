@@ -1,3 +1,8 @@
 import React from 'react'
+import styled from 'styled-components'
 
-export default () => <div>Loading...</div>
+const LoadingMessage = styled.div`
+  font-family: Arial;
+`
+
+export default () => <LoadingMessage>Loading...</LoadingMessage>
