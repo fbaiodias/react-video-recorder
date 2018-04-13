@@ -28,12 +28,14 @@ export default ({
   isConnecting,
   isRunningCountdown,
   countdownTime,
+  isReplayingVideo,
 
   onTurnOnCamera,
   onTurnOffCamera,
   onOpenVideoInput,
   onStartRecording,
-  onStopRecording
+  onStopRecording,
+  onConfirm
 }) => {
   const renderContent = () => {
     if (!isInlineRecordingSupported && isVideoInputSupported) {
@@ -47,6 +49,10 @@ export default ({
       isRunningCountdown
     ) {
       return null
+    }
+
+    if (isReplayingVideo) {
+      return <ButtonRec onClick={onTurnOnCamera} />
     }
 
     if (isRecording) {

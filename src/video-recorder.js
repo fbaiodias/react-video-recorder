@@ -31,9 +31,6 @@ let constraints = {
   video: true
 }
 
-const _cameraInactivityTimeoutSeconds = 60 // seconds
-const _tabInactivityTimeoutSeconds = _cameraInactivityTimeoutSeconds
-
 const Wrapper = styled.div`
   position: relative;
   display: flex;
@@ -124,6 +121,7 @@ export default class VideoRecorder extends Component {
       isRecording: false,
       isCameraOn: false,
       isConnecting: false,
+      isReplayingVideo: false,
       thereWasAnError: false,
       streamIsReady: false,
       isInlineRecordingSupported,
@@ -140,7 +138,6 @@ export default class VideoRecorder extends Component {
     this.handleDataAvailable = this.handleDataAvailable.bind(this)
     this.handleStop = this.handleStop.bind(this)
     this.renderCameraView = this.renderCameraView.bind(this)
-    this.checkInactivity = this.checkInactivity.bind(this)
     this.handleVideoSelected = this.handleVideoSelected.bind(this)
 
     this.timeSinceInactivity = 0
@@ -162,29 +159,10 @@ export default class VideoRecorder extends Component {
     this.turnOffCamera()
   }
 
-  checkInactivity () {
-    if (this.state.isRecording === false && this.state.isCameraOn === true) {
-      this.timeSinceInactivity++
-    }
-
-    if (
-      this.timeSinceInactivity > _cameraInactivityTimeoutSeconds ||
-      (!document.hasFocus() &&
-        this.timeSinceInactivity > _tabInactivityTimeoutSeconds)
-    ) {
-      this.timeSinceInactivity = 0
-      this.turnOffCamera()
-    }
-  }
-
   turnOnCamera (cameraType) {
-    this.inactivityTimer = setInterval(
-      this.checkInactivity,
-      1000 // one second
-    )
-
     this.setState({
       isConnecting: true,
+      isReplayingVideo: false,
       thereWasAnError: false
     })
 
@@ -232,6 +210,7 @@ export default class VideoRecorder extends Component {
 
     this.setState({
       isConnecting: this.state.isConnecting && false,
+      isRecording: false,
       thereWasAnError: true
     })
 
@@ -275,24 +254,18 @@ export default class VideoRecorder extends Component {
     }
 
     this.mediaRecorder.stop()
-    this.setState({
-      isRecording: false
-    })
   }
 
   handleStartRecording () {
     this.setState({
-      isRunningCountdown: true
+      isRunningCountdown: true,
+      isReplayingVideo: false
     })
 
     setTimeout(() => this.startRecording(), this.props.countdownTime)
   }
 
   startRecording () {
-    this.setState({
-      isRunningCountdown: false
-    })
-
     captureThumb(this.videoTag).then(thumbnail => {
       this.thumbnail = thumbnail
 
@@ -303,6 +276,7 @@ export default class VideoRecorder extends Component {
 
       try {
         this.setState({
+          isRunningCountdown: false,
           isRecording: true
         })
         this.startedAt = new Date().getTime()
@@ -352,6 +326,14 @@ export default class VideoRecorder extends Component {
 
     // if this gets executed to soon, the last chunk of data is lost on FF
     this.mediaRecorder.ondataavailable = null
+
+    this.setState({
+      isRecording: false,
+      isReplayingVideo: true,
+      videoBlob
+    })
+
+    this.turnOffCamera()
 
     this.props.onRecordingComplete(
       videoBlob,
@@ -414,9 +396,21 @@ export default class VideoRecorder extends Component {
       return <ErrorView />
     }
 
+    if (this.state.isReplayingVideo) {
+      return (
+        <CameraView key='replay'>
+          <Video
+            src={window.URL.createObjectURL(this.state.videoBlob)}
+            autoPlay
+            loop
+          />
+        </CameraView>
+      )
+    }
+
     if (this.state.isCameraOn) {
       return (
-        <CameraView>
+        <CameraView key='camera'>
           <Video
             innerRef={video => {
               this.videoTag = video
@@ -444,7 +438,8 @@ export default class VideoRecorder extends Component {
       isCameraOn,
       streamIsReady,
       isConnecting,
-      isRunningCountdown
+      isRunningCountdown,
+      isReplayingVideo
     } = this.state
 
     const { countdownTime } = this.props
@@ -461,6 +456,7 @@ export default class VideoRecorder extends Component {
           streamIsReady,
           isConnecting,
           isRunningCountdown,
+          isReplayingVideo,
           countdownTime,
 
           onTurnOnCamera: this.turnOnCamera,
