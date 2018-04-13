@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import Button from './button'
 import ButtonRec from './buttonRec'
 import ButtonStop from './buttonStop'
+import Timer from './timer'
 
 const ActionsWrapper = styled.div`
   position: absolute;
@@ -56,5 +57,10 @@ export default ({
     return <Button onClick={onTurnOnCamera}>Turn my camera ON</Button>
   }
 
-  return <ActionsWrapper>{renderContent()}</ActionsWrapper>
+  return (
+    <div>
+      {isRecording && <Timer />}
+      <ActionsWrapper>{renderContent()}</ActionsWrapper>
+    </div>
+  )
 }
