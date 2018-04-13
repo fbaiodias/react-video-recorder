@@ -68,7 +68,7 @@ class Timer extends Component {
   }
 
   render () {
-    const defaultText = this.props.defaultText || '--'
+    const defaultText = this.props.defaultText || '0:00'
     return (
       <Text {...this.props}>
         <RecIcon />

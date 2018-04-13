@@ -281,6 +281,18 @@ export default class VideoRecorder extends Component {
   }
 
   handleStartRecording () {
+    this.setState({
+      isRunningCountdown: true
+    })
+
+    setTimeout(() => this.startRecording(), this.props.countdownTime)
+  }
+
+  startRecording () {
+    this.setState({
+      isRunningCountdown: false
+    })
+
     captureThumb(this.videoTag).then(thumbnail => {
       this.thumbnail = thumbnail
 
@@ -431,8 +443,11 @@ export default class VideoRecorder extends Component {
       isRecording,
       isCameraOn,
       streamIsReady,
-      isConnecting
+      isConnecting,
+      isRunningCountdown
     } = this.state
+
+    const { countdownTime } = this.props
 
     return (
       <Wrapper>
@@ -445,6 +460,8 @@ export default class VideoRecorder extends Component {
           isCameraOn,
           streamIsReady,
           isConnecting,
+          isRunningCountdown,
+          countdownTime,
 
           onTurnOnCamera: this.turnOnCamera,
           onTurnOffCamera: this.turnOffCamera,
@@ -462,5 +479,6 @@ VideoRecorder.defaultProps = {
   ErrorView,
   DisconnectedView,
   LoadingView,
-  renderActions
+  renderActions,
+  countdownTime: 3000
 }

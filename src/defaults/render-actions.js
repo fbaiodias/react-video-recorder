@@ -4,6 +4,7 @@ import Button from './button'
 import ButtonRec from './buttonRec'
 import ButtonStop from './buttonStop'
 import Timer from './timer'
+import Countdown from './countdown'
 
 const ActionsWrapper = styled.div`
   position: absolute;
@@ -25,6 +26,8 @@ export default ({
   isCameraOn,
   streamIsReady,
   isConnecting,
+  isRunningCountdown,
+  countdownTime,
 
   onTurnOnCamera,
   onTurnOffCamera,
@@ -37,7 +40,12 @@ export default ({
       return <Button onClick={onOpenVideoInput}>Record a video</Button>
     }
 
-    if (!isInlineRecordingSupported || thereWasAnError || isConnecting) {
+    if (
+      !isInlineRecordingSupported ||
+      thereWasAnError ||
+      isConnecting ||
+      isRunningCountdown
+    ) {
       return null
     }
 
@@ -60,6 +68,7 @@ export default ({
   return (
     <div>
       {isRecording && <Timer />}
+      {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
       <ActionsWrapper>{renderContent()}</ActionsWrapper>
     </div>
   )
