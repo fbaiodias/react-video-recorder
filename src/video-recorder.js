@@ -188,9 +188,9 @@ export default class VideoRecorder extends Component {
     })
 
     if (window.URL) {
-      this.videoTag.srcObject = stream
+      this.cameraVideo.srcObject = stream
     } else {
-      this.videoTag.src = stream
+      this.cameraVideo.src = stream
     }
 
     // there is probably a better way
@@ -266,7 +266,7 @@ export default class VideoRecorder extends Component {
   }
 
   startRecording () {
-    captureThumb(this.videoTag).then(thumbnail => {
+    captureThumb(this.cameraVideo).then(thumbnail => {
       this.thumbnail = thumbnail
 
       this.recordedBlobs = []
@@ -400,6 +400,7 @@ export default class VideoRecorder extends Component {
       return (
         <CameraView key='replay'>
           <Video
+            innerRef={el => (this.replayVideo = el)}
             src={window.URL.createObjectURL(this.state.videoBlob)}
             autoPlay
             loop
@@ -411,13 +412,7 @@ export default class VideoRecorder extends Component {
     if (this.state.isCameraOn) {
       return (
         <CameraView key='camera'>
-          <Video
-            innerRef={video => {
-              this.videoTag = video
-            }}
-            autoPlay
-            muted
-          />
+          <Video innerRef={el => (this.cameraVideo = el)} autoPlay muted />
         </CameraView>
       )
     }
