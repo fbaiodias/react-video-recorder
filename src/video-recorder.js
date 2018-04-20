@@ -61,6 +61,7 @@ const Video = styled.video`
   transform: translate(-50%, -50%);
   min-height: 100%;
   min-width: 100%;
+  ${props => props.onClick && 'cursor: pointer;'};
 `
 
 const isIOSSafari = () => {
@@ -152,6 +153,24 @@ export default class VideoRecorder extends Component {
   componentDidMount () {
     if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
       this.turnOnCamera()
+    }
+  }
+
+  componentDidUpdate (prevProps, prevState) {
+    if (
+      this.replayVideo &&
+      this.state.isReplayingVideo &&
+      !prevState.isReplayingVideo
+    ) {
+      this.replayVideo.addEventListener(
+        'canplay',
+        () => {
+          this.replayVideo.play()
+        },
+        {
+          once: true
+        }
+      )
     }
   }
 
@@ -402,8 +421,12 @@ export default class VideoRecorder extends Component {
           <Video
             innerRef={el => (this.replayVideo = el)}
             src={window.URL.createObjectURL(this.state.videoBlob)}
-            autoPlay
             loop
+            onClick={() =>
+              this.replayVideo.paused
+                ? this.replayVideo.play()
+                : this.replayVideo.pause()
+            }
           />
         </CameraView>
       )
