@@ -17,11 +17,31 @@ const Button = styled.button`
   }
 `
 
-const DivBorder = styled.div`
+const RecWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`
+
+const ButtonBorder = styled.div`
   border: 8px solid rgba(255, 255, 255, 0.4);
   height: 80px;
   width: 80px;
   border-radius: 50%;
+  margin-bottom: 20px;
+`
+const Instructions = styled.div`
+  font-family: Arial;
+  font-size: 14px;
+  color: #ffffff;
+  letter-spacing: 1.75px;
+  display: flex;
+`
+
+const InstuctionsHighlight = styled.div`
+  font-weight: 700;
+  color: #dc6547;
+  padding: 0 5px;
 `
 
 Button.defaultProps = {
@@ -30,7 +50,15 @@ Button.defaultProps = {
 }
 
 export default props => (
-  <DivBorder>
-    <Button {...props} />
-  </DivBorder>
+  <RecWrapper>
+    <ButtonBorder>
+      <Button {...props} />
+    </ButtonBorder>
+
+    <Instructions>
+      <div>PRESS </div>
+      <InstuctionsHighlight> REC </InstuctionsHighlight>
+      WHEN READY
+    </Instructions>
+  </RecWrapper>
 )
