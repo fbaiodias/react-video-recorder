@@ -28,7 +28,6 @@ const ButtonBorder = styled.div`
   height: 80px;
   width: 80px;
   border-radius: 50%;
-  margin-bottom: 20px;
 `
 const Instructions = styled.div`
   font-family: Arial;
@@ -36,6 +35,7 @@ const Instructions = styled.div`
   color: #ffffff;
   letter-spacing: 1.75px;
   display: flex;
+  margin-bottom: 20px;
 `
 
 const InstuctionsHighlight = styled.div`
@@ -51,14 +51,14 @@ Button.defaultProps = {
 
 export default props => (
   <RecWrapper>
-    <ButtonBorder>
-      <Button {...props} />
-    </ButtonBorder>
-
     <Instructions>
       <div>PRESS </div>
       <InstuctionsHighlight> REC </InstuctionsHighlight>
       WHEN READY
     </Instructions>
+
+    <ButtonBorder>
+      <Button {...props} />
+    </ButtonBorder>
   </RecWrapper>
 )
