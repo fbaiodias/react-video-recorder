@@ -349,7 +349,8 @@ export default class VideoRecorder extends Component {
     this.setState({
       isRecording: false,
       isReplayingVideo: true,
-      videoBlob
+      videoBlob,
+      videoUrl: window.URL.createObjectURL(videoBlob)
     })
 
     this.turnOffCamera()
@@ -420,7 +421,7 @@ export default class VideoRecorder extends Component {
         <CameraView key='replay'>
           <Video
             innerRef={el => (this.replayVideo = el)}
-            src={window.URL.createObjectURL(this.state.videoBlob)}
+            src={this.state.videoUrl}
             loop
             onClick={() =>
               this.replayVideo.paused
