@@ -179,6 +179,10 @@ export default class VideoRecorder extends Component {
   }
 
   turnOnCamera (cameraType) {
+    if (this.props.onTurnOnCamera) {
+      this.props.onTurnOnCamera()
+    }
+
     this.setState({
       isConnecting: true,
       isReplayingVideo: false,
@@ -192,6 +196,10 @@ export default class VideoRecorder extends Component {
   }
 
   turnOffCamera () {
+    if (this.props.onTurnOffCamera) {
+      this.props.onTurnOffCamera()
+    }
+
     this.stream && this.stream.getTracks().forEach(stream => stream.stop())
     this.setState({
       isCameraOn: false
@@ -267,6 +275,10 @@ export default class VideoRecorder extends Component {
   }
 
   handleStopRecording () {
+    if (this.props.onStopRecording) {
+      this.props.onStopRecording()
+    }
+
     if (!this.mediaRecorder) {
       this.handleError(new Error("Couldn't get mediaRecorder"))
       return
@@ -276,6 +288,10 @@ export default class VideoRecorder extends Component {
   }
 
   handleStartRecording () {
+    if (this.props.onStartRecording) {
+      this.props.onStartRecording()
+    }
+
     this.setState({
       isRunningCountdown: true,
       isReplayingVideo: false
@@ -384,6 +400,10 @@ export default class VideoRecorder extends Component {
   }
 
   handleOpenVideoInput () {
+    if (this.props.onOpenVideoInput) {
+      this.props.onOpenVideoInput()
+    }
+
     this.videoInput.click()
   }
 
