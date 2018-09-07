@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import styled from 'styled-components'
 
 import UnsupportedView from './defaults/unsupported-view'
@@ -409,14 +409,15 @@ export default class VideoRecorder extends Component {
 
   renderCameraView () {
     const {
-      DisconnectedView,
-      UnsupportedView,
-      ErrorView,
-      LoadingView
+      renderDisconnectedView,
+      renderVideoInputView,
+      renderUnsupportedView,
+      renderErrorView,
+      renderLoadingView
     } = this.props
 
     if (this.state.isVideoInputSupported) {
-      return (
+      const videoInput = (
         <input
           ref={el => (this.videoInput = el)}
           type='file'
@@ -426,14 +427,16 @@ export default class VideoRecorder extends Component {
           onChange={this.handleVideoSelected}
         />
       )
+
+      return renderVideoInputView({ videoInput })
     }
 
     if (!this.state.isInlineRecordingSupported) {
-      return <UnsupportedView />
+      return renderUnsupportedView()
     }
 
     if (this.state.thereWasAnError) {
-      return <ErrorView />
+      return renderErrorView()
     }
 
     if (this.state.isReplayingVideo) {
@@ -462,10 +465,10 @@ export default class VideoRecorder extends Component {
     }
 
     if (this.state.isConnecting) {
-      return <LoadingView />
+      return renderLoadingView()
     }
 
-    return <DisconnectedView />
+    return renderDisconnectedView()
   }
 
   render () {
@@ -510,10 +513,11 @@ export default class VideoRecorder extends Component {
 }
 
 VideoRecorder.defaultProps = {
-  UnsupportedView,
-  ErrorView,
-  DisconnectedView,
-  LoadingView,
+  renderUnsupportedView: () => <UnsupportedView />,
+  renderErrorView: () => <ErrorView />,
+  renderVideoInputView: ({ children }) => <Fragment>{children}</Fragment>,
+  renderDisconnectedView: () => <DisconnectedView />,
+  renderLoadingView: () => <LoadingView />,
   renderActions,
   countdownTime: 3000
 }

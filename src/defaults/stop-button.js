@@ -18,7 +18,7 @@ const Button = styled.button`
   }
 `
 
-const DivBorder = styled.div`
+const Border = styled.div`
   background: rgba(255, 255, 255, 0.4);
   height: 80px;
   width: 80px;
@@ -31,7 +31,7 @@ Button.defaultProps = {
 }
 
 export default props => (
-  <DivBorder>
+  <Border>
     <Button {...props} />
-  </DivBorder>
+  </Border>
 )

@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import Button from './button'
-import ButtonRec from './buttonRec'
-import ButtonStop from './buttonStop'
+import RecordButton from './record-button'
+import StopButton from './stop-button'
 import Timer from './timer'
 import Countdown from './countdown'
 
@@ -52,18 +52,18 @@ export default ({
     }
 
     if (isReplayingVideo) {
-      return <ButtonRec onClick={onTurnOnCamera} />
+      return <RecordButton onClick={onTurnOnCamera} />
     }
 
     if (isRecording) {
-      return <ButtonStop onClick={onStopRecording} />
+      return <StopButton onClick={onStopRecording} />
     }
 
     if (isCameraOn && streamIsReady) {
       return (
         <div>
           {/* <Button onClick={onTurnOffCamera} >.</Button> */}
-          <ButtonRec onClick={onStartRecording} />
+          <RecordButton onClick={onStartRecording} />
         </div>
       )
     }
