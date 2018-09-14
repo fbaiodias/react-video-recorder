@@ -15,7 +15,7 @@ const ActionsWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding-top: 20px;
-  padding-bottom: 22vh;
+  padding-bottom: 80px;
 `
 
 export default ({
@@ -38,12 +38,11 @@ export default ({
   onConfirm
 }) => {
   const renderContent = () => {
-    if (!isInlineRecordingSupported && isVideoInputSupported) {
-      return <Button onClick={onOpenVideoInput}>Record a video</Button>
-    }
+    const shouldUseVideoInput =
+      !isInlineRecordingSupported && isVideoInputSupported
 
     if (
-      !isInlineRecordingSupported ||
+      (!isInlineRecordingSupported && !isVideoInputSupported) ||
       thereWasAnError ||
       isConnecting ||
       isRunningCountdown
@@ -52,7 +51,11 @@ export default ({
     }
 
     if (isReplayingVideo) {
-      return <RecordButton onClick={onTurnOnCamera} />
+      return shouldUseVideoInput ? (
+        <Button onClick={onOpenVideoInput}>Record another video</Button>
+      ) : (
+        <RecordButton onClick={onTurnOnCamera} />
+      )
     }
 
     if (isRecording) {
@@ -60,15 +63,14 @@ export default ({
     }
 
     if (isCameraOn && streamIsReady) {
-      return (
-        <div>
-          {/* <Button onClick={onTurnOffCamera} >.</Button> */}
-          <RecordButton onClick={onStartRecording} />
-        </div>
-      )
+      return <RecordButton onClick={onStartRecording} />
     }
 
-    return <Button onClick={onTurnOnCamera}>Turn my camera ON</Button>
+    return shouldUseVideoInput ? (
+      <Button onClick={onOpenVideoInput}>Record a video</Button>
+    ) : (
+      <Button onClick={onTurnOnCamera}>Turn my camera ON</Button>
+    )
   }
 
   return (

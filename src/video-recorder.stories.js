@@ -1,11 +1,17 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import styled from 'styled-components'
-import { action } from '@storybook/addon-actions'
+import styled, { injectGlobal } from 'styled-components'
 import VideoRecorder from './video-recorder'
 
+injectGlobal`
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+  }
+`
+
 const Wrapper = styled.div`
-  height: 100vh;
+  height: 100%;
 `
 storiesOf('VideoRecorder', module).add('default', () => {
   return (
@@ -24,7 +30,6 @@ storiesOf('VideoRecorder', module).add('default', () => {
           console.log('Thumb Blob', thumbnailBlob, thumbUrl)
           console.log('Started:', startedAt)
           console.log('Duration:', duration)
-          action('returned')
         }}
       />
     </Wrapper>

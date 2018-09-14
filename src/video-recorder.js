@@ -123,6 +123,7 @@ export default class VideoRecorder extends Component {
       isCameraOn: false,
       isConnecting: false,
       isReplayingVideo: false,
+      isReplayVideoMuted: true,
       thereWasAnError: false,
       streamIsReady: false,
       isInlineRecordingSupported,
@@ -140,6 +141,7 @@ export default class VideoRecorder extends Component {
     this.handleStop = this.handleStop.bind(this)
     this.renderCameraView = this.renderCameraView.bind(this)
     this.handleVideoSelected = this.handleVideoSelected.bind(this)
+    this.handleOpenVideoInput = this.handleOpenVideoInput.bind(this)
 
     this.timeSinceInactivity = 0
   }
@@ -162,15 +164,9 @@ export default class VideoRecorder extends Component {
       this.state.isReplayingVideo &&
       !prevState.isReplayingVideo
     ) {
-      this.replayVideo.addEventListener(
-        'canplay',
-        () => {
-          this.replayVideo.play()
-        },
-        {
-          once: true
-        }
-      )
+      this.replayVideo.addEventListener('loadedmetadata', () => {
+        this.replayVideo.play()
+      })
     }
   }
 
@@ -365,6 +361,7 @@ export default class VideoRecorder extends Component {
     this.setState({
       isRecording: false,
       isReplayingVideo: true,
+      isReplayVideoMuted: true,
       videoBlob,
       videoUrl: window.URL.createObjectURL(videoBlob)
     })
@@ -388,15 +385,25 @@ export default class VideoRecorder extends Component {
 
     const extension = video.type === 'video/quicktime' ? 'mov' : undefined
 
-    getVideoInfo(video).then(({ duration, thumbnail }) => {
-      this.props.onRecordingComplete(
-        video,
-        startedAt,
-        thumbnail,
-        duration,
-        extension
-      )
-    })
+    getVideoInfo(video)
+      .then(({ duration, thumbnail }) => {
+        this.setState({
+          isRecording: false,
+          isReplayingVideo: true,
+          isReplayVideoMuted: true,
+          videoBlob: video,
+          videoUrl: window.URL.createObjectURL(video)
+        })
+
+        this.props.onRecordingComplete(
+          video,
+          startedAt,
+          thumbnail,
+          duration,
+          extension
+        )
+      })
+      .catch(this.handleError)
   }
 
   handleOpenVideoInput () {
@@ -416,47 +423,58 @@ export default class VideoRecorder extends Component {
       renderLoadingView
     } = this.props
 
-    if (this.state.isVideoInputSupported) {
-      const videoInput = (
-        <input
-          ref={el => (this.videoInput = el)}
-          type='file'
-          accept='video/*'
-          capture='camcorder'
-          style={{ display: 'none' }}
-          onChange={this.handleVideoSelected}
-        />
-      )
+    const {
+      isVideoInputSupported,
+      isReplayingVideo,
+      isInlineRecordingSupported,
+      thereWasAnError,
+      isCameraOn,
+      isConnecting,
+      isReplayVideoMuted
+    } = this.state
 
-      return renderVideoInputView({ videoInput })
-    }
+    const videoInput = isVideoInputSupported ? (
+      <input
+        ref={el => (this.videoInput = el)}
+        type='file'
+        accept='video/*'
+        capture='camcorder'
+        style={{ display: 'none' }}
+        onChange={this.handleVideoSelected}
+      />
+    ) : null
 
-    if (!this.state.isInlineRecordingSupported) {
-      return renderUnsupportedView()
-    }
-
-    if (this.state.thereWasAnError) {
-      return renderErrorView()
-    }
-
-    if (this.state.isReplayingVideo) {
+    if (isReplayingVideo) {
       return (
         <CameraView key='replay'>
           <Video
             innerRef={el => (this.replayVideo = el)}
             src={this.state.videoUrl}
             loop
+            muted={isReplayVideoMuted}
+            playsInline
             onClick={() =>
-              this.replayVideo.paused
-                ? this.replayVideo.play()
-                : this.replayVideo.pause()
+              this.setState({ isReplayVideoMuted: !isReplayVideoMuted })
             }
           />
+          {videoInput}
         </CameraView>
       )
     }
 
-    if (this.state.isCameraOn) {
+    if (isVideoInputSupported) {
+      return renderVideoInputView({ videoInput })
+    }
+
+    if (!isInlineRecordingSupported) {
+      return renderUnsupportedView()
+    }
+
+    if (thereWasAnError) {
+      return renderErrorView()
+    }
+
+    if (isCameraOn) {
       return (
         <CameraView key='camera'>
           <Video innerRef={el => (this.cameraVideo = el)} autoPlay muted />
@@ -464,7 +482,7 @@ export default class VideoRecorder extends Component {
       )
     }
 
-    if (this.state.isConnecting) {
+    if (isConnecting) {
       return renderLoadingView()
     }
 
@@ -481,7 +499,8 @@ export default class VideoRecorder extends Component {
       streamIsReady,
       isConnecting,
       isRunningCountdown,
-      isReplayingVideo
+      isReplayingVideo,
+      isReplayVideoMuted
     } = this.state
 
     const { countdownTime } = this.props
@@ -499,6 +518,7 @@ export default class VideoRecorder extends Component {
           isConnecting,
           isRunningCountdown,
           isReplayingVideo,
+          isReplayVideoMuted,
           countdownTime,
 
           onTurnOnCamera: this.turnOnCamera,
@@ -515,7 +535,7 @@ export default class VideoRecorder extends Component {
 VideoRecorder.defaultProps = {
   renderUnsupportedView: () => <UnsupportedView />,
   renderErrorView: () => <ErrorView />,
-  renderVideoInputView: ({ children }) => <Fragment>{children}</Fragment>,
+  renderVideoInputView: ({ videoInput }) => <Fragment>{videoInput}</Fragment>,
   renderDisconnectedView: () => <DisconnectedView />,
   renderLoadingView: () => <LoadingView />,
   renderActions,
