@@ -1,14 +1,31 @@
 language: node_js
+
 cache:
   directories:
     - ~/.npm
+
 notifications:
   email: false
+
 node_js:
   - '9'
   - '8'
+
+
 after_success:
   - npm run travis-deploy-once "npm run semantic-release"
+
+before_deploy:
+  - npm run build-storybook
+
+deploy:
+  provider: surge
+  project: ./storybook-static/
+  domain: react-video-recorder.surge.sh
+  skip_cleanup: true
+  on:
+    branch: master
+
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
