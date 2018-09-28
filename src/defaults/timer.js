@@ -16,7 +16,8 @@ const RecIcon = styled.div`
   background: #e55226;
   border-radius: 50%;
   float: left;
-  margin: 8px 8px;
+  margin: 2px 8px;
+  margin-left: 0;
 `
 
 class Timer extends Component {
