@@ -26,7 +26,7 @@ const getMimeType = () => {
   return mimeType
 }
 
-let constraints = {
+const CONSTRAINTS = {
   audio: true,
   video: true
 }
@@ -155,6 +155,8 @@ export default class VideoRecorder extends Component {
   componentDidMount () {
     if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
       this.turnOnCamera()
+    } else if (this.state.isVideoInputSupported && this.props.isOnInitially) {
+      this.handleOpenVideoInput()
     }
   }
 
@@ -186,7 +188,7 @@ export default class VideoRecorder extends Component {
     })
 
     navigator.mediaDevices
-      .getUserMedia(constraints)
+      .getUserMedia(CONSTRAINTS)
       .then(this.handleSuccess)
       .catch(this.handleError)
   }
