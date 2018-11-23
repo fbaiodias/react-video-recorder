@@ -450,7 +450,7 @@ export default class VideoRecorder extends Component {
       return (
         <CameraView key='replay'>
           <Video
-            innerRef={el => (this.replayVideo = el)}
+            ref={el => (this.replayVideo = el)}
             src={this.state.videoUrl}
             loop
             muted={isReplayVideoMuted}
@@ -479,7 +479,7 @@ export default class VideoRecorder extends Component {
     if (isCameraOn) {
       return (
         <CameraView key='camera'>
-          <Video innerRef={el => (this.cameraVideo = el)} autoPlay muted />
+          <Video ref={el => (this.cameraVideo = el)} autoPlay muted />
         </CameraView>
       )
     }

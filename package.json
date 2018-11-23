@@ -19,9 +19,9 @@
     "semantic-release": "semantic-release"
   },
   "peerDependencies": {
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "styled-components": "^3.2.1"
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "styled-components": "^4.1.1"
   },
   "dependencies": {
     "babel-plugin-styled-components": "^1.5.1",
@@ -42,11 +42,11 @@
     "jest": "^22.4.2",
     "lint-staged": "^7.0.0",
     "prettier-standard": "^8.0.0",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
     "semantic-release": "^15.9.15",
     "standard": "^11.0.0",
-    "styled-components": "^3.4.6",
+    "styled-components": "^4.1.1",
     "travis-deploy-once": "^4.4.0"
   },
   "lint-staged": {
