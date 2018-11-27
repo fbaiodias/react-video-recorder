@@ -234,7 +234,13 @@ export default class VideoRecorder extends Component {
   }
 
   handleError (err) {
+    const { onError } = this.props
+
     console.error('Captured error', err)
+
+    if (onError) {
+      onError(err)
+    }
 
     this.setState({
       isConnecting: this.state.isConnecting && false,
