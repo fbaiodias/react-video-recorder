@@ -13,13 +13,16 @@ const chunkSizeInMS = 250
 const dataCheckInterval = 2000 / chunkSizeInMS
 
 const getMimeType = () => {
-  let mimeType = 'video/webm;codecs=vp9'
+  let mimeType = 'video/webm;codecs=H264'
   if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-    mimeType = 'video/webm;codecs=vp8'
+    mimeType = 'video/webm;codecs=vp9'
     if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-      mimeType = 'video/webm'
+      mimeType = 'video/webm;codecs=vp8'
       if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = ''
+        mimeType = 'video/webm'
+        if (!window.MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = ''
+        }
       }
     }
   }

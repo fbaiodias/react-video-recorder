@@ -1,9 +1,9 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import styled, { injectGlobal } from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import VideoRecorder from './video-recorder'
 
-injectGlobal`
+const GlobalStyle = createGlobalStyle`
   html, body, #root {
     height: 100%;
     margin: 0;
@@ -33,6 +33,7 @@ storiesOf('VideoRecorder', module)
   .add('default', () => {
     return (
       <Wrapper>
+        <GlobalStyle />
         <VideoRecorder onRecordingComplete={handleRecordingComplete} />
       </Wrapper>
     )
@@ -40,6 +41,7 @@ storiesOf('VideoRecorder', module)
   .add('isOnInitially', () => {
     return (
       <Wrapper>
+        <GlobalStyle />
         <VideoRecorder
           isOnInitially
           onRecordingComplete={handleRecordingComplete}
