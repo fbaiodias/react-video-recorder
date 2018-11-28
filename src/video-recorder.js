@@ -12,22 +12,12 @@ import renderActions from './defaults/render-actions'
 const chunkSizeInMS = 250
 const dataCheckInterval = 2000 / chunkSizeInMS
 
-const getMimeType = () => {
-  let mimeType = 'video/webm;codecs=H264'
-  if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-    mimeType = 'video/webm;codecs=vp9'
-    if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-      mimeType = 'video/webm;codecs=vp8'
-      if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'video/webm'
-        if (!window.MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = ''
-        }
-      }
-    }
-  }
-  return mimeType
-}
+const MIME_TYPES = [
+  'video/webm;codecs=h264',
+  'video/webm;codecs=vp9',
+  'video/webm;codecs=vp8',
+  'video/webm'
+]
 
 const CONSTRAINTS = {
   audio: true,
@@ -259,17 +249,25 @@ export default class VideoRecorder extends Component {
     return false
   }
 
+  getMimeType () {
+    if (this.props.mimeType) {
+      return this.props.mimeType
+    }
+
+    const mimeType = MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
+
+    return mimeType || ''
+  }
+
   isDataHealthOK (event) {
     if (!event.data) return this.onDataIssue(event)
-
-    const mimeType = this.props.mimeType || getMimeType()
 
     // in some browsers (FF/S), data only shows up
     // after a certain amount of time ~everyt 2 seconds
     const blobCount = this.recordedBlobs.length
     if (blobCount > dataCheckInterval && blobCount % dataCheckInterval === 0) {
       const blob = new window.Blob(this.recordedBlobs, {
-        type: mimeType
+        type: this.getMimeType()
       })
       if (blob.size <= 0) return this.onDataIssue(event)
     }
@@ -315,7 +313,7 @@ export default class VideoRecorder extends Component {
 
       this.recordedBlobs = []
       const options = {
-        mimeType: getMimeType()
+        mimeType: this.getMimeType()
       }
 
       try {
@@ -361,7 +359,7 @@ export default class VideoRecorder extends Component {
     }
 
     const videoBlob = new window.Blob(this.recordedBlobs, {
-      type: getMimeType()
+      type: this.getMimeType()
     })
     // const videoBlob = new window.Blob(this.recordedBlobs)
     const thumbnailBlob = this.thumbnail
