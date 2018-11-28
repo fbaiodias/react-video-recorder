@@ -13,9 +13,9 @@ const chunkSizeInMS = 250
 const dataCheckInterval = 2000 / chunkSizeInMS
 
 const MIME_TYPES = [
+  'video/webm;codecs=vp8',
   'video/webm;codecs=h264',
   'video/webm;codecs=vp9',
-  'video/webm;codecs=vp8',
   'video/webm'
 ]
 
