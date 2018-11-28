@@ -262,12 +262,14 @@ export default class VideoRecorder extends Component {
   isDataHealthOK (event) {
     if (!event.data) return this.onDataIssue(event)
 
+    const mimeType = this.props.mimeType || getMimeType()
+
     // in some browsers (FF/S), data only shows up
     // after a certain amount of time ~everyt 2 seconds
     const blobCount = this.recordedBlobs.length
     if (blobCount > dataCheckInterval && blobCount % dataCheckInterval === 0) {
       const blob = new window.Blob(this.recordedBlobs, {
-        type: getMimeType()
+        type: mimeType
       })
       if (blob.size <= 0) return this.onDataIssue(event)
     }
