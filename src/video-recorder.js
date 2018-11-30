@@ -57,13 +57,6 @@ const Video = styled.video`
   ${props => props.onClick && 'cursor: pointer;'};
 `
 
-const isIOSSafari = () => {
-  const ua = window.navigator.userAgent
-  const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i)
-  const webkit = !!ua.match(/WebKit/i)
-  return iOS && webkit
-}
-
 const captureThumb = videoTag =>
   new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
@@ -110,7 +103,9 @@ export default class VideoRecorder extends Component {
 
     const isInlineRecordingSupported =
       !!window.MediaSource && !!window.MediaRecorder
-    const isVideoInputSupported = isIOSSafari()
+
+    const isVideoInputSupported =
+      document.createElement('input').capture !== undefined
 
     this.state = {
       isRecording: false,
