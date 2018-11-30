@@ -49,3 +49,15 @@ storiesOf('VideoRecorder', module)
       </Wrapper>
     )
   })
+  .add('isOnInitially with timeLimit', () => {
+    return (
+      <Wrapper>
+        <GlobalStyle />
+        <VideoRecorder
+          isOnInitially
+          timeLimit={30 * 1000}
+          onRecordingComplete={handleRecordingComplete}
+        />
+      </Wrapper>
+    )
+  })

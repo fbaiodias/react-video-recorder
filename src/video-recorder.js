@@ -224,6 +224,8 @@ export default class VideoRecorder extends Component {
 
     console.error('Captured error', err)
 
+    clearTimeout(this.timeLimitTimeout)
+
     if (onError) {
       onError(err)
     }
@@ -324,6 +326,13 @@ export default class VideoRecorder extends Component {
         this.mediaRecorder.ondataavailable = this.handleDataAvailable
         this.mediaRecorder.start(chunkSizeInMS) // collect 10ms of data
 
+        const { timeLimit } = this.props
+        if (timeLimit) {
+          this.timeLimitTimeout = setTimeout(() => {
+            this.handleStopRecording()
+          }, timeLimit)
+        }
+
         // mediaRecorder.ondataavailable should be called every 10ms,
         // as that's what we're passing to mediaRecorder.start() above
         setTimeout(() => {
@@ -353,6 +362,8 @@ export default class VideoRecorder extends Component {
       this.handleError(new Error("Couldn't get recordedBlobs"))
       return
     }
+
+    clearTimeout(this.timeLimitTimeout)
 
     const videoBlob = new window.Blob(this.recordedBlobs, {
       type: this.getMimeType()
@@ -510,7 +521,7 @@ export default class VideoRecorder extends Component {
       isReplayVideoMuted
     } = this.state
 
-    const { countdownTime } = this.props
+    const { countdownTime, timeLimit } = this.props
 
     return (
       <Wrapper>
@@ -527,6 +538,7 @@ export default class VideoRecorder extends Component {
           isReplayingVideo,
           isReplayVideoMuted,
           countdownTime,
+          timeLimit,
 
           onTurnOnCamera: this.turnOnCamera,
           onTurnOffCamera: this.turnOffCamera,
@@ -546,5 +558,5 @@ VideoRecorder.defaultProps = {
   renderDisconnectedView: () => <DisconnectedView />,
   renderLoadingView: () => <LoadingView />,
   renderActions,
-  countdownTime: 3000
+  countdownTime: 3 * 1000
 }

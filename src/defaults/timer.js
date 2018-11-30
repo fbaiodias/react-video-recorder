@@ -23,31 +23,25 @@ const RecIcon = styled.div`
 class Timer extends Component {
   constructor (props) {
     super(props)
-    this.state = {
-      seconds: null,
-      minutes: null
-    }
-  }
 
-  init (running) {
-    this.start()
-    this.setState({ seconds: 0 })
+    const nextSeconds = props.timeLimit ? props.timeLimit / 1000 : 0
+
+    this.state = this.getState(nextSeconds)
   }
 
   componentWillUnmount () {
-    this.stop()
+    clearInterval(this.timer)
   }
 
   componentDidMount () {
-    this.init()
-  }
+    const { timeLimit } = this.props
+    this.timer = setInterval(() => {
+      const { seconds } = this.state
+      const nextSeconds = timeLimit ? seconds - 1 : seconds + 1
 
-  stop () {
-    clearInterval(this.timer)
-    this.setState({
-      seconds: null,
-      human: null
-    })
+      const nextState = this.getState(nextSeconds)
+      this.setState(nextState)
+    }, 1000)
   }
 
   pad (unit) {
@@ -56,16 +50,18 @@ class Timer extends Component {
     return pad.substring(0, pad.length - str.length) + str
   }
 
-  start () {
-    this.timer = setInterval(() => {
-      const seconds = (this.state.seconds || 0) + 1
-      const minutes = Math.floor(seconds / 60)
-      const humanTime = `${minutes}:${this.pad(seconds - minutes * 60)}`
-      this.setState({
-        seconds: seconds,
-        human: humanTime
-      })
-    }, 1000)
+  getState (seconds) {
+    const minutes = Math.floor(seconds / 60)
+
+    let humanTime =
+      minutes !== 0
+        ? `${minutes}:${this.pad(seconds - minutes * 60)}`
+        : `${seconds - minutes * 60}s`
+
+    return {
+      seconds: seconds,
+      human: humanTime
+    }
   }
 
   render () {

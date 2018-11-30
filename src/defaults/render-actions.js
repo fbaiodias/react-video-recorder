@@ -28,6 +28,7 @@ export default ({
   isConnecting,
   isRunningCountdown,
   countdownTime,
+  timeLimit,
   isReplayingVideo,
 
   onTurnOnCamera,
@@ -75,7 +76,7 @@ export default ({
 
   return (
     <div>
-      {isRecording && <Timer />}
+      {isRecording && <Timer timeLimit={timeLimit} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
       <ActionsWrapper>{renderContent()}</ActionsWrapper>
     </div>
