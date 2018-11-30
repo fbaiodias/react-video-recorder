@@ -451,7 +451,10 @@ export default class VideoRecorder extends Component {
       isReplayVideoMuted
     } = this.state
 
-    const videoInput = isVideoInputSupported ? (
+    const shouldUseVideoInput =
+      !isInlineRecordingSupported && isVideoInputSupported
+
+    const videoInput = shouldUseVideoInput ? (
       <input
         ref={el => (this.videoInput = el)}
         type='file'
@@ -480,7 +483,7 @@ export default class VideoRecorder extends Component {
       )
     }
 
-    if (isVideoInputSupported) {
+    if (shouldUseVideoInput) {
       return renderVideoInputView({ videoInput })
     }
 
