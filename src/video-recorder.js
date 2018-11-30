@@ -108,7 +108,8 @@ export default class VideoRecorder extends Component {
   constructor (props) {
     super(props)
 
-    const isInlineRecordingSupported = !!window.MediaSource
+    const isInlineRecordingSupported =
+      !!window.MediaSource && !!window.MediaRecorder
     const isVideoInputSupported = isIOSSafari()
 
     this.state = {
