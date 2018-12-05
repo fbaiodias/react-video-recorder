@@ -79,7 +79,9 @@ const getVideoInfo = videoBlob =>
     const videoTag = document.createElement('video')
     videoTag.preload = 'metadata'
     videoTag.muted = true
+    videoTag.defaultMuted = true
     videoTag.playsInline = true
+    videoTag.autoplay = true
 
     videoTag.addEventListener('loadeddata', function () {
       const duration = videoTag.duration * 1000
@@ -94,7 +96,6 @@ const getVideoInfo = videoBlob =>
     })
 
     videoTag.src = window.URL.createObjectURL(videoBlob)
-    videoTag.play()
   })
 
 export default class VideoRecorder extends Component {
@@ -474,6 +475,7 @@ export default class VideoRecorder extends Component {
             loop
             muted={isReplayVideoMuted}
             playsInline
+            autoPlay
             onClick={() =>
               this.setState({ isReplayVideoMuted: !isReplayVideoMuted })
             }
