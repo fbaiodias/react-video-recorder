@@ -36,6 +36,7 @@ export default ({
   onOpenVideoInput,
   onStartRecording,
   onStopRecording,
+  onStopReplaying,
   onConfirm
 }) => {
   const renderContent = () => {
@@ -52,11 +53,7 @@ export default ({
     }
 
     if (isReplayingVideo) {
-      return shouldUseVideoInput ? (
-        <Button onClick={onOpenVideoInput}>Record another video</Button>
-      ) : (
-        <RecordButton onClick={onTurnOnCamera} />
-      )
+      return <Button onClick={onStopReplaying}>Record another video</Button>
     }
 
     if (isRecording) {

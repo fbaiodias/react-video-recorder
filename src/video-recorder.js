@@ -129,6 +129,7 @@ export default class VideoRecorder extends Component {
     this.handleStopRecording = this.handleStopRecording.bind(this)
     this.handleDataAvailable = this.handleDataAvailable.bind(this)
     this.handleStop = this.handleStop.bind(this)
+    this.handleStopReplaying = this.handleStopReplaying.bind(this)
     this.renderCameraView = this.renderCameraView.bind(this)
     this.handleVideoSelected = this.handleVideoSelected.bind(this)
     this.handleOpenVideoInput = this.handleOpenVideoInput.bind(this)
@@ -433,6 +434,22 @@ export default class VideoRecorder extends Component {
     this.videoInput.click()
   }
 
+  handleStopReplaying () {
+    if (this.props.onStopReplaying) {
+      this.props.onStopReplaying()
+    }
+
+    this.setState({
+      isReplayingVideo: false
+    })
+
+    if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
+      this.turnOnCamera()
+    } else if (this.state.isVideoInputSupported && this.props.isOnInitially) {
+      this.handleOpenVideoInput()
+    }
+  }
+
   renderCameraView () {
     const {
       renderDisconnectedView,
@@ -549,7 +566,8 @@ export default class VideoRecorder extends Component {
           onTurnOffCamera: this.turnOffCamera,
           onOpenVideoInput: this.handleOpenVideoInput,
           onStartRecording: this.handleStartRecording,
-          onStopRecording: this.handleStopRecording
+          onStopRecording: this.handleStopRecording,
+          onStopReplaying: this.handleStopReplaying
         })}
       </Wrapper>
     )
