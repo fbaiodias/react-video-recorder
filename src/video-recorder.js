@@ -6,6 +6,7 @@ import ErrorView from './defaults/error-view'
 import DisconnectedView from './defaults/disconnected-view'
 import LoadingView from './defaults/loading-view'
 import renderActions from './defaults/render-actions'
+import getVideoInfo, { captureThumb } from './get-video-info'
 
 // data shows up on some browsers
 // approx every 2 seconds
@@ -56,47 +57,6 @@ const Video = styled.video`
   min-width: 100%;
   ${props => props.onClick && 'cursor: pointer;'};
 `
-
-const captureThumb = videoTag =>
-  new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas')
-    canvas.width = videoTag.videoWidth
-    canvas.height = videoTag.videoHeight
-    canvas.getContext('2d').drawImage(
-      videoTag,
-      0, // top
-      0, // left
-      videoTag.videoWidth,
-      videoTag.videoHeight
-    )
-    canvas.toBlob(thumbnail => {
-      resolve(thumbnail)
-    })
-  })
-
-const getVideoInfo = videoBlob =>
-  new Promise((resolve, reject) => {
-    const videoTag = document.createElement('video')
-    videoTag.preload = 'metadata'
-    videoTag.muted = true
-    videoTag.defaultMuted = true
-    videoTag.playsInline = true
-    videoTag.autoplay = true
-
-    videoTag.addEventListener('loadeddata', function () {
-      const duration = videoTag.duration * 1000
-
-      captureThumb(videoTag)
-        .then(thumbnail => {
-          window.URL.revokeObjectURL(this.src)
-          videoTag.pause()
-          resolve({ duration, thumbnail })
-        })
-        .catch(reject)
-    })
-
-    videoTag.src = window.URL.createObjectURL(videoBlob)
-  })
 
 export default class VideoRecorder extends Component {
   constructor (props) {
@@ -423,7 +383,9 @@ export default class VideoRecorder extends Component {
           extension
         )
       })
-      .catch(this.handleError)
+      .catch(err => {
+        this.handleError(err)
+      })
   }
 
   handleOpenVideoInput () {
