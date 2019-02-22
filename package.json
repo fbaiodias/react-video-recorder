@@ -6,7 +6,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "jest src",
     "clean": "rm -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.spec.js",
     "prebuild": "yarn run clean",
