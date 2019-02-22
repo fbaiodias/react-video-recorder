@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import UnsupportedView from './defaults/unsupported-view'
@@ -508,12 +509,12 @@ export default class VideoRecorder extends Component {
       isReplayVideoMuted
     } = this.state
 
-    const { countdownTime, timeLimit } = this.props
+    const { countdownTime, timeLimit, renderActions } = this.props
 
     return (
       <Wrapper>
         {this.renderCameraView()}
-        {this.props.renderActions({
+        {renderActions({
           isVideoInputSupported,
           isInlineRecordingSupported,
           thereWasAnError,
@@ -537,6 +538,29 @@ export default class VideoRecorder extends Component {
       </Wrapper>
     )
   }
+}
+
+VideoRecorder.propTypes = {
+  isOnInitially: PropTypes.bool,
+  mimeType: PropTypes.string,
+  countdownTime: PropTypes.number,
+  timeLimit: PropTypes.number,
+
+  renderDisconnectedView: PropTypes.func,
+  renderVideoInputView: PropTypes.func,
+  renderUnsupportedView: PropTypes.func,
+  renderErrorView: PropTypes.func,
+  renderLoadingView: PropTypes.func,
+  renderActions: PropTypes.func,
+
+  onTurnOnCamera: PropTypes.func,
+  onTurnOffCamera: PropTypes.func,
+  onStartRecording: PropTypes.func,
+  onStopRecording: PropTypes.func,
+  onRecordingComplete: PropTypes.func,
+  onOpenVideoInput: PropTypes.func,
+  onStopReplaying: PropTypes.func,
+  onError: PropTypes.func
 }
 
 VideoRecorder.defaultProps = {

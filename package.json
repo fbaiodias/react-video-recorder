@@ -19,8 +19,9 @@
     "semantic-release": "semantic-release"
   },
   "peerDependencies": {
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
     "styled-components": "^4.1.1"
   },
   "dependencies": {
@@ -42,8 +43,9 @@
     "jest": "^22.4.2",
     "lint-staged": "^7.0.0",
     "prettier-standard": "^8.0.0",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
     "semantic-release": "^15.9.15",
     "standard": "^11.0.0",
     "styled-components": "^4.1.1",
