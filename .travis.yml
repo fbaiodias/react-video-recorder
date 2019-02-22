@@ -8,15 +8,16 @@ notifications:
   email: false
 
 node_js:
-  - '9'
+  - '12'
+  - '10'
   - '8'
 
 
 after_success:
-  - npm run travis-deploy-once "npm run semantic-release"
+  - yarn travis-deploy-once "yarn semantic-release"
 
 before_deploy:
-  - npm run build-storybook
+  - yarn build-storybook
 
 deploy:
   provider: surge
