@@ -1,1 +1,1 @@
-module.exports = require('./video-recorder')
+export { default } from './video-recorder'

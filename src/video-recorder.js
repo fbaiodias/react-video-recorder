@@ -60,6 +60,43 @@ const Video = styled.video`
 `
 
 export default class VideoRecorder extends Component {
+  static propTypes = {
+    /** Wether or not to start the camera initially */
+    isOnInitially: PropTypes.bool,
+    /** Pass this if you want to force a specific mime-type for the video */
+    mimeType: PropTypes.string,
+    /** How much time to wait until it starts recording (in ms) */
+    countdownTime: PropTypes.number,
+    /** Use this if you want to set a time limit for the video (in ms) */
+    timeLimit: PropTypes.number,
+
+    renderDisconnectedView: PropTypes.func,
+    renderVideoInputView: PropTypes.func,
+    renderUnsupportedView: PropTypes.func,
+    renderErrorView: PropTypes.func,
+    renderLoadingView: PropTypes.func,
+    renderActions: PropTypes.func,
+
+    onTurnOnCamera: PropTypes.func,
+    onTurnOffCamera: PropTypes.func,
+    onStartRecording: PropTypes.func,
+    onStopRecording: PropTypes.func,
+    onRecordingComplete: PropTypes.func,
+    onOpenVideoInput: PropTypes.func,
+    onStopReplaying: PropTypes.func,
+    onError: PropTypes.func
+  }
+
+  static defaultProps = {
+    renderUnsupportedView: () => <UnsupportedView />,
+    renderErrorView: () => <ErrorView />,
+    renderVideoInputView: ({ videoInput }) => <Fragment>{videoInput}</Fragment>,
+    renderDisconnectedView: () => <DisconnectedView />,
+    renderLoadingView: () => <LoadingView />,
+    renderActions,
+    countdownTime: 3000
+  }
+
   constructor (props) {
     super(props)
 
@@ -538,37 +575,4 @@ export default class VideoRecorder extends Component {
       </Wrapper>
     )
   }
-}
-
-VideoRecorder.propTypes = {
-  isOnInitially: PropTypes.bool,
-  mimeType: PropTypes.string,
-  countdownTime: PropTypes.number,
-  timeLimit: PropTypes.number,
-
-  renderDisconnectedView: PropTypes.func,
-  renderVideoInputView: PropTypes.func,
-  renderUnsupportedView: PropTypes.func,
-  renderErrorView: PropTypes.func,
-  renderLoadingView: PropTypes.func,
-  renderActions: PropTypes.func,
-
-  onTurnOnCamera: PropTypes.func,
-  onTurnOffCamera: PropTypes.func,
-  onStartRecording: PropTypes.func,
-  onStopRecording: PropTypes.func,
-  onRecordingComplete: PropTypes.func,
-  onOpenVideoInput: PropTypes.func,
-  onStopReplaying: PropTypes.func,
-  onError: PropTypes.func
-}
-
-VideoRecorder.defaultProps = {
-  renderUnsupportedView: () => <UnsupportedView />,
-  renderErrorView: () => <ErrorView />,
-  renderVideoInputView: ({ videoInput }) => <Fragment>{videoInput}</Fragment>,
-  renderDisconnectedView: () => <DisconnectedView />,
-  renderLoadingView: () => <LoadingView />,
-  renderActions,
-  countdownTime: 3 * 1000
 }

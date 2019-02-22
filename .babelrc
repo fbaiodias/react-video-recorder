@@ -1,9 +1,0 @@
-{
-  "presets": [
-    "react",
-    "env"
-  ],
-  "plugins": [
-    "styled-components"
-  ]
-}

@@ -1,16 +1,23 @@
-# Installation
+react-video-recorder
+===
+
+## Installation
 
 ```
 yarn add react-video-recorder
-or
-npm install react-video-recorder
 ```
 
-# Development
+## Usage
+
+Check the [Storybook](https://react-video-recorder.surge.sh/) for a demo and usage examples.
+
+**Note:** if you click the **"Show info"** button in the top-right corner, you should be able to see a table with the supported prop-types.
+
+## Development
 
 Requirements
 
-`node  version ">=8.3"`
+`node version ">=8.3"`
 
 Install packages
 
