@@ -1,7 +1,6 @@
 const { join } = require('path')
 
 const isDebug = !!process.env.DEBUG
-const isCI = !!process.env.CI
 
 module.exports = {
   launch: {
@@ -16,12 +15,5 @@ module.exports = {
         'test/assets/bowing.y4m'
       )}`
     ]
-  },
-  server: isCI
-    ? {
-      command: 'yarn start',
-      port: 3001,
-      launchTimeout: 120000
-    }
-    : null
+  }
 }

@@ -6,11 +6,13 @@
     "README.md"
   ],
   "scripts": {
-    "test": "yarn jest:unit && yarn jest:browser",
-    "jest:unit": "jest -c test/unit/jest.config.js",
+    "test": "yarn test:unit && yarn jest:browser",
+    "test:unit": "jest -c test/unit/jest.config.js",
     "jest:browser": "jest -c test/browser/jest.config.js",
+    "test:browser": "start-server-and-test storybook http-get://localhost:6006 jest:browser",
+    "lint": "standard",
     "clean": "rm -rf lib",
-    "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.spec.js",
+    "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "prebuild": "yarn run clean",
     "prepublish": "NODE_ENV=production yarn run build",
     "precommit": "lint-staged && yarn test",
@@ -60,6 +62,7 @@
     "react-dom": "^16.8.3",
     "semantic-release": "^15.9.15",
     "standard": "^11.0.0",
+    "start-server-and-test": "^1.7.11",
     "styled-components": "^4.1.1",
     "travis-deploy-once": "^4.4.0"
   },

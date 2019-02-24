@@ -11,6 +11,16 @@ node_js:
   - '10'
   - '8'
 
+addons:
+  apt:
+    packages:
+      # This is required to run new chrome on old trusty
+      - libnss3
+
+script:
+  - yarn lint
+  - yarn test:unit
+  - yarn test:browser
 
 after_success:
   - yarn travis-deploy-once "yarn semantic-release"
