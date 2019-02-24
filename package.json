@@ -83,5 +83,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/fbaiodias/react-video-recorder.git"
-  }
+  },
+  "license": "MIT"
 }
