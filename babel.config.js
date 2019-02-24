@@ -10,5 +10,10 @@ module.exports = {
         fileName: true
       }
     ]
-  ]
+  ],
+  env: {
+    test: {
+      plugins: ['@babel/plugin-transform-runtime']
+    }
+  }
 }

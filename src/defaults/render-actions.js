@@ -53,21 +53,31 @@ export default ({
     }
 
     if (isReplayingVideo) {
-      return <Button onClick={onStopReplaying}>Record another video</Button>
+      return (
+        <Button onClick={onStopReplaying} data-qa='start-replaying'>
+          Record another video
+        </Button>
+      )
     }
 
     if (isRecording) {
-      return <StopButton onClick={onStopRecording} />
+      return <StopButton onClick={onStopRecording} data-qa='stop-recording' />
     }
 
     if (isCameraOn && streamIsReady) {
-      return <RecordButton onClick={onStartRecording} />
+      return (
+        <RecordButton onClick={onStartRecording} data-qa='start-recording' />
+      )
     }
 
     return shouldUseVideoInput ? (
-      <Button onClick={onOpenVideoInput}>Record a video</Button>
+      <Button onClick={onOpenVideoInput} data-qa='open-input'>
+        Record a video
+      </Button>
     ) : (
-      <Button onClick={onTurnOnCamera}>Turn my camera ON</Button>
+      <Button onClick={onTurnOnCamera} data-qa='turn-on-camera'>
+        Turn my camera ON
+      </Button>
     )
   }
 

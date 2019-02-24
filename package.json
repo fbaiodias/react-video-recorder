@@ -6,7 +6,9 @@
     "README.md"
   ],
   "scripts": {
-    "test": "jest src",
+    "test": "yarn jest:unit && yarn jest:browser",
+    "jest:unit": "jest -c test/unit/jest.config.js",
+    "jest:browser": "jest -c test/browser/jest.config.js",
     "clean": "rm -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.spec.js",
     "prebuild": "yarn run clean",
@@ -32,6 +34,7 @@
     "@babel/core": "^7.3.3",
     "@babel/plugin-proposal-class-properties": "^7.3.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
     "@storybook/addon-actions": "^4.1.13",
@@ -48,9 +51,11 @@
     "enzyme-adapter-react-16": "^1.9.1",
     "husky": "^0.14.3",
     "jest": "^24.1.0",
+    "jest-puppeteer": "^4.0.0",
     "lint-staged": "^7.0.0",
     "prettier-standard": "^8.0.0",
     "prop-types": "^15.7.2",
+    "puppeteer": "^1.12.2",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "semantic-release": "^15.9.15",
@@ -72,14 +77,6 @@
       "it",
       "expect",
       "alert"
-    ]
-  },
-  "jest": {
-    "setupFiles": [
-      "./test/setup.js"
-    ],
-    "coverageReporters": [
-      "html"
     ]
   },
   "version": "0.0.0-development",
