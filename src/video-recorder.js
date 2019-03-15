@@ -156,7 +156,17 @@ export default class VideoRecorder extends Component {
       !prevState.isReplayingVideo
     ) {
       this.replayVideo.addEventListener('loadedmetadata', () => {
-        this.replayVideo.play()
+        const playPromise = this.replayVideo.play()
+
+        if (playPromise) {
+          playPromise.catch(err => {
+            if (err.name === 'NotAllowedError') {
+              console.warn(err)
+              return
+            }
+            throw err
+          })
+        }
       })
     }
   }
@@ -497,7 +507,7 @@ export default class VideoRecorder extends Component {
               if (this.replayVideo.paused) {
                 this.replayVideo.play()
               }
-              this.setState({ isReplayVideoMuted: !isReplayVideoMuted })
+              this.setState({ isReplayVideoMuted: !this.replayVideo.muted })
             }}
           />
           {videoInput}
