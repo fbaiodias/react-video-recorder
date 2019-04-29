@@ -487,7 +487,7 @@ export default class VideoRecorder extends Component {
         ref={el => (this.videoInput = el)}
         type='file'
         accept='video/*'
-        capture='camcorder'
+        capture='user'
         style={{ display: 'none' }}
         onChange={this.handleVideoSelected}
       />
