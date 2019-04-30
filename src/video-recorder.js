@@ -100,12 +100,6 @@ export default class VideoRecorder extends Component {
   constructor (props) {
     super(props)
 
-    const isInlineRecordingSupported =
-      !!window.MediaSource && !!window.MediaRecorder
-
-    const isVideoInputSupported =
-      document.createElement('input').capture !== undefined
-
     this.state = {
       isRecording: false,
       isCameraOn: false,
@@ -114,8 +108,8 @@ export default class VideoRecorder extends Component {
       isReplayVideoMuted: true,
       thereWasAnError: false,
       streamIsReady: false,
-      isInlineRecordingSupported,
-      isVideoInputSupported,
+      isInlineRecordingSupported: null,
+      isVideoInputSupported: null,
       stream: undefined
     }
 
@@ -135,18 +129,33 @@ export default class VideoRecorder extends Component {
     this.timeSinceInactivity = 0
   }
 
-  componentWillMount () {
-    if (this.state.isInlineRecordingSupported) {
+  componentDidMount () {
+    const isInlineRecordingSupported =
+      !!window.MediaSource && !!window.MediaRecorder
+
+    const isVideoInputSupported =
+      document.createElement('input').capture !== undefined
+
+    if (isInlineRecordingSupported) {
       this.mediaSource = new window.MediaSource()
     }
-  }
 
-  componentDidMount () {
-    if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
-      this.turnOnCamera()
-    } else if (this.state.isVideoInputSupported && this.props.isOnInitially) {
-      this.handleOpenVideoInput()
-    }
+    this.setState(
+      {
+        isInlineRecordingSupported,
+        isVideoInputSupported
+      },
+      () => {
+        if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
+          this.turnOnCamera()
+        } else if (
+          this.state.isVideoInputSupported &&
+          this.props.isOnInitially
+        ) {
+          this.handleOpenVideoInput()
+        }
+      }
+    )
   }
 
   componentDidUpdate (prevProps, prevState) {
