@@ -131,7 +131,7 @@ export default class VideoRecorder extends Component {
 
   componentDidMount () {
     const isInlineRecordingSupported =
-      !!window.MediaSource && !!window.MediaRecorder
+      !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
 
     const isVideoInputSupported =
       document.createElement('input').capture !== undefined
@@ -184,7 +184,7 @@ export default class VideoRecorder extends Component {
     this.turnOffCamera()
   }
 
-  turnOnCamera (cameraType) {
+  turnOnCamera () {
     if (this.props.onTurnOnCamera) {
       this.props.onTurnOnCamera()
     }
