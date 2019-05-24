@@ -97,6 +97,8 @@ export default class VideoRecorder extends Component {
     countdownTime: 3000
   }
 
+  videoInput = React.createRef()
+
   constructor (props) {
     super(props)
 
@@ -146,7 +148,12 @@ export default class VideoRecorder extends Component {
         isVideoInputSupported
       },
       () => {
-        if (this.state.isInlineRecordingSupported && this.props.isOnInitially) {
+        if (this.props.useVideoInput && this.props.isOnInitially) {
+          this.handleOpenVideoInput()
+        } else if (
+          this.state.isInlineRecordingSupported &&
+          this.props.isOnInitially
+        ) {
           this.turnOnCamera()
         } else if (
           this.state.isVideoInputSupported &&
@@ -414,11 +421,19 @@ export default class VideoRecorder extends Component {
   }
 
   handleVideoSelected (e) {
+    if (this.state.isReplayingVideo) {
+      this.setState({
+        isReplayingVideo: false
+      })
+    }
+
     const files = e.target.files || e.dataTransfer.files
     if (files.length === 0) return
 
     const startedAt = new Date().getTime()
     const video = files[0]
+
+    e.target.value = null
 
     const extension = video.type === 'video/quicktime' ? 'mov' : undefined
 
@@ -450,12 +465,17 @@ export default class VideoRecorder extends Component {
       this.props.onOpenVideoInput()
     }
 
-    this.videoInput.click()
+    this.videoInput.current.value = null
+    this.videoInput.current.click()
   }
 
   handleStopReplaying () {
     if (this.props.onStopReplaying) {
       this.props.onStopReplaying()
+    }
+
+    if (this.props.useVideoInput && this.props.isOnInitially) {
+      return this.handleOpenVideoInput()
     }
 
     this.setState({
@@ -475,7 +495,8 @@ export default class VideoRecorder extends Component {
       renderVideoInputView,
       renderUnsupportedView,
       renderErrorView,
-      renderLoadingView
+      renderLoadingView,
+      useVideoInput
     } = this.props
 
     const {
@@ -489,14 +510,15 @@ export default class VideoRecorder extends Component {
     } = this.state
 
     const shouldUseVideoInput =
-      !isInlineRecordingSupported && isVideoInputSupported
+      useVideoInput || (!isInlineRecordingSupported && isVideoInputSupported)
 
     const videoInput = shouldUseVideoInput ? (
       <input
-        ref={el => (this.videoInput = el)}
+        ref={this.videoInput}
+        key='videoInput'
         type='file'
         accept='video/*'
-        capture='user'
+        capture={useVideoInput ? undefined : 'user'}
         style={{ display: 'none' }}
         onChange={this.handleVideoSelected}
       />
@@ -565,7 +587,12 @@ export default class VideoRecorder extends Component {
       isReplayVideoMuted
     } = this.state
 
-    const { countdownTime, timeLimit, renderActions } = this.props
+    const {
+      countdownTime,
+      timeLimit,
+      renderActions,
+      useVideoInput
+    } = this.props
 
     return (
       <Wrapper>
@@ -583,6 +610,7 @@ export default class VideoRecorder extends Component {
           isReplayVideoMuted,
           countdownTime,
           timeLimit,
+          useVideoInput,
 
           onTurnOnCamera: this.turnOnCamera,
           onTurnOffCamera: this.turnOffCamera,

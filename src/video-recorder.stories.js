@@ -73,3 +73,7 @@ stories.add('with isOnInitially=true', () => (
     {...actionLoggers}
   />
 ))
+
+stories.add('with useVideoInput=true isOnInitially=true', () => (
+  <VideoRecorder isOnInitially useVideoInput {...actionLoggers} />
+))

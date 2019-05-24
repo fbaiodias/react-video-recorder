@@ -30,6 +30,7 @@ export default ({
   countdownTime,
   timeLimit,
   isReplayingVideo,
+  useVideoInput,
 
   onTurnOnCamera,
   onTurnOffCamera,
@@ -55,7 +56,7 @@ export default ({
     if (isReplayingVideo) {
       return (
         <Button onClick={onStopReplaying} data-qa='start-replaying'>
-          Record another video
+          Use another video
         </Button>
       )
     }
@@ -67,6 +68,14 @@ export default ({
     if (isCameraOn && streamIsReady) {
       return (
         <RecordButton onClick={onStartRecording} data-qa='start-recording' />
+      )
+    }
+
+    if (useVideoInput) {
+      return (
+        <Button onClick={onOpenVideoInput} data-qa='open-input'>
+          Upload a video
+        </Button>
       )
     }
 
