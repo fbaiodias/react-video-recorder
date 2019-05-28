@@ -12,7 +12,7 @@ export const captureThumb = videoTag =>
     )
     canvas.toBlob(thumbnail => {
       resolve(thumbnail)
-    })
+    }, 'image/jpeg')
   })
 
 const getVideoInfo = videoBlob =>
