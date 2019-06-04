@@ -99,36 +99,19 @@ export default class VideoRecorder extends Component {
 
   videoInput = React.createRef()
 
-  constructor (props) {
-    super(props)
+  timeSinceInactivity = 0
 
-    this.state = {
-      isRecording: false,
-      isCameraOn: false,
-      isConnecting: false,
-      isReplayingVideo: false,
-      isReplayVideoMuted: true,
-      thereWasAnError: false,
-      streamIsReady: false,
-      isInlineRecordingSupported: null,
-      isVideoInputSupported: null,
-      stream: undefined
-    }
-
-    this.handleSuccess = this.handleSuccess.bind(this)
-    this.turnOnCamera = this.turnOnCamera.bind(this)
-    this.turnOffCamera = this.turnOffCamera.bind(this)
-    this.handleError = this.handleError.bind(this)
-    this.handleStartRecording = this.handleStartRecording.bind(this)
-    this.handleStopRecording = this.handleStopRecording.bind(this)
-    this.handleDataAvailable = this.handleDataAvailable.bind(this)
-    this.handleStop = this.handleStop.bind(this)
-    this.handleStopReplaying = this.handleStopReplaying.bind(this)
-    this.renderCameraView = this.renderCameraView.bind(this)
-    this.handleVideoSelected = this.handleVideoSelected.bind(this)
-    this.handleOpenVideoInput = this.handleOpenVideoInput.bind(this)
-
-    this.timeSinceInactivity = 0
+  state = {
+    isRecording: false,
+    isCameraOn: false,
+    isConnecting: false,
+    isReplayingVideo: false,
+    isReplayVideoMuted: true,
+    thereWasAnError: false,
+    streamIsReady: false,
+    isInlineRecordingSupported: null,
+    isVideoInputSupported: null,
+    stream: undefined
   }
 
   componentDidMount () {
@@ -179,7 +162,7 @@ export default class VideoRecorder extends Component {
     this.turnOffCamera()
   }
 
-  turnOnCamera () {
+  turnOnCamera = () => {
     if (this.props.onTurnOnCamera) {
       this.props.onTurnOnCamera()
     }
@@ -196,7 +179,7 @@ export default class VideoRecorder extends Component {
       .catch(this.handleError)
   }
 
-  turnOffCamera () {
+  turnOffCamera = () => {
     if (this.props.onTurnOffCamera) {
       this.props.onTurnOffCamera()
     }
@@ -208,7 +191,7 @@ export default class VideoRecorder extends Component {
     clearInterval(this.inactivityTimer)
   }
 
-  handleSuccess (stream) {
+  handleSuccess = stream => {
     this.stream = stream
     this.setState({
       isCameraOn: true,
@@ -233,7 +216,7 @@ export default class VideoRecorder extends Component {
     }, 200)
   }
 
-  handleError (err) {
+  handleError = err => {
     const { onError } = this.props
 
     console.error('Captured error', err)
@@ -255,13 +238,13 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  onDataIssue (event) {
+  onDataIssue = event => {
     console.error("Couldn't get data from event", event)
     this.handleError(new Error("Couldn't get data from event"))
     return false
   }
 
-  getMimeType () {
+  getMimeType = () => {
     if (this.props.mimeType) {
       return this.props.mimeType
     }
@@ -271,7 +254,7 @@ export default class VideoRecorder extends Component {
     return mimeType || ''
   }
 
-  isDataHealthOK (event) {
+  isDataHealthOK = event => {
     if (!event.data) return this.onDataIssue(event)
 
     // in some browsers (FF/S), data only shows up
@@ -311,13 +294,13 @@ export default class VideoRecorder extends Component {
       })
   }
 
-  handleDataAvailable (event) {
+  handleDataAvailable = event => {
     if (this.isDataHealthOK(event)) {
       this.recordedBlobs.push(event.data)
     }
   }
 
-  handleStopRecording () {
+  handleStopRecording = () => {
     if (this.props.onStopRecording) {
       this.props.onStopRecording()
     }
@@ -330,7 +313,7 @@ export default class VideoRecorder extends Component {
     this.mediaRecorder.stop()
   }
 
-  handleStartRecording () {
+  handleStartRecording = () => {
     if (this.props.onStartRecording) {
       this.props.onStartRecording()
     }
@@ -343,7 +326,7 @@ export default class VideoRecorder extends Component {
     setTimeout(() => this.startRecording(), this.props.countdownTime)
   }
 
-  startRecording () {
+  startRecording = () => {
     captureThumb(this.cameraVideo).then(thumbnail => {
       this.thumbnail = thumbnail
 
@@ -392,7 +375,7 @@ export default class VideoRecorder extends Component {
     })
   }
 
-  handleStop (event) {
+  handleStop = event => {
     const endedAt = new Date().getTime()
 
     if (!this.recordedBlobs || this.recordedBlobs.length <= 0) {
@@ -432,7 +415,7 @@ export default class VideoRecorder extends Component {
     )
   }
 
-  handleVideoSelected (e) {
+  handleVideoSelected = e => {
     if (this.state.isReplayingVideo) {
       this.setState({
         isReplayingVideo: false
@@ -472,7 +455,7 @@ export default class VideoRecorder extends Component {
       })
   }
 
-  handleOpenVideoInput () {
+  handleOpenVideoInput = () => {
     if (this.props.onOpenVideoInput) {
       this.props.onOpenVideoInput()
     }
@@ -481,7 +464,7 @@ export default class VideoRecorder extends Component {
     this.videoInput.current.click()
   }
 
-  handleStopReplaying () {
+  handleStopReplaying = () => {
     if (this.props.onStopReplaying) {
       this.props.onStopReplaying()
     }
