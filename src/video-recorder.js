@@ -171,19 +171,7 @@ export default class VideoRecorder extends Component {
       this.state.isReplayingVideo &&
       !prevState.isReplayingVideo
     ) {
-      this.replayVideo.addEventListener('loadedmetadata', () => {
-        const playPromise = this.replayVideo.play()
-
-        if (playPromise) {
-          playPromise.catch(err => {
-            if (err.name === 'NotAllowedError') {
-              console.warn(err)
-              return
-            }
-            throw err
-          })
-        }
-      })
+      this.tryToUnmuteReplayVideo()
     }
   }
 
@@ -297,6 +285,30 @@ export default class VideoRecorder extends Component {
     }
 
     return true
+  }
+
+  tryToUnmuteReplayVideo = () => {
+    const video = this.replayVideo
+    video.muted = false
+
+    let playPromise = video.play()
+    if (!playPromise) {
+      video.muted = true
+      return
+    }
+
+    playPromise
+      .then(() => {
+        this.setState({ isReplayVideoMuted: false })
+      })
+      .catch(err => {
+        console.warn('Could not autoplay replay video', err)
+        video.muted = true
+        return video.play()
+      })
+      .catch(err => {
+        console.warn('Could play muted replay video after failed autoplay', err)
+      })
   }
 
   handleDataAvailable (event) {
