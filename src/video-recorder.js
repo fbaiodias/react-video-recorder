@@ -501,6 +501,16 @@ export default class VideoRecorder extends Component {
     }
   }
 
+  handleReplayVideoClick = () => {
+    if (this.replayVideo.paused) {
+      this.replayVideo.play()
+    }
+
+    this.setState({
+      isReplayVideoMuted: !this.state.isReplayVideoMuted
+    })
+  }
+
   renderCameraView () {
     const {
       renderDisconnectedView,
@@ -546,12 +556,7 @@ export default class VideoRecorder extends Component {
             muted={isReplayVideoMuted}
             playsInline
             autoPlay
-            onClick={() => {
-              if (this.replayVideo.paused) {
-                this.replayVideo.play()
-              }
-              this.setState({ isReplayVideoMuted: !this.replayVideo.muted })
-            }}
+            onClick={this.handleReplayVideoClick}
           />
           {videoInput}
         </CameraView>
