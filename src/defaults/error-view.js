@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default () => (
+const ErrorView = () => (
   <div>
     Oh snap! Your browser failed to record your video.
     <br />
@@ -8,3 +8,5 @@ export default () => (
     Please restart it and try again 👍
   </div>
 )
+
+export default ErrorView

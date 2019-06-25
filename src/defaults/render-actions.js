@@ -18,7 +18,7 @@ const ActionsWrapper = styled.div`
   padding-bottom: 80px;
 `
 
-export default ({
+const Actions = ({
   isVideoInputSupported,
   isInlineRecordingSupported,
   thereWasAnError,
@@ -98,3 +98,5 @@ export default ({
     </div>
   )
 }
+
+export default Actions

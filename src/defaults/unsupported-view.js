@@ -1,3 +1,7 @@
 import React from 'react'
 
-export default () => <div>This browser is uncapable of recording video</div>
+const UnsupportedView = () => (
+  <div>This browser is uncapable of recording video</div>
+)
+
+export default UnsupportedView

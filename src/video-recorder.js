@@ -71,10 +71,10 @@ export default class VideoRecorder extends Component {
     timeLimit: PropTypes.number,
 
     renderDisconnectedView: PropTypes.func,
+    renderLoadingView: PropTypes.func,
     renderVideoInputView: PropTypes.func,
     renderUnsupportedView: PropTypes.func,
     renderErrorView: PropTypes.func,
-    renderLoadingView: PropTypes.func,
     renderActions: PropTypes.func,
 
     onTurnOnCamera: PropTypes.func,

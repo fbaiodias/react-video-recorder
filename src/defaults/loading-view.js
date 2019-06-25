@@ -5,4 +5,6 @@ const LoadingMessage = styled.div`
   font-family: Arial;
 `
 
-export default () => <LoadingMessage>Loading...</LoadingMessage>
+const LoadingView = () => <LoadingMessage>Loading...</LoadingMessage>
+
+export default LoadingView
