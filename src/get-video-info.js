@@ -32,8 +32,8 @@ const getVideoInfo = videoBlob =>
         duration: null,
         thumbnail: null
       })
-      videoTag.remoteEventListener &&
-        videoTag.remoteEventListener('loadeddata', handleLoadedData)
+      videoTag.removeEventListener &&
+        videoTag.removeEventListener('loadeddata', handleLoadedData)
       window.URL.revokeObjectURL(videoTag.src)
     }
 
