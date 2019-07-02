@@ -56,6 +56,9 @@ const Video = styled.video`
   transform: translate(-50%, -50%);
   min-height: 100%;
   min-width: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   ${props => props.onClick && 'cursor: pointer;'};
 `
 
@@ -206,8 +209,7 @@ export default class VideoRecorder extends Component {
 
     // there is probably a better way
     // but this makes sure the start recording button
-    // gives the steam a couple seconds to be ready
-    // --- Ideally there would be a property to checkk....
+    // gives the stream a couple miliseconds to be ready
     setTimeout(() => {
       this.setState({
         isConnecting: false,
@@ -342,9 +344,12 @@ export default class VideoRecorder extends Component {
         })
         this.startedAt = new Date().getTime()
         this.mediaRecorder = new window.MediaRecorder(this.stream, options)
-        this.mediaRecorder.onstop = this.handleStop
-        this.mediaRecorder.onerror = this.handleError
-        this.mediaRecorder.ondataavailable = this.handleDataAvailable
+        this.mediaRecorder.addEventListener('stop', this.handleStop)
+        this.mediaRecorder.addEventListener('error', this.handleError)
+        this.mediaRecorder.addEventListener(
+          'dataavailable',
+          this.handleDataAvailable
+        )
         this.mediaRecorder.start(chunkSizeInMS) // collect 10ms of data
 
         const { timeLimit } = this.props
@@ -358,9 +363,6 @@ export default class VideoRecorder extends Component {
         // as that's what we're passing to mediaRecorder.start() above
         setTimeout(() => {
           if (this.recordedBlobs.length === 0) {
-            console.error(
-              "Method mediaRecorder.ondataavailable wasn't called after 500ms"
-            )
             this.handleError(
               new Error(
                 "Method mediaRecorder.ondataavailable wasn't called after 500ms"
@@ -394,7 +396,7 @@ export default class VideoRecorder extends Component {
     const startedAt = this.startedAt
     const duration = endedAt - startedAt
 
-    // if this gets executed to soon, the last chunk of data is lost on FF
+    // if this gets executed too soon, the last chunk of data is lost on FF
     this.mediaRecorder.ondataavailable = null
 
     this.setState({
