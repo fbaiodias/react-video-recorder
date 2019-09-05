@@ -72,6 +72,11 @@ export default class VideoRecorder extends Component {
     countdownTime: PropTypes.number,
     /** Use this if you want to set a time limit for the video (in ms) */
     timeLimit: PropTypes.number,
+    /** Use this if you want to customize the constaints passed to getUserMedia() */
+    constraints: PropTypes.shape({
+      audio: PropTypes.any,
+      video: PropTypes.any
+    }),
 
     renderDisconnectedView: PropTypes.func,
     renderLoadingView: PropTypes.func,
@@ -97,7 +102,8 @@ export default class VideoRecorder extends Component {
     renderDisconnectedView: () => <DisconnectedView />,
     renderLoadingView: () => <LoadingView />,
     renderActions,
-    countdownTime: 3000
+    countdownTime: 3000,
+    constraints: CONSTRAINTS
   }
 
   videoInput = React.createRef()
@@ -177,7 +183,7 @@ export default class VideoRecorder extends Component {
     })
 
     navigator.mediaDevices
-      .getUserMedia(CONSTRAINTS)
+      .getUserMedia(this.props.constraints)
       .then(this.handleSuccess)
       .catch(this.handleError)
   }
