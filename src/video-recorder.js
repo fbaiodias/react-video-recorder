@@ -9,11 +9,6 @@ import LoadingView from './defaults/loading-view'
 import renderActions from './defaults/render-actions'
 import getVideoInfo, { captureThumb } from './get-video-info'
 
-// data shows up on some browsers
-// approx every 2 seconds
-const chunkSizeInMS = 250
-const dataCheckInterval = 2000 / chunkSizeInMS
-
 const MIME_TYPES = [
   'video/webm;codecs=vp8',
   'video/webm;codecs=h264',
@@ -77,6 +72,8 @@ export default class VideoRecorder extends Component {
       audio: PropTypes.any,
       video: PropTypes.any
     }),
+    chunkSize: PropTypes.number,
+    dataAvailableTimeout: PropTypes.number,
 
     renderDisconnectedView: PropTypes.func,
     renderLoadingView: PropTypes.func,
@@ -103,7 +100,9 @@ export default class VideoRecorder extends Component {
     renderLoadingView: () => <LoadingView />,
     renderActions,
     countdownTime: 3000,
-    constraints: CONSTRAINTS
+    constraints: CONSTRAINTS,
+    chunkSize: 250,
+    dataAvailableTimeout: 500
   }
 
   videoInput = React.createRef()
@@ -246,7 +245,7 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  onDataIssue = event => {
+  handleDataIssue = event => {
     console.error("Couldn't get data from event", event)
     this.handleError(new Error("Couldn't get data from event"))
     return false
@@ -263,7 +262,11 @@ export default class VideoRecorder extends Component {
   }
 
   isDataHealthOK = event => {
-    if (!event.data) return this.onDataIssue(event)
+    if (!event.data) return this.handleDataIssue(event)
+
+    const { chunkSize } = this.props
+
+    const dataCheckInterval = 2000 / chunkSize
 
     // in some browsers (FF/S), data only shows up
     // after a certain amount of time ~everyt 2 seconds
@@ -272,7 +275,7 @@ export default class VideoRecorder extends Component {
       const blob = new window.Blob(this.recordedBlobs, {
         type: this.getMimeType()
       })
-      if (blob.size <= 0) return this.onDataIssue(event)
+      if (blob.size <= 0) return this.handleDataIssue(event)
     }
 
     return true
@@ -356,9 +359,10 @@ export default class VideoRecorder extends Component {
           'dataavailable',
           this.handleDataAvailable
         )
-        this.mediaRecorder.start(chunkSizeInMS) // collect 10ms of data
 
-        const { timeLimit } = this.props
+        const { timeLimit, chunkSize, dataAvailableTimeout } = this.props
+        this.mediaRecorder.start(chunkSize) // collect 10ms of data
+
         if (timeLimit) {
           this.timeLimitTimeout = setTimeout(() => {
             this.handleStopRecording()
@@ -367,15 +371,17 @@ export default class VideoRecorder extends Component {
 
         // mediaRecorder.ondataavailable should be called every 10ms,
         // as that's what we're passing to mediaRecorder.start() above
-        setTimeout(() => {
-          if (this.recordedBlobs.length === 0) {
-            this.handleError(
-              new Error(
-                "Method mediaRecorder.ondataavailable wasn't called after 500ms"
+        if (Number.isInteger(dataAvailableTimeout)) {
+          setTimeout(() => {
+            if (this.recordedBlobs.length === 0) {
+              this.handleError(
+                new Error(
+                  `Method mediaRecorder.ondataavailable wasn't called after ${dataAvailableTimeout}ms`
+                )
               )
-            )
-          }
-        }, 500)
+            }
+          }, dataAvailableTimeout)
+        }
       } catch (err) {
         console.error("Couldn't create MediaRecorder", err, options)
         this.handleError(err)
