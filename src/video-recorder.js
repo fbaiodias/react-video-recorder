@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
@@ -54,7 +54,16 @@ const Video = styled.video`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  ${props => props.onClick && 'cursor: pointer;'};
+  ${props =>
+    props.isFlipped &&
+    css`
+      transform: translate(-50%, -50%) scaleX(-1);
+    `};
+  ${props =>
+    props.onClick &&
+    css`
+      cursor: pointer;
+    `};
 `
 
 export default class VideoRecorder extends Component {
@@ -575,7 +584,7 @@ export default class VideoRecorder extends Component {
     if (isCameraOn) {
       return (
         <CameraView key='camera'>
-          <Video ref={el => (this.cameraVideo = el)} autoPlay muted />
+          <Video isFlipped ref={el => (this.cameraVideo = el)} autoPlay muted />
         </CameraView>
       )
     }
