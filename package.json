@@ -80,7 +80,7 @@
     "puppeteer": "^1.18.1",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
-    "semantic-release": "^15.13.18",
+    "semantic-release": "^15.13.24",
     "standard": "^11.0.0",
     "start-server-and-test": "^1.7.11",
     "styled-components": "4",
