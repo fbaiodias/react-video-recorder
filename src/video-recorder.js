@@ -275,7 +275,9 @@ export default class VideoRecorder extends Component {
       return this.props.mimeType
     }
 
-    const mimeType = MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
+    const mimeType = window.MediaRecorder.isTypeSupported
+      ? MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
+      : 'video/webm'
 
     return mimeType || ''
   }
