@@ -8,6 +8,12 @@ import DisconnectedView from './defaults/disconnected-view'
 import LoadingView from './defaults/loading-view'
 import renderActions from './defaults/render-actions'
 import getVideoInfo, { captureThumb } from './get-video-info'
+import {
+  ReactVideoRecorderDataIssueError,
+  ReactVideoRecorderRecordedBlobsUnavailableError,
+  ReactVideoRecorderDataAvailableTimeoutError,
+  ReactVideoRecorderMediaRecorderUnavailableError
+} from './custom-errors'
 
 const MIME_TYPES = [
   'video/webm;codecs=vp8',
@@ -125,6 +131,7 @@ export default class VideoRecorder extends Component {
     isReplayingVideo: false,
     isReplayVideoMuted: true,
     thereWasAnError: false,
+    error: null,
     streamIsReady: false,
     isInlineRecordingSupported: null,
     isVideoInputSupported: null,
@@ -187,7 +194,8 @@ export default class VideoRecorder extends Component {
     this.setState({
       isConnecting: true,
       isReplayingVideo: false,
-      thereWasAnError: false
+      thereWasAnError: false,
+      error: null
     })
 
     navigator.mediaDevices
@@ -246,7 +254,8 @@ export default class VideoRecorder extends Component {
     this.setState({
       isConnecting: this.state.isConnecting && false,
       isRecording: false,
-      thereWasAnError: true
+      thereWasAnError: true,
+      error: err
     })
 
     if (this.state.isCameraOn) {
@@ -255,8 +264,9 @@ export default class VideoRecorder extends Component {
   }
 
   handleDataIssue = event => {
-    console.error("Couldn't get data from event", event)
-    this.handleError(new Error("Couldn't get data from event"))
+    const error = new ReactVideoRecorderDataIssueError(event)
+    console.error(error.message, event)
+    this.handleError(error)
     return false
   }
 
@@ -326,7 +336,7 @@ export default class VideoRecorder extends Component {
     }
 
     if (!this.mediaRecorder) {
-      this.handleError(new Error("Couldn't get mediaRecorder"))
+      this.handleError(new ReactVideoRecorderMediaRecorderUnavailableError())
       return
     }
 
@@ -384,8 +394,8 @@ export default class VideoRecorder extends Component {
           setTimeout(() => {
             if (this.recordedBlobs.length === 0) {
               this.handleError(
-                new Error(
-                  `Method mediaRecorder.ondataavailable wasn't called after ${dataAvailableTimeout}ms`
+                new ReactVideoRecorderDataAvailableTimeoutError(
+                  dataAvailableTimeout
                 )
               )
             }
@@ -402,8 +412,9 @@ export default class VideoRecorder extends Component {
     const endedAt = new Date().getTime()
 
     if (!this.recordedBlobs || this.recordedBlobs.length <= 0) {
-      console.error("Couldn't get recordedBlobs", event)
-      this.handleError(new Error("Couldn't get recordedBlobs"))
+      const error = new ReactVideoRecorderRecordedBlobsUnavailableError(event)
+      console.error(error.message, event)
+      this.handleError(error)
       return
     }
 
@@ -532,6 +543,7 @@ export default class VideoRecorder extends Component {
       isReplayingVideo,
       isInlineRecordingSupported,
       thereWasAnError,
+      error,
       isCameraOn,
       isConnecting,
       isReplayVideoMuted
@@ -578,7 +590,7 @@ export default class VideoRecorder extends Component {
     }
 
     if (thereWasAnError) {
-      return renderErrorView()
+      return renderErrorView({ error })
     }
 
     if (isCameraOn) {
