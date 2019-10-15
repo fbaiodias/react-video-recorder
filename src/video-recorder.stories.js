@@ -79,5 +79,5 @@ stories.add('with useVideoInput=true isOnInitially=true', () => (
 ))
 
 stories.add('without dataAvailableTimeout', () => (
-  <VideoRecorder dataAvailableTimeout={null} {...actionLoggers} />
+  <VideoRecorder isOnInitially dataAvailableTimeout={null} {...actionLoggers} />
 ))

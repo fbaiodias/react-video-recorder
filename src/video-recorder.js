@@ -423,10 +423,13 @@ export default class VideoRecorder extends Component {
 
     clearTimeout(this.timeLimitTimeout)
 
-    const videoBlob = new window.Blob(this.recordedBlobs, {
-      type: this.getMimeType()
-    })
-    // const videoBlob = new window.Blob(this.recordedBlobs)
+    const videoBlob =
+      this.recordedBlobs.length === 1
+        ? this.recordedBlobs[0]
+        : new window.Blob(this.recordedBlobs, {
+          type: this.getMimeType()
+        })
+
     const thumbnailBlob = this.thumbnail
     const startedAt = this.startedAt
     const duration = endedAt - startedAt
