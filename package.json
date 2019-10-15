@@ -10,7 +10,7 @@
     "test:unit": "jest -c test/unit/jest.config.js",
     "jest:browser": "jest -c test/browser/jest.config.js",
     "test:browser": "start-server-and-test storybook http-get://localhost:6006 jest:browser",
-    "lint": "standard",
+    "lint": "eslint .",
     "clean": "rm -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "prebuild": "yarn run clean",
@@ -29,17 +29,8 @@
   "lint-staged": {
     "**/*.js": [
       "prettier-standard",
-      "standard --fix",
+      "eslint --fix",
       "git add"
-    ]
-  },
-  "standard": {
-    "parser": "babel-eslint",
-    "globals": [
-      "describe",
-      "it",
-      "expect",
-      "alert"
     ]
   },
   "peerDependencies": {
@@ -71,6 +62,15 @@
     "babel-plugin-styled-components": "^1.10.6",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.9.1",
+    "eslint": "^6.5.1",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-config-standard-react": "^9.2.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.19.0",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-standard": "^4.0.1",
     "husky": "^3.0.0",
     "jest": "^24.1.0",
     "jest-puppeteer": "^4.0.0",
@@ -81,7 +81,6 @@
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "semantic-release": "^15.13.24",
-    "standard": "^11.0.0",
     "start-server-and-test": "^1.7.11",
     "styled-components": "4",
     "travis-deploy-once": "^4.4.0"

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 const Root = styled.div`
@@ -16,14 +17,16 @@ const Root = styled.div`
 `
 
 export default class Countdown extends Component {
+  static propTypes = {
+    countdownTime: PropTypes.number
+  }
+
   constructor (props) {
     super(props)
 
     this.state = {
       number: props.countdownTime / 1000
     }
-
-    this.updateNumber = this.updateNumber.bind(this)
   }
 
   componentDidMount () {
@@ -34,7 +37,7 @@ export default class Countdown extends Component {
     clearInterval(this.timeout)
   }
 
-  updateNumber () {
+  updateNumber = () => {
     const nextNumber = this.state.number - 1
     this.setState({
       number: nextNumber

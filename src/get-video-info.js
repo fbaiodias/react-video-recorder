@@ -37,7 +37,7 @@ const getVideoInfo = videoBlob =>
       window.URL.revokeObjectURL(videoTag.src)
     }
 
-    let timeout = setTimeout(handleTimeout, 1000)
+    const timeout = setTimeout(handleTimeout, 1000)
 
     const handleLoadedData = () => {
       const duration = videoTag.duration * 1000
@@ -54,7 +54,6 @@ const getVideoInfo = videoBlob =>
         })
         .catch(err => {
           if (!resolved) {
-            alert(`thumb error ${err}`)
             clearTimeout(timeout)
             resolved = true
             reject(err)

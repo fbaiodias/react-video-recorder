@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
 
@@ -89,6 +89,7 @@ export default class VideoRecorder extends Component {
     }),
     chunkSize: PropTypes.number,
     dataAvailableTimeout: PropTypes.number,
+    useVideoInput: PropTypes.bool,
 
     renderDisconnectedView: PropTypes.func,
     renderLoadingView: PropTypes.func,
@@ -110,7 +111,7 @@ export default class VideoRecorder extends Component {
   static defaultProps = {
     renderUnsupportedView: () => <UnsupportedView />,
     renderErrorView: () => <ErrorView />,
-    renderVideoInputView: ({ videoInput }) => <Fragment>{videoInput}</Fragment>,
+    renderVideoInputView: ({ videoInput }) => <>{videoInput}</>,
     renderDisconnectedView: () => <DisconnectedView />,
     renderLoadingView: () => <LoadingView />,
     renderActions,
@@ -306,7 +307,7 @@ export default class VideoRecorder extends Component {
     const video = this.replayVideo
     video.muted = false
 
-    let playPromise = video.play()
+    const playPromise = video.play()
     if (!playPromise) {
       video.muted = true
       return

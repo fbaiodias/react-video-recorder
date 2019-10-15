@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 const Text = styled.div`
@@ -21,6 +22,11 @@ const RecIcon = styled.div`
 `
 
 class Timer extends Component {
+  static propTypes = {
+    timeLimit: PropTypes.number,
+    defaultText: PropTypes.string
+  }
+
   constructor (props) {
     super(props)
 
@@ -53,7 +59,7 @@ class Timer extends Component {
   getState (seconds) {
     const minutes = Math.floor(seconds / 60)
 
-    let humanTime =
+    const humanTime =
       minutes !== 0
         ? `${minutes}:${this.pad(seconds - minutes * 60)}`
         : `${seconds - minutes * 60}s`

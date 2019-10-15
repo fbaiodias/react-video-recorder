@@ -1,6 +1,6 @@
 export class ReactVideoRecorderDataIssueError extends Error {
   constructor (event) {
-    super(`Couldn't get data from event`)
+    super("Couldn't get data from event")
     this.name = 'ReactVideoRecorderDataIssueError'
     this.event = event
   }
@@ -8,7 +8,7 @@ export class ReactVideoRecorderDataIssueError extends Error {
 
 export class ReactVideoRecorderRecordedBlobsUnavailableError extends Error {
   constructor (event) {
-    super(`Couldn't get recordedBlobs`)
+    super("Couldn't get recordedBlobs")
     this.name = 'ReactVideoRecorderRecordedBlobsUnavailableError'
     this.event = event
   }
@@ -26,7 +26,7 @@ export class ReactVideoRecorderDataAvailableTimeoutError extends Error {
 
 export class ReactVideoRecorderMediaRecorderUnavailableError extends Error {
   constructor () {
-    super(`Couldn't get mediaRecorder`)
+    super("Couldn't get mediaRecorder")
     this.name = 'ReactVideoRecorderMediaRecorderUnavailableError'
   }
 }

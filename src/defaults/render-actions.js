@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Button from './button'
 import RecordButton from './record-button'
@@ -97,6 +98,29 @@ const Actions = ({
       <ActionsWrapper>{renderContent()}</ActionsWrapper>
     </div>
   )
+}
+
+Actions.propTypes = {
+  isVideoInputSupported: PropTypes.bool,
+  isInlineRecordingSupported: PropTypes.bool,
+  thereWasAnError: PropTypes.bool,
+  isRecording: PropTypes.bool,
+  isCameraOn: PropTypes.bool,
+  streamIsReady: PropTypes.bool,
+  isConnecting: PropTypes.bool,
+  isRunningCountdown: PropTypes.bool,
+  countdownTime: PropTypes.number,
+  timeLimit: PropTypes.number,
+  isReplayingVideo: PropTypes.bool,
+  useVideoInput: PropTypes.bool,
+
+  onTurnOnCamera: PropTypes.func,
+  onTurnOffCamera: PropTypes.func,
+  onOpenVideoInput: PropTypes.func,
+  onStartRecording: PropTypes.func,
+  onStopRecording: PropTypes.func,
+  onStopReplaying: PropTypes.func,
+  onConfirm: PropTypes.func
 }
 
 export default Actions
