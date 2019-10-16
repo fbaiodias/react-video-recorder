@@ -199,8 +199,28 @@ export default class VideoRecorder extends Component {
       error: null
     })
 
+    const fallbackContraints = {
+      audio: true,
+      video: true
+    }
+
     navigator.mediaDevices
       .getUserMedia(this.props.constraints)
+      .catch(err => {
+        // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
+        if (
+          err.name === 'NotReadableError' ||
+          err.name === 'OverconstrainedError'
+        ) {
+          console.warn(
+            `Got ${
+              err.name
+            }, trying getUserMedia again with fallback constraints`
+          )
+          return navigator.mediaDevices.getUserMedia(fallbackContraints)
+        }
+        throw err
+      })
       .then(this.handleSuccess)
       .catch(this.handleError)
   }
