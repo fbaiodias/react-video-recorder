@@ -74,7 +74,7 @@ const Video = styled.video`
 
 export default class VideoRecorder extends Component {
   static propTypes = {
-    /** Wether or not to start the camera initially */
+    /** Whether or not to start the camera initially */
     isOnInitially: PropTypes.bool,
     /** Pass this if you want to force a specific mime-type for the video */
     mimeType: PropTypes.string,
@@ -82,7 +82,9 @@ export default class VideoRecorder extends Component {
     countdownTime: PropTypes.number,
     /** Use this if you want to set a time limit for the video (in ms) */
     timeLimit: PropTypes.number,
-    /** Use this if you want to customize the constaints passed to getUserMedia() */
+    /** Use this if you want to show play/pause/etc. controls on the replay video */
+    showReplayControls: PropTypes.bool,
+    /** Use this if you want to customize the constraints passed to getUserMedia() */
     constraints: PropTypes.shape({
       audio: PropTypes.any,
       video: PropTypes.any
@@ -102,6 +104,8 @@ export default class VideoRecorder extends Component {
     onTurnOffCamera: PropTypes.func,
     onStartRecording: PropTypes.func,
     onStopRecording: PropTypes.func,
+    onPauseRecording: PropTypes.func,
+    onResumeRecording: PropTypes.func,
     onRecordingComplete: PropTypes.func,
     onOpenVideoInput: PropTypes.func,
     onStopReplaying: PropTypes.func,
@@ -366,6 +370,32 @@ export default class VideoRecorder extends Component {
     this.mediaRecorder.stop()
   }
 
+  handlePauseRecording = () => {
+    if (this.props.onPauseRecording) {
+      this.props.onPauseRecording()
+    }
+
+    if (!this.mediaRecorder) {
+      this.handleError(new ReactVideoRecorderMediaRecorderUnavailableError())
+      return
+    }
+
+    this.mediaRecorder.pause()
+  }
+
+  handleResumeRecording = () => {
+    if (this.props.onResumeRecording) {
+      this.props.onResumeRecording()
+    }
+
+    if (!this.mediaRecorder) {
+      this.handleError(new ReactVideoRecorderMediaRecorderUnavailableError())
+      return
+    }
+
+    this.mediaRecorder.resume()
+  }
+
   handleStartRecording = () => {
     if (this.props.onStartRecording) {
       this.props.onStartRecording()
@@ -556,6 +586,7 @@ export default class VideoRecorder extends Component {
 
   renderCameraView () {
     const {
+      showReplayControls,
       renderDisconnectedView,
       renderVideoInputView,
       renderUnsupportedView,
@@ -600,6 +631,7 @@ export default class VideoRecorder extends Component {
             muted={isReplayVideoMuted}
             playsInline
             autoPlay
+            controls={showReplayControls}
             onClick={this.handleReplayVideoClick}
           />
           {videoInput}
@@ -651,6 +683,7 @@ export default class VideoRecorder extends Component {
     const {
       countdownTime,
       timeLimit,
+      showReplayControls,
       renderActions,
       useVideoInput
     } = this.props
@@ -671,6 +704,7 @@ export default class VideoRecorder extends Component {
           isReplayVideoMuted,
           countdownTime,
           timeLimit,
+          showReplayControls,
           useVideoInput,
 
           onTurnOnCamera: this.turnOnCamera,
@@ -678,6 +712,8 @@ export default class VideoRecorder extends Component {
           onOpenVideoInput: this.handleOpenVideoInput,
           onStartRecording: this.handleStartRecording,
           onStopRecording: this.handleStopRecording,
+          onPauseRecording: this.handlePauseRecording,
+          onResumeRecording: this.handleResumeRecording,
           onStopReplaying: this.handleStopReplaying
         })}
       </Wrapper>

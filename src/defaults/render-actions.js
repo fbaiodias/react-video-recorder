@@ -28,9 +28,10 @@ const Actions = ({
   streamIsReady,
   isConnecting,
   isRunningCountdown,
+  isReplayingVideo,
   countdownTime,
   timeLimit,
-  isReplayingVideo,
+  showReplayControls,
   useVideoInput,
 
   onTurnOnCamera,
@@ -38,6 +39,8 @@ const Actions = ({
   onOpenVideoInput,
   onStartRecording,
   onStopRecording,
+  onPauseRecording,
+  onResumeRecording,
   onStopReplaying,
   onConfirm
 }) => {
@@ -111,6 +114,7 @@ Actions.propTypes = {
   isRunningCountdown: PropTypes.bool,
   countdownTime: PropTypes.number,
   timeLimit: PropTypes.number,
+  showReplayControls: PropTypes.bool,
   isReplayingVideo: PropTypes.bool,
   useVideoInput: PropTypes.bool,
 
@@ -119,6 +123,8 @@ Actions.propTypes = {
   onOpenVideoInput: PropTypes.func,
   onStartRecording: PropTypes.func,
   onStopRecording: PropTypes.func,
+  onPauseRecording: PropTypes.func,
+  onResumeRecording: PropTypes.func,
   onStopReplaying: PropTypes.func,
   onConfirm: PropTypes.func
 }
