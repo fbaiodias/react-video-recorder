@@ -584,6 +584,10 @@ export default class VideoRecorder extends Component {
     })
   }
 
+  handleDurationChange = () => {
+    this.props.showReplayControls ? this.replayVideo.currentTime = 1000000 : null
+  }
+
   renderCameraView () {
     const {
       showReplayControls,
@@ -633,6 +637,7 @@ export default class VideoRecorder extends Component {
             autoPlay
             controls={showReplayControls}
             onClick={this.handleReplayVideoClick}
+            onDurationChange={this.handleDurationChange}
           />
           {videoInput}
         </CameraView>
