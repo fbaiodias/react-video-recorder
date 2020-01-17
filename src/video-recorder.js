@@ -76,6 +76,8 @@ export default class VideoRecorder extends Component {
   static propTypes = {
     /** Whether or not to start the camera initially */
     isOnInitially: PropTypes.bool,
+    /** Whether or not to display the video flipped (makes sense for user facing camera) */
+    isFlipped: PropTypes.bool,
     /** Pass this if you want to force a specific mime-type for the video */
     mimeType: PropTypes.string,
     /** How much time to wait until it starts recording (in ms) */
@@ -119,6 +121,7 @@ export default class VideoRecorder extends Component {
     renderDisconnectedView: () => <DisconnectedView />,
     renderLoadingView: () => <LoadingView />,
     renderActions,
+    isFlipped: true,
     countdownTime: 3000,
     constraints: CONSTRAINTS,
     chunkSize: 250,
@@ -661,7 +664,12 @@ export default class VideoRecorder extends Component {
     if (isCameraOn) {
       return (
         <CameraView key='camera'>
-          <Video isFlipped ref={el => (this.cameraVideo = el)} autoPlay muted />
+          <Video
+            isFlipped={this.props.isFlipped}
+            ref={el => (this.cameraVideo = el)}
+            autoPlay
+            muted
+          />
         </CameraView>
       )
     }

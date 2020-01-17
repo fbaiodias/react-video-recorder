@@ -85,3 +85,7 @@ stories.add('without dataAvailableTimeout', () => (
 stories.add('with showReplayControls=true', () => (
   <VideoRecorder isOnInitially showReplayControls {...actionLoggers} />
 ))
+
+stories.add('with isFlipped=false', () => (
+  <VideoRecorder isFlipped={false} showReplayControls {...actionLoggers} />
+))
