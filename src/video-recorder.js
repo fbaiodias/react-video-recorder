@@ -84,6 +84,8 @@ export default class VideoRecorder extends Component {
     timeLimit: PropTypes.number,
     /** Use this if you want to show play/pause/etc. controls on the replay video */
     showReplayControls: PropTypes.bool,
+    /** Use this to turn off autoplay and looping of the replay video. It is recommended to also showReplayControls in order to play */
+    replayVideoAutoplayAndLoopOff: PropTypes.bool,
     /** Use this if you want to customize the constraints passed to getUserMedia() */
     constraints: PropTypes.shape({
       audio: PropTypes.any,
@@ -340,6 +342,11 @@ export default class VideoRecorder extends Component {
     playPromise
       .then(() => {
         this.setState({ isReplayVideoMuted: false })
+        // fixes bug where seeking control during autoplay is not available until the video is almost completely played through
+        if (this.props.replayVideoAutoplayAndLoopOff) {
+          video.pause()
+          video.loop = false
+        }
       })
       .catch(err => {
         console.warn('Could not autoplay replay video', err)
@@ -575,15 +582,19 @@ export default class VideoRecorder extends Component {
   }
 
   handleReplayVideoClick = () => {
-    if (this.replayVideo.paused) {
+    if (this.replayVideo.paused && !this.props.showReplayControls) {
       this.replayVideo.play()
     }
 
-    this.setState({
-      isReplayVideoMuted: !this.state.isReplayVideoMuted
-    })
+    // fixes bug where seeking control during autoplay is not available until the video is almost completely played through
+    if (!this.props.replayVideoAutoplayAndLoopOff) {
+      this.setState({
+        isReplayVideoMuted: !this.state.isReplayVideoMuted
+      })
+    }
   }
 
+  // fixes bug where seeking control is not available until the video is almost completely played through
   handleDurationChange = () => {
     if (this.props.showReplayControls) {
       this.replayVideo.currentTime = 1000000
@@ -593,6 +604,7 @@ export default class VideoRecorder extends Component {
   renderCameraView () {
     const {
       showReplayControls,
+      replayVideoAutoplayAndLoopOff,
       renderDisconnectedView,
       renderVideoInputView,
       renderUnsupportedView,
@@ -636,7 +648,7 @@ export default class VideoRecorder extends Component {
             loop
             muted={isReplayVideoMuted}
             playsInline
-            autoPlay
+            autoPlay={!replayVideoAutoplayAndLoopOff}
             controls={showReplayControls}
             onClick={this.handleReplayVideoClick}
             onDurationChange={this.handleDurationChange}
@@ -691,6 +703,7 @@ export default class VideoRecorder extends Component {
       countdownTime,
       timeLimit,
       showReplayControls,
+      replayVideoAutoplayAndLoopOff,
       renderActions,
       useVideoInput
     } = this.props
@@ -712,6 +725,7 @@ export default class VideoRecorder extends Component {
           countdownTime,
           timeLimit,
           showReplayControls,
+          replayVideoAutoplayAndLoopOff,
           useVideoInput,
 
           onTurnOnCamera: this.turnOnCamera,
