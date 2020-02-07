@@ -100,6 +100,7 @@ export default class VideoRecorder extends Component {
     renderErrorView: PropTypes.func,
     renderActions: PropTypes.func,
 
+    onCameraOn: PropTypes.func,
     onTurnOnCamera: PropTypes.func,
     onTurnOffCamera: PropTypes.func,
     onStartRecording: PropTypes.func,
@@ -247,6 +248,9 @@ export default class VideoRecorder extends Component {
       isCameraOn: true,
       stream: stream
     })
+    if (this.props.onCameraOn) {
+      this.props.onCameraOn()
+    }
 
     if (window.URL) {
       this.cameraVideo.srcObject = stream
