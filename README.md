@@ -15,7 +15,13 @@ import React from 'react'
 import { render } from 'react-dom'
 import VideoRecorder from 'react-video-recorder'
 
-const App = () => <VideoRecorder />
+const App = () => 
+  <VideoRecorder 
+    onRecordingComplete={(videoBlob) => {
+      // Do something with the video...
+      console.log('videoBlob', videoBlob)
+    }} 
+  />
 
 render(<App />, document.getElementById('root'))
 ```
@@ -23,6 +29,8 @@ render(<App />, document.getElementById('root'))
 Also check the [Storybook](https://react-video-recorder.surge.sh/) for more demos and usage examples.
 
 **Note:** if you click the **"Show info"** button in the top-right corner, you should be able to see a table with the supported prop-types.
+
+### Basic usage: getting the 
 
 ### Modifying the UI
 
