@@ -32,6 +32,7 @@ const Actions = ({
   countdownTime,
   timeLimit,
   showReplayControls,
+  replayVideoAutoplayAndLoopOff,
   useVideoInput,
 
   onTurnOnCamera,
@@ -115,6 +116,7 @@ Actions.propTypes = {
   countdownTime: PropTypes.number,
   timeLimit: PropTypes.number,
   showReplayControls: PropTypes.bool,
+  replayVideoAutoplayAndLoopOff: PropTypes.bool,
   isReplayingVideo: PropTypes.bool,
   useVideoInput: PropTypes.bool,
 
