@@ -86,7 +86,6 @@ stories.add('with showReplayControls=true', () => (
   <VideoRecorder isOnInitially showReplayControls {...actionLoggers} />
 ))
 
-
 stories.add(
   'with showReplayControls=true replayVideoAutoplayAndLoopOff=true',
   () => (
