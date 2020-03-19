@@ -13,13 +13,14 @@
     "lint": "eslint .",
     "clean": "rm -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
+    "precommit": "yarn run build",
     "prebuild": "yarn run clean",
     "prepublish": "NODE_ENV=production yarn run build",
     "start": "yarn run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "travis-deploy-once": "travis-deploy-once",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
   },
   "husky": {
     "hooks": {
