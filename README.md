@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-yarn add react-video-recorder
+yarn add react-video-recorder styled-components
 ```
 
 ## Usage
