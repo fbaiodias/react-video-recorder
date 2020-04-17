@@ -16,16 +16,26 @@ import {
 } from './custom-errors'
 
 const MIME_TYPES = [
-  'video/webm;codecs="vp8,opus"',
   'video/webm;codecs=h264',
   'video/webm;codecs=vp9',
+  'video/webm;codecs="vp8,opus"',
   'video/webm'
 ]
 
-const CONSTRAINTS = {
-  audio: true,
-  video: true
-}
+const CONSTRAINTS = [
+  {
+    width: '1280',
+    height: '720',
+    frameRate: {
+      min: '30',
+      max: '53'
+    }
+  },
+  { width: '1280', height: '720' },
+  { width: '640', height: '480' },
+  { width: '320', height: '240' },
+  true
+]
 
 const Wrapper = styled.div`
   position: relative;
@@ -60,12 +70,12 @@ const Video = styled.video`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  ${props =>
+  ${(props) =>
     props.isFlipped &&
     css`
       transform: translate(-50%, -50%) scaleX(-1);
     `};
-  ${props =>
+  ${(props) =>
     props.onClick &&
     css`
       cursor: pointer;
@@ -126,7 +136,6 @@ export default class VideoRecorder extends Component {
     renderActions,
     isFlipped: true,
     countdownTime: 3000,
-    constraints: CONSTRAINTS,
     chunkSize: 250,
     dataAvailableTimeout: 500
   }
@@ -209,30 +218,7 @@ export default class VideoRecorder extends Component {
       error: null
     })
 
-    const fallbackContraints = {
-      audio: true,
-      video: true
-    }
-
-    navigator.mediaDevices
-      .getUserMedia(this.props.constraints)
-      .catch(err => {
-        // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
-        if (
-          err.name === 'NotReadableError' ||
-          err.name === 'OverconstrainedError'
-        ) {
-          console.warn(
-            `Got ${
-              err.name
-            }, trying getUserMedia again with fallback constraints`
-          )
-          return navigator.mediaDevices.getUserMedia(fallbackContraints)
-        }
-        throw err
-      })
-      .then(this.handleSuccess)
-      .catch(this.handleError)
+    this.getUserMedia().then(this.handleSuccess).catch(this.handleError)
   }
 
   turnOffCamera = () => {
@@ -240,14 +226,14 @@ export default class VideoRecorder extends Component {
       this.props.onTurnOffCamera()
     }
 
-    this.stream && this.stream.getTracks().forEach(stream => stream.stop())
+    this.stream && this.stream.getTracks().forEach((stream) => stream.stop())
     this.setState({
       isCameraOn: false
     })
     clearInterval(this.inactivityTimer)
   }
 
-  handleSuccess = stream => {
+  handleSuccess = (stream) => {
     this.stream = stream
     this.setState({
       isCameraOn: true,
@@ -274,7 +260,7 @@ export default class VideoRecorder extends Component {
     }, 200)
   }
 
-  handleError = err => {
+  handleError = (err) => {
     const { onError } = this.props
 
     console.error('Captured error', err)
@@ -297,7 +283,7 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  handleDataIssue = event => {
+  handleDataIssue = (event) => {
     const error = new ReactVideoRecorderDataIssueError(event)
     console.error(error.message, event)
     this.handleError(error)
@@ -310,13 +296,16 @@ export default class VideoRecorder extends Component {
     }
 
     const mimeType = window.MediaRecorder.isTypeSupported
-      ? MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
+      ? MIME_TYPES.find((x) => {
+        console.log('trying MIME', x)
+        return window.MediaRecorder.isTypeSupported(x)
+      })
       : 'video/webm'
 
     return mimeType || ''
   }
 
-  isDataHealthOK = event => {
+  isDataHealthOK = (event) => {
     if (!event.data) return this.handleDataIssue(event)
 
     const { chunkSize } = this.props
@@ -355,17 +344,17 @@ export default class VideoRecorder extends Component {
           video.loop = false
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.warn('Could not autoplay replay video', err)
         video.muted = true
         return video.play()
       })
-      .catch(err => {
+      .catch((err) => {
         console.warn('Could play muted replay video after failed autoplay', err)
       })
   }
 
-  handleDataAvailable = event => {
+  handleDataAvailable = (event) => {
     if (this.isDataHealthOK(event)) {
       this.recordedBlobs.push(event.data)
     }
@@ -424,11 +413,12 @@ export default class VideoRecorder extends Component {
   }
 
   startRecording = () => {
-    captureThumb(this.cameraVideo).then(thumbnail => {
+    captureThumb(this.cameraVideo).then((thumbnail) => {
       this.thumbnail = thumbnail
 
       this.recordedBlobs = []
       const options = {
+        videoBitsPerSecond: 2500000,
         mimeType: this.getMimeType()
       }
 
@@ -475,7 +465,7 @@ export default class VideoRecorder extends Component {
     })
   }
 
-  handleStop = event => {
+  handleStop = (event) => {
     const endedAt = new Date().getTime()
 
     if (!this.recordedBlobs || this.recordedBlobs.length <= 0) {
@@ -519,7 +509,7 @@ export default class VideoRecorder extends Component {
     )
   }
 
-  handleVideoSelected = e => {
+  handleVideoSelected = (e) => {
     if (this.state.isReplayingVideo) {
       this.setState({
         isReplayingVideo: false
@@ -554,7 +544,7 @@ export default class VideoRecorder extends Component {
           extension
         )
       })
-      .catch(err => {
+      .catch((err) => {
         this.handleError(err)
       })
   }
@@ -608,6 +598,31 @@ export default class VideoRecorder extends Component {
     }
   }
 
+  getUserMedia = () => {
+    if (this.props.constraints) {
+      return navigator.mediaDevices.getUserMedia(this.props.constraints)
+    }
+    let index = 0
+    while (index < CONSTRAINTS.length) {
+      try {
+        const media = navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: CONSTRAINTS[index]
+        })
+        return media
+      } catch (err) {
+        // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
+        if (
+          err.name === 'NotReadableError' ||
+          err.name === 'OverconstrainedError'
+        ) {
+          console.warn(`Got ${err.name}, trying getUserMedia again`)
+        }
+      }
+      index++
+    }
+  }
+
   renderCameraView () {
     const {
       showReplayControls,
@@ -650,7 +665,7 @@ export default class VideoRecorder extends Component {
       return (
         <CameraView key='replay'>
           <Video
-            ref={el => (this.replayVideo = el)}
+            ref={(el) => (this.replayVideo = el)}
             src={this.state.videoUrl}
             loop
             muted={isReplayVideoMuted}
@@ -682,7 +697,7 @@ export default class VideoRecorder extends Component {
         <CameraView key='camera'>
           <Video
             isFlipped={this.props.isFlipped}
-            ref={el => (this.cameraVideo = el)}
+            ref={(el) => (this.cameraVideo = el)}
             autoPlay
             muted
           />

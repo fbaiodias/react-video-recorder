@@ -9,14 +9,12 @@ import Countdown from './countdown'
 
 const ActionsWrapper = styled.div`
   position: absolute;
-  bottom: 0;
+  top: 40%;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 20px;
-  padding-bottom: 80px;
 `
 
 const Actions = ({
