@@ -31,6 +31,10 @@
       "prettier-standard",
       "eslint --fix",
       "git add"
+    ],
+    "**/*.md": [
+      "prettier-standard",
+      "git add"
     ]
   },
   "peerDependencies": {
