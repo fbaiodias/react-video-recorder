@@ -5,13 +5,13 @@ const Button = styled.button`
   background: ${props => props.backgroundColor};
   color: ${props => props.color};
   border-radius: 4px;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   background: rgba(227, 73, 28, 0.8);
   outline: none;
   border: none;
   cursor: pointer;
-  margin: 20px;
+  margin: 25px !important;
 
   :hover {
     background: #fb6d42;
@@ -20,9 +20,11 @@ const Button = styled.button`
 
 const Border = styled.div`
   background: rgba(255, 255, 255, 0.4);
-  height: 80px;
-  width: 80px;
+  height: 100px;
+  width: 100px;
   border-radius: 50%;
+  position: absolute;
+  top: 25px;
 `
 
 Button.defaultProps = {
