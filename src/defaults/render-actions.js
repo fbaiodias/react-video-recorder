@@ -2,7 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Button from './button'
-import RecordButton from './record-button'
+import { RetakeButton, SaveButton } from './ActionButtons'
+import RecordButton from './PrimaryButton'
 import StopButton from './stop-button'
 import Timer from './timer'
 import Countdown from './countdown'
@@ -60,9 +61,11 @@ const Actions = ({
 
     if (isReplayingVideo) {
       return (
-        <Button onClick={onStopReplaying} data-qa='start-replaying'>
-          Use another video
-        </Button>
+        <>
+          <RetakeButton onClick={onStopReplaying} data-qa='start-replaying' />
+          {/* TODO: figure out how to trigger the "done" */}
+          <SaveButton onClick={onConfirm} />
+        </>
       )
     }
 
