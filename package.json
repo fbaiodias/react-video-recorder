@@ -6,7 +6,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "yarn test:unit && yarn jest:browser",
+    "test": "yarn test:unit",
     "test:unit": "jest -c test/unit/jest.config.js",
     "jest:browser": "jest -c test/browser/jest.config.js",
     "test:browser": "start-server-and-test storybook http-get://localhost:6006 jest:browser",

@@ -60,7 +60,8 @@ typings/
 # next.js build output
 .next
 
-lib
+# NOTE: keeping compiled files as a part of this punchbowl fork, since they're not importing into the project properly.
+# lib
 
 storybook-static
 
