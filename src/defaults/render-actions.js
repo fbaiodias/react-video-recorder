@@ -60,36 +60,50 @@ const Actions = ({
 
     if (isReplayingVideo) {
       return (
-        <Button onClick={onStopReplaying} data-qa='start-replaying'>
+        <Button
+          type='button'
+          onClick={onStopReplaying}
+          data-qa='start-replaying'
+        >
           Use another video
         </Button>
       )
     }
 
     if (isRecording) {
-      return <StopButton onClick={onStopRecording} data-qa='stop-recording' />
+      return (
+        <StopButton
+          type='button'
+          onClick={onStopRecording}
+          data-qa='stop-recording'
+        />
+      )
     }
 
     if (isCameraOn && streamIsReady) {
       return (
-        <RecordButton onClick={onStartRecording} data-qa='start-recording' />
+        <RecordButton
+          type='button'
+          onClick={onStartRecording}
+          data-qa='start-recording'
+        />
       )
     }
 
     if (useVideoInput) {
       return (
-        <Button onClick={onOpenVideoInput} data-qa='open-input'>
+        <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
           Upload a video
         </Button>
       )
     }
 
     return shouldUseVideoInput ? (
-      <Button onClick={onOpenVideoInput} data-qa='open-input'>
+      <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
         Record a video
       </Button>
     ) : (
-      <Button onClick={onTurnOnCamera} data-qa='turn-on-camera'>
+      <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
         Turn my camera ON
       </Button>
     )
