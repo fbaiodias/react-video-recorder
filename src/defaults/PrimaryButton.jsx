@@ -12,7 +12,7 @@ const PrimaryButton = ({
         <div role="button" onClick={onClick} style={{
             position: 'absolute',
             width: '100px',
-            top: '25px',
+            top: '45px',
             transform: 'translate(-50 %, -20 %) scale(1)'
             }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
