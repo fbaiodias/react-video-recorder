@@ -2,14 +2,14 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-const Text = styled.div`
-  position: absolute;
-  top: -33px;
-  right: 100px;
-  font-family: Menlo, monospace;
-  font-size: 28px;
-  text-shadow: 1px 2px rgba(0, 0, 0, 0.5);
-`
+// const Text = styled.div`
+//   position: absolute;
+//   top: -33px;
+//   right: 100px;
+//   font-family: Menlo, monospace;
+//   font-size: 28px;
+//   text-shadow: 1px 2px rgba(0, 0, 0, 0.5);
+// `
 
 const RecIcon = styled.div`
   width: 16px;
@@ -19,6 +19,24 @@ const RecIcon = styled.div`
   float: left;
   margin: 2px 8px;
   margin-left: 0;
+`
+
+const RecTimer = styled.div`
+  grid-area: 1 / 1;
+  z-index: 2;
+  display: flex;
+  border-radius: 15px;
+  place-items: center;
+  color: #ffffff;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #000;
+  padding: 3px 8px;
+`
+
+const RecTimerCount = styled.div`
+  grid-area: 1 / 1;
 `
 
 class Timer extends Component {
@@ -73,11 +91,17 @@ class Timer extends Component {
   render () {
     const defaultText = this.props.defaultText || '0:00'
     return (
-      <Text {...this.props}>
+      <RecTimer>
         <RecIcon />
-        {this.state.human || defaultText}
-      </Text>
+        <RecTimerCount>{this.state.human || defaultText}</RecTimerCount>
+      </RecTimer>
     )
+    // return (
+    //   <Text {...this.props}>
+    //     <RecIcon />
+    //     {this.state.human || defaultText}
+    //   </Text>
+    // )
   }
 }
 

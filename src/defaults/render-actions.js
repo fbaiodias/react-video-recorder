@@ -99,11 +99,11 @@ const Actions = ({
   }
 
   return (
-    <div>
+    <>
       {isRecording && <Timer timeLimit={timeLimit} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
       <ActionsWrapper>{renderContent()}</ActionsWrapper>
-    </div>
+    </>
   )
 }
 

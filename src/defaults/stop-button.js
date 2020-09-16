@@ -2,7 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 const Button = styled.button`
-  background: ${props => props.backgroundColor};
+  /* background: ${props => props.backgroundColor}; */
+  background: pink;
   color: ${props => props.color};
   border-radius: 4px;
   width: 50px;
@@ -24,7 +25,7 @@ const Border = styled.div`
   width: 100px;
   border-radius: 50%;
   position: absolute;
-  top: 25px;
+  bottom: -50px;
 `
 
 Button.defaultProps = {
