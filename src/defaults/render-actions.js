@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PureComponent, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Button from './button'
@@ -18,34 +18,36 @@ const ActionsWrapper = styled.div`
   padding-bottom: 80px;
 `
 
-const Actions = ({
-  isVideoInputSupported,
-  isInlineRecordingSupported,
-  thereWasAnError,
-  isRecording,
-  isCameraOn,
-  streamIsReady,
-  isConnecting,
-  isRunningCountdown,
-  isReplayingVideo,
-  countdownTime,
-  timeLimit,
-  showReplayControls,
-  replayVideoAutoplayAndLoopOff,
-  useVideoInput,
+const onTick = state => {
+  console.log('onTick: ')
+  console.table(state)
+}
 
-  onTurnOnCamera,
-  onTurnOffCamera,
-  onOpenVideoInput,
-  onStartRecording,
-  onStopRecording,
-  onPauseRecording,
-  onResumeRecording,
-  onStopReplaying,
-  onConfirm,
-  PrimaryButtonComponent
-}) => {
-  const renderContent = () => {
+class Actions extends PureComponent {
+  renderContent () {
+    const {
+      isVideoInputSupported,
+      isInlineRecordingSupported,
+      thereWasAnError,
+      isRecording,
+      isCameraOn,
+      streamIsReady,
+      isConnecting,
+      isRunningCountdown,
+      isReplayingVideo,
+      countdownTime,
+      timeLimit,
+      useVideoInput,
+
+      onTurnOnCamera,
+      onOpenVideoInput,
+      onStartRecording,
+      onStopRecording,
+      onStopReplaying,
+      onConfirm,
+      PrimaryButtonComponent
+    } = this.props
+
     const shouldUseVideoInput =
       !isInlineRecordingSupported && isVideoInputSupported
 
@@ -72,7 +74,6 @@ const Actions = ({
     console.log('---------------- isRecording: ', isRecording)
     console.log('---------------- timeLimit ', timeLimit)
     console.log('---------------- countdownTime ', countdownTime)
-
     console.groupEnd()
 
     if (isRecording) {
@@ -116,18 +117,22 @@ const Actions = ({
     )
   }
 
-  const onTick = state => {
-    console.log('onTick: ')
-    console.table(state)
-  }
+  render () {
+    const {
+      isRecording,
+      isRunningCountdown,
+      countdownTime,
+      timeLimit
+    } = this.props
 
-  return (
-    <>
-      {isRecording && <Timer onTick={onTick} timeLimit={timeLimit} />}
-      {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
-      <ActionsWrapper>{renderContent()}</ActionsWrapper>
-    </>
-  )
+    return (
+      <>
+        {isRecording && <Timer onTick={onTick} timeLimit={timeLimit} />}
+        {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
+        <ActionsWrapper>{this.renderContent()}</ActionsWrapper>
+      </>
+    )
+  }
 }
 
 Actions.propTypes = {
