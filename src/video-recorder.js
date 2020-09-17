@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
+import { Decoder, tools, Reader } from 'ts-ebml';
 
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
@@ -149,7 +150,7 @@ export default class VideoRecorder extends Component {
     stream: undefined
   }
 
-  componentDidMount () {
+  componentDidMount() {
     const isInlineRecordingSupported =
       !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
 
@@ -183,7 +184,7 @@ export default class VideoRecorder extends Component {
     )
   }
 
-  componentDidUpdate (prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     if (
       this.replayVideo &&
       this.state.isReplayingVideo &&
@@ -193,7 +194,7 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this.turnOffCamera()
   }
 
@@ -223,8 +224,7 @@ export default class VideoRecorder extends Component {
           err.name === 'OverconstrainedError'
         ) {
           console.warn(
-            `Got ${
-              err.name
+            `Got ${err.name
             }, trying getUserMedia again with fallback constraints`
           )
           return navigator.mediaDevices.getUserMedia(fallbackContraints)
@@ -501,22 +501,50 @@ export default class VideoRecorder extends Component {
     // if this gets executed too soon, the last chunk of data is lost on FF
     this.mediaRecorder.ondataavailable = null
 
-    this.setState({
-      isRecording: false,
-      isReplayingVideo: true,
-      isReplayVideoMuted: true,
-      videoBlob,
-      videoUrl: window.URL.createObjectURL(videoBlob)
-    })
+    this.fixVideoMetadata(videoBlob)
+      .then((fixedVideoBlob) => {
 
-    this.turnOffCamera()
+        this.setState({
+          isRecording: false,
+          isReplayingVideo: true,
+          isReplayVideoMuted: true,
+          fixedVideoBlob,
+          videoUrl: window.URL.createObjectURL(fixedVideoBlob)
+        })
 
-    this.props.onRecordingComplete(
-      videoBlob,
-      startedAt,
-      thumbnailBlob,
-      duration
-    )
+        this.turnOffCamera()
+
+        this.props.onRecordingComplete(
+          fixedVideoBlob,
+          startedAt,
+          thumbnailBlob,
+          duration);
+      }
+      );
+  }
+
+  // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
+  fixVideoMetadata = rawVideoBlob => {
+    return rawVideoBlob.arrayBuffer().then((buffer) => {
+      const decoder = new Decoder();
+      const elements = decoder.decode(buffer);
+
+      const reader = new Reader();
+      reader.logging = false;
+      reader.drop_default_duration = false;
+      elements.forEach((element) => reader.read(element));
+      reader.stop();
+
+      const seekableMetadata = tools.makeMetadataSeekable(
+        reader.metadatas, reader.duration, reader.cues);
+
+      const blobBody = buffer.slice(reader.metadataSize);
+
+      const result = new Blob([seekableMetadata, blobBody],
+        { type: rawVideoBlob.type });
+
+      return result;
+    });
   }
 
   handleVideoSelected = e => {
@@ -601,14 +629,7 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  // fixes bug where seeking control is not available until the video is almost completely played through
-  handleDurationChange = () => {
-    if (this.props.showReplayControls) {
-      this.replayVideo.currentTime = 1000000
-    }
-  }
-
-  renderCameraView () {
+  renderCameraView() {
     const {
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
@@ -697,7 +718,7 @@ export default class VideoRecorder extends Component {
     return renderDisconnectedView()
   }
 
-  render () {
+  render() {
     const {
       isVideoInputSupported,
       isInlineRecordingSupported,
