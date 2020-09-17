@@ -3,8 +3,6 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Button from './button'
 import { RetakeButton, SaveButton } from './ActionButtons'
-import RecordButton from './PrimaryButton'
-import StopButton from './stop-button'
 import Timer from './timer'
 import Countdown from './countdown'
 
@@ -44,7 +42,8 @@ const Actions = ({
   onPauseRecording,
   onResumeRecording,
   onStopReplaying,
-  onConfirm
+  onConfirm,
+  PrimaryButtonComponent
 }) => {
   const renderContent = () => {
     const shouldUseVideoInput =
@@ -77,12 +76,24 @@ const Actions = ({
     console.groupEnd()
 
     if (isRecording) {
-      return <StopButton onClick={onStopRecording} data-qa='stop-recording' />
+      return (
+        <PrimaryButtonComponent
+          onClick={onStopRecording}
+          maxSeconds={timeLimit}
+          status={isRecording ? 'recording' : ''}
+          data-qa='stop-recording'
+        />
+      )
     }
 
     if (isCameraOn && streamIsReady) {
       return (
-        <RecordButton onClick={onStartRecording} data-qa='start-recording' />
+        <PrimaryButtonComponent
+          status={isRecording ? 'recording' : ''}
+          maxSeconds={timeLimit}
+          onClick={onStartRecording}
+          data-qa='start-recording'
+        />
       )
     }
 
@@ -143,7 +154,9 @@ Actions.propTypes = {
   onPauseRecording: PropTypes.func,
   onResumeRecording: PropTypes.func,
   onStopReplaying: PropTypes.func,
-  onConfirm: PropTypes.func
+  onConfirm: PropTypes.func,
+
+  PrimaryButtonComponent: PropTypes.elementType
 }
 
 export default Actions

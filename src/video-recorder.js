@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
-
+import PrimaryButton from './defaults/PrimaryButton'
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
 import DisconnectedView from './defaults/disconnected-view'
@@ -113,7 +113,9 @@ export default class VideoRecorder extends PureComponent {
     onRecordingComplete: PropTypes.func,
     onOpenVideoInput: PropTypes.func,
     onStopReplaying: PropTypes.func,
-    onError: PropTypes.func
+    onError: PropTypes.func,
+
+    PrimaryButtonComponent: PropTypes.elementType
   }
 
   static defaultProps = {
@@ -127,7 +129,8 @@ export default class VideoRecorder extends PureComponent {
     countdownTime: 3000,
     constraints: CONSTRAINTS,
     chunkSize: 250,
-    dataAvailableTimeout: 500
+    dataAvailableTimeout: 500,
+    PrimaryButtonComponent: PrimaryButton
   }
 
   videoInput = React.createRef()
@@ -720,7 +723,8 @@ export default class VideoRecorder extends PureComponent {
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
       renderActions,
-      useVideoInput
+      useVideoInput,
+      PrimaryButtonComponent
     } = this.props
 
     return (
@@ -742,6 +746,7 @@ export default class VideoRecorder extends PureComponent {
           showReplayControls,
           replayVideoAutoplayAndLoopOff,
           useVideoInput,
+          PrimaryButtonComponent,
 
           onTurnOnCamera: this.turnOnCamera,
           onTurnOffCamera: this.turnOffCamera,

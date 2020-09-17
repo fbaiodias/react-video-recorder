@@ -49,7 +49,8 @@ class Timer extends Component {
   constructor (props) {
     super(props)
 
-    const nextSeconds = props.timeLimit ? props.timeLimit / 1000 : 0
+    // const nextSeconds = props.timeLimit ? props.timeLimit / 1000 : 0
+    const nextSeconds = 0
 
     this.state = this.getState(nextSeconds)
   }
@@ -59,10 +60,11 @@ class Timer extends Component {
   }
 
   componentDidMount () {
-    const { onTick, timeLimit } = this.props
+    const { onTick } = this.props
     this.timer = setInterval(() => {
       const { seconds } = this.state
-      const nextSeconds = timeLimit ? seconds - 1 : seconds + 1
+      // const nextSeconds = timeLimit ? seconds - 1 : seconds + 1
+      const nextSeconds = seconds + 1
 
       const nextState = this.getState(nextSeconds)
       this.setState(nextState, () => {
@@ -78,7 +80,10 @@ class Timer extends Component {
   }
 
   getState (seconds) {
-    const minutes = Math.floor(seconds / 60)
+    const elapsedSeconds = seconds
+    const { timeLimit } = this.props
+    const remainingSeconds = timeLimit / 1000 - seconds
+    const minutes = Math.floor(remainingSeconds / 60)
 
     const humanTime =
       minutes !== 0
@@ -87,6 +92,8 @@ class Timer extends Component {
 
     return {
       seconds: seconds,
+      remainingSeconds,
+      elapsedSeconds,
       human: humanTime
     }
   }
@@ -100,12 +107,6 @@ class Timer extends Component {
         <RecTimerCount>{this.state.human || defaultText}</RecTimerCount>
       </RecTimer>
     )
-    // return (
-    //   <Text {...this.props}>
-    //     <RecIcon />
-    //     {this.state.human || defaultText}
-    //   </Text>
-    // )
   }
 }
 
