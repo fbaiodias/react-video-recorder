@@ -69,6 +69,13 @@ const Actions = ({
       )
     }
 
+    console.group('renderActions')
+    console.log('---------------- isRecording: ', isRecording)
+    console.log('---------------- timeLimit ', timeLimit)
+    console.log('---------------- countdownTime ', countdownTime)
+
+    console.groupEnd()
+
     if (isRecording) {
       return <StopButton onClick={onStopRecording} data-qa='stop-recording' />
     }
@@ -98,9 +105,14 @@ const Actions = ({
     )
   }
 
+  const onTick = state => {
+    console.log('onTick: ')
+    console.table(state)
+  }
+
   return (
     <>
-      {isRecording && <Timer timeLimit={timeLimit} />}
+      {isRecording && <Timer onTick={onTick} timeLimit={timeLimit} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
       <ActionsWrapper>{renderContent()}</ActionsWrapper>
     </>

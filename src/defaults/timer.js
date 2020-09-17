@@ -42,7 +42,8 @@ const RecTimerCount = styled.div`
 class Timer extends Component {
   static propTypes = {
     timeLimit: PropTypes.number,
-    defaultText: PropTypes.string
+    defaultText: PropTypes.string,
+    onTick: PropTypes.func
   }
 
   constructor (props) {
@@ -58,13 +59,15 @@ class Timer extends Component {
   }
 
   componentDidMount () {
-    const { timeLimit } = this.props
+    const { onTick, timeLimit } = this.props
     this.timer = setInterval(() => {
       const { seconds } = this.state
       const nextSeconds = timeLimit ? seconds - 1 : seconds + 1
 
       const nextState = this.getState(nextSeconds)
-      this.setState(nextState)
+      this.setState(nextState, () => {
+        onTick(nextState)
+      })
     }, 1000)
   }
 
@@ -89,6 +92,7 @@ class Timer extends Component {
   }
 
   render () {
+    console.log('Timer render: ', this.state.seconds, this.state.human)
     const defaultText = this.props.defaultText || '0:00'
     return (
       <RecTimer>

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
 
@@ -71,7 +71,7 @@ const Video = styled.video`
     `};
 `
 
-export default class VideoRecorder extends Component {
+export default class VideoRecorder extends PureComponent {
   static propTypes = {
     /** Whether or not to start the camera initially */
     isOnInitially: PropTypes.bool,
@@ -149,6 +149,7 @@ export default class VideoRecorder extends Component {
   }
 
   componentDidMount () {
+    console.log('---------------- VideoREcorder -> CDM ')
     const isInlineRecordingSupported =
       !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
 
@@ -183,6 +184,7 @@ export default class VideoRecorder extends Component {
   }
 
   componentDidUpdate (prevProps, prevState) {
+    console.log('---------------- VideoREcorder -> CDU ')
     if (
       this.replayVideo &&
       this.state.isReplayingVideo &&
@@ -608,6 +610,7 @@ export default class VideoRecorder extends Component {
   }
 
   renderCameraView () {
+    console.log('---------------- VideoRecorder -> renderCameraView ')
     const {
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
@@ -697,6 +700,7 @@ export default class VideoRecorder extends Component {
   }
 
   render () {
+    console.log('---------------- VideoREcorder -> render ')
     const {
       isVideoInputSupported,
       isInlineRecordingSupported,
