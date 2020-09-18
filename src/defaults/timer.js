@@ -78,11 +78,11 @@ class Timer extends Component {
 
     const humanTime =
       minutes !== 0
-        ? `${minutes}:${this.pad(seconds - minutes * 60)}`
-        : `${seconds - minutes * 60}s`
+        ? `${minutes}:${this.pad(remainingSeconds - minutes * 60)}`
+        : `${remainingSeconds - minutes * 60}s`
 
     return {
-      seconds: seconds,
+      seconds,
       remainingSeconds,
       elapsedSeconds,
       human: humanTime
