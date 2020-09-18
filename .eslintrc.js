@@ -6,5 +6,8 @@ module.exports = {
       version: '16.8'
     }
   },
+  env: {
+    browser: true
+  },
   plugins: ['jest']
 }
