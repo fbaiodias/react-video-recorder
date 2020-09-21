@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
+import { Decoder, tools, Reader } from 'ts-ebml'
 
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
@@ -501,22 +502,52 @@ export default class VideoRecorder extends Component {
     // if this gets executed too soon, the last chunk of data is lost on FF
     this.mediaRecorder.ondataavailable = null
 
-    this.setState({
-      isRecording: false,
-      isReplayingVideo: true,
-      isReplayVideoMuted: true,
-      videoBlob,
-      videoUrl: window.URL.createObjectURL(videoBlob)
+    this.fixVideoMetadata(videoBlob).then(fixedVideoBlob => {
+      this.setState({
+        isRecording: false,
+        isReplayingVideo: true,
+        isReplayVideoMuted: true,
+        fixedVideoBlob,
+        videoUrl: window.URL.createObjectURL(fixedVideoBlob)
+      })
+
+      this.turnOffCamera()
+
+      this.props.onRecordingComplete(
+        fixedVideoBlob,
+        startedAt,
+        thumbnailBlob,
+        duration
+      )
     })
+  }
 
-    this.turnOffCamera()
+  // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
+  fixVideoMetadata = rawVideoBlob => {
+    return rawVideoBlob.arrayBuffer().then(buffer => {
+      const decoder = new Decoder()
+      const elements = decoder.decode(buffer)
 
-    this.props.onRecordingComplete(
-      videoBlob,
-      startedAt,
-      thumbnailBlob,
-      duration
-    )
+      const reader = new Reader()
+      reader.logging = false
+      reader.drop_default_duration = false
+      elements.forEach(element => reader.read(element))
+      reader.stop()
+
+      const seekableMetadata = tools.makeMetadataSeekable(
+        reader.metadatas,
+        reader.duration,
+        reader.cues
+      )
+
+      const blobBody = buffer.slice(reader.metadataSize)
+
+      const result = new Blob([seekableMetadata, blobBody], {
+        type: rawVideoBlob.type
+      })
+
+      return result
+    })
   }
 
   handleVideoSelected = e => {
@@ -598,13 +629,6 @@ export default class VideoRecorder extends Component {
       this.setState({
         isReplayVideoMuted: !this.state.isReplayVideoMuted
       })
-    }
-  }
-
-  // fixes bug where seeking control is not available until the video is almost completely played through
-  handleDurationChange = () => {
-    if (this.props.showReplayControls) {
-      this.replayVideo.currentTime = 1000000
     }
   }
 
