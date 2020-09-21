@@ -29,13 +29,14 @@
   },
   "lint-staged": {
     "**/*.js": [
-      "prettier-standard",
-      "eslint --fix",
-      "git add"
+      "prettier --write",
+      "eslint --fix"
     ],
     "**/*.md": [
-      "prettier-standard",
-      "git add"
+      "prettier --write"
+    ],
+    "**/*.yml": [
+      "prettier --write"
     ]
   },
   "peerDependencies": {
@@ -65,26 +66,26 @@
     "@storybook/addon-options": "^5.1.9",
     "@storybook/addons": "^5.1.9",
     "@storybook/react": "^5.1.9",
-    "babel-eslint": "^10.0.2",
+    "babel-eslint": "^10.1.0",
     "babel-jest": "^24.1.0",
     "babel-loader": "^8.0.5",
     "babel-plugin-styled-components": "^1.10.6",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.9.1",
-    "eslint": "^6.5.1",
-    "eslint-config-standard": "^14.1.0",
+    "eslint": "^7.9.0",
+    "eslint-config-standard": "^14.1.1",
     "eslint-config-standard-react": "^9.2.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^22.19.0",
-    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^24.0.2",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-standard": "^4.0.1",
-    "husky": "^3.0.0",
+    "husky": "^4.3.0",
     "jest": "^24.1.0",
     "jest-puppeteer": "^4.0.0",
-    "lint-staged": "^9.0.1",
-    "prettier-standard": "^8.0.0",
+    "lint-staged": "^10.4.0",
+    "prettier": "^2.1.2",
     "prop-types": "^15.7.2",
     "puppeteer": "^1.18.1",
     "react": "^16.8.3",

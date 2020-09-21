@@ -2,8 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 const Button = styled.button`
-  background: ${props => props.backgroundColor};
-  color: ${props => props.color};
+  background: ${(props) => props.backgroundColor};
+  color: ${(props) => props.color};
   border-radius: 4px;
   width: 40px;
   height: 40px;
@@ -30,7 +30,7 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default props => (
+export default (props) => (
   <Border>
     <Button {...props} />
   </Border>

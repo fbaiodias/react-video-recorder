@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 const Button = styled.button`
-  background: ${props => props.backgroundColor};
-  color: ${props => props.color};
+  background: ${(props) => props.backgroundColor};
+  color: ${(props) => props.color};
   border-radius: 4px;
   padding: 17px 18px;
   border: none;
