@@ -21,3 +21,5 @@ function loadStories() {
 }
 
 configure(loadStories, module)
+
+export const parameters = { layout: 'fullscreen' }
