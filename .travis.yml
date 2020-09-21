@@ -8,8 +8,8 @@ notifications:
   email: false
 
 node_js:
-  - "10"
-  - "8"
+  - '10'
+  - '8'
 
 addons:
   apt:
@@ -25,17 +25,6 @@ script:
 
 after_success:
   - yarn travis-deploy-once "yarn semantic-release"
-
-before_deploy:
-  - yarn build-storybook
-
-deploy:
-  provider: surge
-  project: ./storybook-static/
-  domain: react-video-recorder.surge.sh
-  skip_cleanup: true
-  on:
-    branch: master
 
 branches:
   except:
