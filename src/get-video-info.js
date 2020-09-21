@@ -1,4 +1,4 @@
-export const captureThumb = videoTag =>
+export const captureThumb = (videoTag) =>
   new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     canvas.width = videoTag.videoWidth
@@ -10,12 +10,12 @@ export const captureThumb = videoTag =>
       videoTag.videoWidth,
       videoTag.videoHeight
     )
-    canvas.toBlob(thumbnail => {
+    canvas.toBlob((thumbnail) => {
       resolve(thumbnail)
     }, 'image/jpeg')
   })
 
-const getVideoInfo = videoBlob =>
+const getVideoInfo = (videoBlob) =>
   new Promise((resolve, reject) => {
     const videoTag = document.createElement('video')
     videoTag.preload = 'metadata'
@@ -39,9 +39,9 @@ const getVideoInfo = videoBlob =>
 
     const timeout = setTimeout(handleTimeout, 1000)
 
-    const handleVideoTag = duration => {
+    const handleVideoTag = (duration) => {
       captureThumb(videoTag)
-        .then(thumbnail => {
+        .then((thumbnail) => {
           videoTag.pause()
           if (!resolved) {
             clearTimeout(timeout)
@@ -50,7 +50,7 @@ const getVideoInfo = videoBlob =>
           }
           window.URL.revokeObjectURL(videoTag.src)
         })
-        .catch(err => {
+        .catch((err) => {
           if (!resolved) {
             clearTimeout(timeout)
             resolved = true
@@ -79,4 +79,3 @@ const getVideoInfo = videoBlob =>
   })
 
 export default getVideoInfo
-

@@ -19,7 +19,7 @@ describe('VideoRecorder', () => {
     await page.waitFor(DURATION)
     await page.click('[data-qa="stop-recording"]')
     await page.waitForSelector('video')
-    const duration = await page.$eval('video', el => el.duration)
+    const duration = await page.$eval('video', (el) => el.duration)
 
     expect(duration * 1000).toBeWithinRange(DURATION - 100, DURATION + 100)
   })

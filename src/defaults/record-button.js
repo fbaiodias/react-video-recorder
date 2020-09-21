@@ -2,8 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 const Button = styled.button`
-  background: ${props => props.backgroundColor};
-  color: ${props => props.color};
+  background: ${(props) => props.backgroundColor};
+  color: ${(props) => props.color};
   border-radius: 50%;
   width: 64px;
   height: 64px;
@@ -49,7 +49,7 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default props => (
+export default (props) => (
   <RecWrapper>
     <Instructions>
       <div>PRESS </div>
