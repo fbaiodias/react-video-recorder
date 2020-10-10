@@ -522,6 +522,11 @@ export default class VideoRecorder extends Component {
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
   fixVideoMetadata = (rawVideoBlob) => {
+    // see https://stackoverflow.com/a/63568311
+    Blob.prototype.arrayBuffer ??= function () {
+      return new Response(this).arrayBuffer()
+    }
+
     return rawVideoBlob.arrayBuffer().then((buffer) => {
       const decoder = new Decoder()
       const elements = decoder.decode(buffer)
