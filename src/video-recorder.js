@@ -600,6 +600,9 @@ export default class VideoRecorder extends Component {
 
     this.videoInput.current.value = null
     this.videoInput.current.click()
+
+    // fixes a bug on iPhone where it doesn't save the recorded video on the second time (if you press the 'Use another video' button)
+    this.videoInput.current.addEventListener('change', this.handleVideoSelected)
   }
 
   handleStopReplaying = () => {
