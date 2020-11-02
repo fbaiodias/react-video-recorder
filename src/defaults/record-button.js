@@ -1,5 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
+import SwitchCameraIcon from './switch-camera-view'
 
 const Button = styled.button`
   background: ${(props) => props.backgroundColor};
@@ -49,16 +51,24 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default (props) => (
+const RecordButton = ({ onSwitchCamera, t, ...restProps }) => (
   <RecWrapper>
     <Instructions>
-      <div>PRESS </div>
-      <InstuctionsHighlight> REC </InstuctionsHighlight>
-      WHEN READY
+      <div>{t('PRESS')} </div>
+      <InstuctionsHighlight> {t('REC')} </InstuctionsHighlight>
+      {t('WHEN READY')}
     </Instructions>
 
     <ButtonBorder>
-      <Button {...props} />
+      <Button {...restProps} />
     </ButtonBorder>
+    <SwitchCameraIcon onClick={onSwitchCamera} />
   </RecWrapper>
 )
+
+RecordButton.propTypes = {
+  onSwitchCamera: PropTypes.func,
+  t: PropTypes.func
+}
+
+export default RecordButton

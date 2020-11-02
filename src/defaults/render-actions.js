@@ -20,6 +20,7 @@ const ActionsWrapper = styled.div`
 `
 
 const Actions = ({
+  t,
   isVideoInputSupported,
   isInlineRecordingSupported,
   thereWasAnError,
@@ -36,6 +37,7 @@ const Actions = ({
   useVideoInput,
 
   onTurnOnCamera,
+  onSwitchCamera,
   onTurnOffCamera,
   onOpenVideoInput,
   onStartRecording,
@@ -65,7 +67,7 @@ const Actions = ({
           onClick={onStopReplaying}
           data-qa='start-replaying'
         >
-          Use another video
+          {t('Use another video')}
         </Button>
       )
     }
@@ -75,6 +77,7 @@ const Actions = ({
         <StopButton
           type='button'
           onClick={onStopRecording}
+          onSwitchCamera={onSwitchCamera}
           data-qa='stop-recording'
         />
       )
@@ -83,8 +86,10 @@ const Actions = ({
     if (isCameraOn && streamIsReady) {
       return (
         <RecordButton
+          t={t}
           type='button'
           onClick={onStartRecording}
+          onSwitchCamera={onSwitchCamera}
           data-qa='start-recording'
         />
       )
@@ -93,18 +98,18 @@ const Actions = ({
     if (useVideoInput) {
       return (
         <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-          Upload a video
+          {t('Upload a video')}
         </Button>
       )
     }
 
     return shouldUseVideoInput ? (
       <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-        Record a video
+        {t('Record a video')}
       </Button>
     ) : (
       <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
-        Turn my camera ON
+        {t('Turn my camera ON')}
       </Button>
     )
   }
@@ -119,6 +124,7 @@ const Actions = ({
 }
 
 Actions.propTypes = {
+  t: PropTypes.func,
   isVideoInputSupported: PropTypes.bool,
   isInlineRecordingSupported: PropTypes.bool,
   thereWasAnError: PropTypes.bool,
@@ -135,6 +141,7 @@ Actions.propTypes = {
   useVideoInput: PropTypes.bool,
 
   onTurnOnCamera: PropTypes.func,
+  onSwitchCamera: PropTypes.func,
   onTurnOffCamera: PropTypes.func,
   onOpenVideoInput: PropTypes.func,
   onStartRecording: PropTypes.func,
