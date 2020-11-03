@@ -21,12 +21,6 @@
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && yarn test",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "lint-staged": {
     "**/*.js": [
       "prettier --write",

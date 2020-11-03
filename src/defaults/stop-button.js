@@ -1,7 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Button = styled.button`
+const Button = styled.button.attrs((props) => ({
+  type: props.type || 'button'
+}))`
   background: ${(props) => props.backgroundColor};
   color: ${(props) => props.color};
   border-radius: 4px;
