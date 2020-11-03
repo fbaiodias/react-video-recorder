@@ -15,7 +15,7 @@
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "build:watch": "babel --watch src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "prebuild": "yarn run clean",
-    "prepublish": "set NODE_ENV=production yarn run build",
+    "prepublish": "NODE_ENV=production yarn run build",
     "start": "yarn run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
