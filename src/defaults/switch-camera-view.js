@@ -7,7 +7,7 @@ const SVGWrapper = styled.div`
   height: 80px;
   bottom: 4px;
   right: 4px;
-  color: red;
+  z-index: 10;
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 50%;
   padding-left: 8px;
