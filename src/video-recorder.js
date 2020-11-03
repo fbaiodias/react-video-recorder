@@ -7,6 +7,7 @@ import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
 import DisconnectedView from './defaults/disconnected-view'
 import LoadingView from './defaults/loading-view'
+import SwitchCameraView from './defaults/switch-camera-view'
 import renderActions from './defaults/render-actions'
 import getVideoInfo, { captureThumb } from './get-video-info'
 import {
@@ -728,7 +729,9 @@ export default class VideoRecorder extends Component {
       error,
       isCameraOn,
       isConnecting,
-      isReplayVideoMuted
+      isReplayVideoMuted,
+      isRecording,
+      availableDeviceIds
     } = this.state
 
     const shouldUseVideoInput =
@@ -778,6 +781,12 @@ export default class VideoRecorder extends Component {
     }
 
     if (isCameraOn) {
+      // Enable switch camera button, only if not recording and multiple video sources available
+      const switchCameraControl =
+        (availableDeviceIds && availableDeviceIds.length >= 1) && !isRecording ? (
+        <SwitchCameraView onClick={this.switchCamera} />
+      ) : null
+
       return (
         <CameraView key='camera'>
           <Video
@@ -786,6 +795,7 @@ export default class VideoRecorder extends Component {
             autoPlay
             muted
           />
+          { switchCameraControl }
         </CameraView>
       )
     }

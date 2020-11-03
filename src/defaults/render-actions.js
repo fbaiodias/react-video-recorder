@@ -35,7 +35,6 @@ const Actions = ({
   useVideoInput,
 
   onTurnOnCamera,
-  onSwitchCamera,
   onTurnOffCamera,
   onOpenVideoInput,
   onStartRecording,
@@ -75,7 +74,6 @@ const Actions = ({
         <StopButton
           type='button'
           onClick={onStopRecording}
-          onSwitchCamera={onSwitchCamera}
           data-qa='stop-recording'
         />
       )
@@ -87,7 +85,6 @@ const Actions = ({
           t={t}
           type='button'
           onClick={onStartRecording}
-          onSwitchCamera={onSwitchCamera}
           data-qa='start-recording'
         />
       )
@@ -139,7 +136,6 @@ Actions.propTypes = {
   useVideoInput: PropTypes.bool,
 
   onTurnOnCamera: PropTypes.func,
-  onSwitchCamera: PropTypes.func,
   onTurnOffCamera: PropTypes.func,
   onOpenVideoInput: PropTypes.func,
   onStartRecording: PropTypes.func,
