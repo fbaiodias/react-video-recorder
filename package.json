@@ -90,7 +90,7 @@
     "puppeteer": "^1.18.1",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
-    "semantic-release": "^15.13.24",
+    "semantic-release": "^17.2.3",
     "start-server-and-test": "^1.7.11",
     "styled-components": "4",
     "travis-deploy-once": "^4.4.0"
