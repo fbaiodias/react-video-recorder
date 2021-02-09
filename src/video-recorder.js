@@ -285,13 +285,17 @@ export default class VideoRecorder extends Component {
   handleError = (err) => {
     const { onError } = this.props
 
-    console.error('Captured error', err)
-
-    clearTimeout(this.timeLimitTimeout)
-
     if (onError) {
       onError(err)
     }
+
+    if (this.isComponentUnmounted) {
+      return
+    }
+
+    console.error('Captured error', err)
+
+    clearTimeout(this.timeLimitTimeout)
 
     this.setState({
       isConnecting: this.state.isConnecting && false,
