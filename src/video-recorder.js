@@ -14,7 +14,8 @@ import {
   ReactVideoRecorderDataIssueError,
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
-  ReactVideoRecorderMediaRecorderUnavailableError
+  ReactVideoRecorderMediaRecorderUnavailableError,
+  ReactVideoRecorderDeviceUnavailableError
 } from './custom-errors'
 
 const MIME_TYPES = [
@@ -224,7 +225,7 @@ export default class VideoRecorder extends Component {
           videoDevices.find((x) => x.deviceId) === undefined
         ) {
           return this.handleError(
-            new ReactVideoRecorderMediaRecorderUnavailableError()
+            new ReactVideoRecorderDeviceUnavailableError()
           )
         }
 
@@ -287,9 +288,7 @@ export default class VideoRecorder extends Component {
     const maxIndex = availableDeviceIds.length - 1
 
     if (index < 0) {
-      return this.handleError(
-        new ReactVideoRecorderMediaRecorderUnavailableError()
-      )
+      return this.handleError(new ReactVideoRecorderDeviceUnavailableError())
     }
 
     if (index + 1 > maxIndex) return this.turnOnCamera(availableDeviceIds[0])
