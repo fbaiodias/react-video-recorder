@@ -219,6 +219,7 @@ export default class VideoRecorder extends Component {
       .then((mediaDevices) => {
         const videoDevices = mediaDevices.filter((x) => x.kind === 'videoinput')
         if (
+          deviceId &&
           videoDevices[0] &&
           videoDevices.find((x) => x.deviceId) === undefined
         ) {
