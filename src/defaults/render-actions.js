@@ -18,6 +18,7 @@ const ActionsWrapper = styled.div`
 `
 
 const Actions = ({
+  t,
   isVideoInputSupported,
   isInlineRecordingSupported,
   thereWasAnError,
@@ -63,7 +64,7 @@ const Actions = ({
           onClick={onStopReplaying}
           data-qa='start-replaying'
         >
-          Use another video
+          {t('Use another video')}
         </Button>
       )
     }
@@ -81,6 +82,7 @@ const Actions = ({
     if (isCameraOn && streamIsReady) {
       return (
         <RecordButton
+          t={t}
           type='button'
           onClick={onStartRecording}
           data-qa='start-recording'
@@ -91,18 +93,18 @@ const Actions = ({
     if (useVideoInput) {
       return (
         <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-          Upload a video
+          {t('Upload a video')}
         </Button>
       )
     }
 
     return shouldUseVideoInput ? (
       <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-        Record a video
+        {t('Record a video')}
       </Button>
     ) : (
       <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
-        Turn my camera ON
+        {t('Turn my camera ON')}
       </Button>
     )
   }
@@ -117,6 +119,7 @@ const Actions = ({
 }
 
 Actions.propTypes = {
+  t: PropTypes.func,
   isVideoInputSupported: PropTypes.bool,
   isInlineRecordingSupported: PropTypes.bool,
   thereWasAnError: PropTypes.bool,

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 
 const Button = styled.button`
   background: ${(props) => props.backgroundColor};
@@ -11,7 +12,7 @@ const Button = styled.button`
   outline: none;
   border: none;
   cursor: pointer;
-
+  z-index: 5;
   :hover {
     background: #fb6d42;
   }
@@ -49,12 +50,12 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default (props) => (
+const RecordButton = ({ t, ...props }) => (
   <RecWrapper>
     <Instructions>
-      <div>PRESS </div>
-      <InstuctionsHighlight> REC </InstuctionsHighlight>
-      WHEN READY
+      <div>{t('PRESS')} </div>
+      <InstuctionsHighlight> {t('REC')} </InstuctionsHighlight>
+      {t('WHEN READY')}
     </Instructions>
 
     <ButtonBorder>
@@ -62,3 +63,9 @@ export default (props) => (
     </ButtonBorder>
   </RecWrapper>
 )
+
+RecordButton.propTypes = {
+  t: PropTypes.func
+}
+
+export default RecordButton

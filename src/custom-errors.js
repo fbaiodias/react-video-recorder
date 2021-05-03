@@ -30,3 +30,10 @@ export class ReactVideoRecorderMediaRecorderUnavailableError extends Error {
     this.name = 'ReactVideoRecorderMediaRecorderUnavailableError'
   }
 }
+
+export class ReactVideoRecorderDeviceUnavailableError extends Error {
+  constructor () {
+    super("Couldn't get selected device")
+    this.name = 'ReactVideoRecorderDeviceUnavailableError'
+  }
+}
