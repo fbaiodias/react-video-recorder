@@ -853,7 +853,7 @@ export default class VideoRecorder extends Component {
           replayVideoAutoplayAndLoopOff,
           useVideoInput,
 
-          onTurnOnCamera: this.turnOnCamera,
+          onTurnOnCamera: () => this.turnOnCamera(),
           onSwitchCamera: this.handleSwitchCamera,
           onTurnOffCamera: this.turnOffCamera,
           onOpenVideoInput: this.handleOpenVideoInput,
