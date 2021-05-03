@@ -134,6 +134,8 @@ export default class VideoRecorder extends Component {
 
   videoInput = React.createRef()
 
+  isComponentUnmounted = false
+
   timeSinceInactivity = 0
 
   state = {
@@ -196,6 +198,7 @@ export default class VideoRecorder extends Component {
 
   componentWillUnmount () {
     this.turnOffCamera()
+    this.isComponentUnmounted = true
   }
 
   turnOnCamera = () => {
@@ -247,6 +250,12 @@ export default class VideoRecorder extends Component {
   }
 
   handleSuccess = (stream) => {
+    // Since handleSuccess is an async function, we may be in a situation where this was called after the
+    // component was unmounted
+    if (this.isComponentUnmounted) {
+      return
+    }
+
     this.stream = stream
     this.setState({
       isCameraOn: true,
@@ -276,13 +285,17 @@ export default class VideoRecorder extends Component {
   handleError = (err) => {
     const { onError } = this.props
 
-    console.error('Captured error', err)
-
-    clearTimeout(this.timeLimitTimeout)
-
     if (onError) {
       onError(err)
     }
+
+    if (this.isComponentUnmounted) {
+      return
+    }
+
+    console.error('Captured error', err)
+
+    clearTimeout(this.timeLimitTimeout)
 
     this.setState({
       isConnecting: this.state.isConnecting && false,
