@@ -22,7 +22,8 @@ const MIME_TYPES = [
   'video/webm;codecs="vp8,opus"',
   'video/webm;codecs=h264',
   'video/webm;codecs=vp9',
-  'video/webm'
+  'video/webm',
+  'video/mp4'
 ]
 
 const CONSTRAINTS = {
@@ -383,7 +384,7 @@ export default class VideoRecorder extends Component {
       ? MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
       : 'video/webm'
 
-    return mimeType || ''
+    return (this.mediaRecorder && this.mediaRecorder.mimeType) || mimeType || ''
   }
 
   isDataHealthOK = (event) => {
@@ -593,6 +594,10 @@ export default class VideoRecorder extends Component {
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
   fixVideoMetadata = (rawVideoBlob) => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    if (isSafari) {
+      return Promise.resolve(rawVideoBlob)
+    }
     // see https://stackoverflow.com/a/63568311
     Blob.prototype.arrayBuffer ??= function () {
       return new Response(this).arrayBuffer()
