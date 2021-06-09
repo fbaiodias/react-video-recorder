@@ -799,6 +799,7 @@ export default class VideoRecorder extends Component {
             ref={(el) => (this.cameraVideo = el)}
             autoPlay
             muted
+            playsInline
           />
           {switchCameraControl}
         </CameraView>
