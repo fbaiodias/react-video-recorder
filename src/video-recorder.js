@@ -324,10 +324,14 @@ export default class VideoRecorder extends Component {
       this.props.onCameraOn()
     }
 
-    if (window.URL) {
-      this.cameraVideo.srcObject = stream
-    } else {
-      this.cameraVideo.src = stream
+    if (this.state.isCameraOn) {
+      setTimeout(() => {
+        if (window.URL) {
+          this.cameraVideo.srcObject = stream
+        } else {
+          this.cameraVideo.src = stream
+        }
+      }, 200)
     }
 
     // there is probably a better way
