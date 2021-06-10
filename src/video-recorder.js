@@ -164,14 +164,10 @@ export default class VideoRecorder extends Component {
 
   componentDidMount () {
     const isInlineRecordingSupported =
-      !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
+      !!window.MediaRecorder && !!navigator.mediaDevices
 
     const isVideoInputSupported =
       document.createElement('input').capture !== undefined
-
-    if (isInlineRecordingSupported) {
-      this.mediaSource = new window.MediaSource()
-    }
 
     this.setState(
       {
@@ -248,15 +244,18 @@ export default class VideoRecorder extends Component {
         }
 
         const currentConstraints = {
-          video: true,
-          audio: true
+          ...this.props.constraints,
+          video: {
+            deviceId: {
+              exact: currentDeviceId
+            }
+          }
         }
 
         navigator.mediaDevices
           .getUserMedia(currentConstraints)
           .catch((err) => {
             // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
-            console.log('error in getUserMedia', err)
             if (
               err.name === 'NotReadableError' ||
               err.name === 'OverconstrainedError'
@@ -313,14 +312,6 @@ export default class VideoRecorder extends Component {
     }
 
     this.stream = stream
-    const videoTracks = stream.getVideoTracks()
-    console.log(
-      `Using video device: ${
-        videoTracks && videoTracks[0] && videoTracks[0].label
-      }`
-    )
-    console.log('Stream', stream)
-    window.stream = this.stream // Assigning stream for testing
     this.setState({
       isCameraOn: true,
       stream: stream
@@ -329,19 +320,10 @@ export default class VideoRecorder extends Component {
       this.props.onCameraOn()
     }
 
-    if (!this.cameraVideo) {
-      const videoElToRender = document.querySelector('camera-video-element')
-      this.cameraVideo = videoElToRender
-    }
-
-    if (this.cameraVideo) {
-      console.log('Camera video exists: ', this.cameraVideo)
-      if (window.URL) {
-        this.cameraVideo.srcObject = stream
-      } else {
-        this.cameraVideo.src = stream
-      }
-      console.log('Camera video after src stream provided: ', this.cameraVideo)
+    if (window.URL) {
+      this.cameraVideo.srcObject = stream
+    } else {
+      this.cameraVideo.src = stream
     }
 
     // there is probably a better way
@@ -352,9 +334,6 @@ export default class VideoRecorder extends Component {
         isConnecting: false,
         streamIsReady: true
       })
-      if (this.cameraVideo) {
-        this.cameraVideo.removeAttribute('controls')
-      }
     }, 200)
   }
 
@@ -365,11 +344,11 @@ export default class VideoRecorder extends Component {
       onError(err)
     }
 
-    console.error('Captured error', err)
-
     if (this.isComponentUnmounted) {
       return
     }
+
+    console.error('Captured error', err)
 
     clearTimeout(this.timeLimitTimeout)
 
@@ -812,13 +791,11 @@ export default class VideoRecorder extends Component {
       return (
         <CameraView key='camera'>
           <Video
-            className='camera-video-element'
             isFlipped={this.props.isFlipped}
             ref={(el) => (this.cameraVideo = el)}
             autoPlay
             muted
             playsInline
-            controls
           />
           {switchCameraControl}
         </CameraView>
