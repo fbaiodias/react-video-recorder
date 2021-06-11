@@ -164,14 +164,10 @@ export default class VideoRecorder extends Component {
 
   componentDidMount () {
     const isInlineRecordingSupported =
-      !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
+      !!window.MediaRecorder && !!navigator.mediaDevices
 
     const isVideoInputSupported =
       document.createElement('input').capture !== undefined
-
-    if (isInlineRecordingSupported) {
-      this.mediaSource = new window.MediaSource()
-    }
 
     this.setState(
       {
