@@ -108,6 +108,10 @@ export default class VideoRecorder extends Component {
     renderErrorView: PropTypes.func,
     renderActions: PropTypes.func,
 
+    cameraViewClassName: PropTypes.string,
+    videoClassName: PropTypes.string,
+    wrapperClassName: PropTypes.string,
+
     /** Use this to localize the texts */
     t: PropTypes.func,
 
@@ -712,6 +716,7 @@ export default class VideoRecorder extends Component {
 
   renderCameraView () {
     const {
+      cameraViewClassName,
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
       renderDisconnectedView,
@@ -719,7 +724,8 @@ export default class VideoRecorder extends Component {
       renderUnsupportedView,
       renderErrorView,
       renderLoadingView,
-      useVideoInput
+      useVideoInput,
+      videoClassName,
     } = this.props
 
     const {
@@ -752,9 +758,13 @@ export default class VideoRecorder extends Component {
 
     if (isReplayingVideo) {
       return (
-        <CameraView key='replay'>
+        <CameraView
+          key='replay'
+          className={cameraViewClassName}
+        >
           <Video
             ref={(el) => (this.replayVideo = el)}
+            className={videoClassName}
             src={this.state.videoUrl}
             loop
             muted={isReplayVideoMuted}
@@ -830,11 +840,12 @@ export default class VideoRecorder extends Component {
       replayVideoAutoplayAndLoopOff,
       renderActions,
       t,
-      useVideoInput
+      useVideoInput,
+      wrapperClassName,
     } = this.props
 
     return (
-      <Wrapper>
+      <Wrapper className={wrapperClassName}>
         {this.renderCameraView()}
         {renderActions({
           t,
