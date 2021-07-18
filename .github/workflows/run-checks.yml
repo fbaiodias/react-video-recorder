@@ -47,15 +47,8 @@ jobs:
       - name: Run browser tests
         run: yarn test:browser
 
-  publish:
-    name: Publish to npm
-    runs-on: ubuntu-latest
-    if: contains(github.ref, 'refs/heads/master')
-    needs: [run-checks]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
       - name: Semantic Release
+        if: contains(github.ref, 'refs/heads/master')
         uses: cycjimmy/semantic-release-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
