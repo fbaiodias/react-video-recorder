@@ -34,7 +34,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run commit message linter
-        run: yarn commitlint-travis
+        uses: wagoid/commitlint-github-action@v4
 
       - name: Run linter
         run: yarn lint
