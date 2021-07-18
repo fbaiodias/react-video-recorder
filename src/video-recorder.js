@@ -725,7 +725,7 @@ export default class VideoRecorder extends Component {
       renderErrorView,
       renderLoadingView,
       useVideoInput,
-      videoClassName,
+      videoClassName
     } = this.props
 
     const {
@@ -758,10 +758,7 @@ export default class VideoRecorder extends Component {
 
     if (isReplayingVideo) {
       return (
-        <CameraView
-          key='replay'
-          className={cameraViewClassName}
-        >
+        <CameraView key='replay' className={cameraViewClassName}>
           <Video
             ref={(el) => (this.replayVideo = el)}
             className={videoClassName}
@@ -841,7 +838,7 @@ export default class VideoRecorder extends Component {
       renderActions,
       t,
       useVideoInput,
-      wrapperClassName,
+      wrapperClassName
     } = this.props
 
     return (
