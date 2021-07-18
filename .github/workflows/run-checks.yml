@@ -47,6 +47,7 @@ jobs:
 
   publish:
     name: Publish to npm
+    runs-on: ubuntu-latest
     if: contains(github.ref, 'refs/heads/master')
     needs: [run-checks]
     steps:
