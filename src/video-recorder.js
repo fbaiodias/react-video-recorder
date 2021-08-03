@@ -605,7 +605,10 @@ export default class VideoRecorder extends Component {
 
     return rawVideoBlob.arrayBuffer().then((buffer) => {
       const decoder = new Decoder()
-      const elements = decoder.decode(buffer)
+      let elements = decoder.decode(buffer)
+      // see https://github.com/legokichi/ts-ebml/issues/33#issuecomment-888800828
+      var validEmlType = ['m', 'u', 'i', 'f', 's', '8', 'b', 'd'];
+      elements = elements?.filter((elm) => validEmlType.includes(elm.type))
 
       const reader = new Reader()
       reader.logging = false
