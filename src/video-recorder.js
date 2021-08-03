@@ -607,7 +607,7 @@ export default class VideoRecorder extends Component {
       const decoder = new Decoder()
       let elements = decoder.decode(buffer)
       // see https://github.com/legokichi/ts-ebml/issues/33#issuecomment-888800828
-      var validEmlType = ['m', 'u', 'i', 'f', 's', '8', 'b', 'd'];
+      const validEmlType = ['m', 'u', 'i', 'f', 's', '8', 'b', 'd'];
       elements = elements?.filter((elm) => validEmlType.includes(elm.type))
 
       const reader = new Reader()
