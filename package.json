@@ -13,12 +13,12 @@
     "lint": "eslint .",
     "clean": "rm -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
+    "build:watch": "babel --watch src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "prebuild": "yarn run clean",
     "prepublish": "NODE_ENV=production yarn run build",
     "start": "yarn run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release"
   },
   "husky": {
@@ -59,7 +59,6 @@
     "@babel/preset-react": "^7.0.0",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "@commitlint/travis-cli": "^8.3.5",
     "@storybook/addon-actions": "^6.0.21",
     "@storybook/addon-info": "^5.3.21",
     "@storybook/addon-knobs": "^6.0.21",
@@ -92,8 +91,7 @@
     "react-dom": "^16.8.3",
     "semantic-release": "^17.2.3",
     "start-server-and-test": "^1.7.11",
-    "styled-components": "4",
-    "travis-deploy-once": "^4.4.0"
+    "styled-components": "4"
   },
   "version": "0.0.0-development",
   "repository": {

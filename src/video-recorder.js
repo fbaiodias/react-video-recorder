@@ -7,20 +7,23 @@ import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
 import DisconnectedView from './defaults/disconnected-view'
 import LoadingView from './defaults/loading-view'
+import SwitchCameraView from './defaults/switch-camera-view'
 import renderActions from './defaults/render-actions'
 import getVideoInfo, { captureThumb } from './get-video-info'
 import {
   ReactVideoRecorderDataIssueError,
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
-  ReactVideoRecorderMediaRecorderUnavailableError
+  ReactVideoRecorderMediaRecorderUnavailableError,
+  ReactVideoRecorderDeviceUnavailableError
 } from './custom-errors'
 
 const MIME_TYPES = [
   'video/webm;codecs="vp8,opus"',
   'video/webm;codecs=h264',
   'video/webm;codecs=vp9',
-  'video/webm'
+  'video/webm',
+  'video/mp4'
 ]
 
 const CONSTRAINTS = {
@@ -105,8 +108,16 @@ export default class VideoRecorder extends Component {
     renderErrorView: PropTypes.func,
     renderActions: PropTypes.func,
 
+    cameraViewClassName: PropTypes.string,
+    videoClassName: PropTypes.string,
+    wrapperClassName: PropTypes.string,
+
+    /** Use this to localize the texts */
+    t: PropTypes.func,
+
     onCameraOn: PropTypes.func,
     onTurnOnCamera: PropTypes.func,
+    onSwitchCamera: PropTypes.func,
     onTurnOffCamera: PropTypes.func,
     onStartRecording: PropTypes.func,
     onStopRecording: PropTypes.func,
@@ -124,6 +135,7 @@ export default class VideoRecorder extends Component {
     renderVideoInputView: ({ videoInput }) => <>{videoInput}</>,
     renderDisconnectedView: () => <DisconnectedView />,
     renderLoadingView: () => <LoadingView />,
+    t: (x) => x,
     renderActions,
     isFlipped: true,
     countdownTime: 3000,
@@ -149,19 +161,17 @@ export default class VideoRecorder extends Component {
     streamIsReady: false,
     isInlineRecordingSupported: null,
     isVideoInputSupported: null,
-    stream: undefined
+    stream: undefined,
+    currentDeviceId: null,
+    availableDeviceIds: []
   }
 
   componentDidMount () {
     const isInlineRecordingSupported =
-      !!window.MediaSource && !!window.MediaRecorder && !!navigator.mediaDevices
+      !!window.MediaRecorder && !!navigator.mediaDevices
 
     const isVideoInputSupported =
       document.createElement('input').capture !== undefined
-
-    if (isInlineRecordingSupported) {
-      this.mediaSource = new window.MediaSource()
-    }
 
     this.setState(
       {
@@ -201,40 +211,89 @@ export default class VideoRecorder extends Component {
     this.isComponentUnmounted = true
   }
 
-  turnOnCamera = () => {
+  turnOnCamera = (deviceId = null) => {
     if (this.props.onTurnOnCamera) {
       this.props.onTurnOnCamera()
     }
 
-    this.setState({
-      isConnecting: true,
-      isReplayingVideo: false,
-      thereWasAnError: false,
-      error: null
-    })
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((mediaDevices) => {
+        const videoDevices = mediaDevices.filter((x) => x.kind === 'videoinput')
+        if (
+          deviceId &&
+          videoDevices[0] &&
+          videoDevices.find((x) => x.deviceId) === undefined
+        ) {
+          return this.handleError(
+            new ReactVideoRecorderDeviceUnavailableError()
+          )
+        }
 
-    const fallbackContraints = {
-      audio: true,
-      video: true
+        const currentDeviceId =
+          typeof deviceId === 'string' ? deviceId : videoDevices[0].deviceId
+
+        this.setState({
+          isConnecting: true,
+          isReplayingVideo: false,
+          thereWasAnError: false,
+          currentDeviceId,
+          availableDeviceIds: videoDevices.map((x) => x.deviceId),
+          error: null
+        })
+
+        const fallbackContraints = {
+          audio: true,
+          video: true
+        }
+
+        const currentConstraints = {
+          ...this.props.constraints,
+          video: {
+            deviceId: {
+              exact: currentDeviceId
+            }
+          }
+        }
+
+        navigator.mediaDevices
+          .getUserMedia(currentConstraints)
+          .catch((err) => {
+            // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
+            if (
+              err.name === 'NotReadableError' ||
+              err.name === 'OverconstrainedError'
+            ) {
+              console.warn(
+                `Got ${err.name}, trying getUserMedia again with fallback constraints`
+              )
+              return navigator.mediaDevices.getUserMedia(fallbackContraints)
+            }
+            throw err
+          })
+          .then(this.handleSuccess)
+          .catch(this.handleError)
+      })
+      .catch(this.handleError)
+  }
+
+  handleSwitchCamera = () => {
+    if (this.props.onSwitchCamera) {
+      this.props.onSwitchCamera()
+    }
+    const { currentDeviceId, availableDeviceIds } = this.state
+    // Stop media tracks
+    this.stream && this.stream.getTracks().forEach((stream) => stream.stop())
+
+    const index = availableDeviceIds.findIndex((x) => x === currentDeviceId)
+    const maxIndex = availableDeviceIds.length - 1
+
+    if (index < 0) {
+      return this.handleError(new ReactVideoRecorderDeviceUnavailableError())
     }
 
-    navigator.mediaDevices
-      .getUserMedia(this.props.constraints)
-      .catch((err) => {
-        // there's a bug in chrome in some windows computers where using `ideal` in the constraints throws a NotReadableError
-        if (
-          err.name === 'NotReadableError' ||
-          err.name === 'OverconstrainedError'
-        ) {
-          console.warn(
-            `Got ${err.name}, trying getUserMedia again with fallback constraints`
-          )
-          return navigator.mediaDevices.getUserMedia(fallbackContraints)
-        }
-        throw err
-      })
-      .then(this.handleSuccess)
-      .catch(this.handleError)
+    if (index + 1 > maxIndex) return this.turnOnCamera(availableDeviceIds[0])
+    return this.turnOnCamera(availableDeviceIds[index + 1])
   }
 
   turnOffCamera = () => {
@@ -325,7 +384,7 @@ export default class VideoRecorder extends Component {
       ? MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
       : 'video/webm'
 
-    return mimeType || ''
+    return (this.mediaRecorder && this.mediaRecorder.mimeType) || mimeType || ''
   }
 
   isDataHealthOK = (event) => {
@@ -535,6 +594,10 @@ export default class VideoRecorder extends Component {
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
   fixVideoMetadata = (rawVideoBlob) => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    if (isSafari) {
+      return Promise.resolve(rawVideoBlob)
+    }
     // see https://stackoverflow.com/a/63568311
     Blob.prototype.arrayBuffer ??= function () {
       return new Response(this).arrayBuffer()
@@ -653,6 +716,7 @@ export default class VideoRecorder extends Component {
 
   renderCameraView () {
     const {
+      cameraViewClassName,
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
       renderDisconnectedView,
@@ -660,7 +724,8 @@ export default class VideoRecorder extends Component {
       renderUnsupportedView,
       renderErrorView,
       renderLoadingView,
-      useVideoInput
+      useVideoInput,
+      videoClassName
     } = this.props
 
     const {
@@ -671,7 +736,9 @@ export default class VideoRecorder extends Component {
       error,
       isCameraOn,
       isConnecting,
-      isReplayVideoMuted
+      isReplayVideoMuted,
+      isRecording,
+      availableDeviceIds
     } = this.state
 
     const shouldUseVideoInput =
@@ -691,9 +758,10 @@ export default class VideoRecorder extends Component {
 
     if (isReplayingVideo) {
       return (
-        <CameraView key='replay'>
+        <CameraView key='replay' className={cameraViewClassName}>
           <Video
             ref={(el) => (this.replayVideo = el)}
+            className={videoClassName}
             src={this.state.videoUrl}
             loop
             muted={isReplayVideoMuted}
@@ -721,6 +789,12 @@ export default class VideoRecorder extends Component {
     }
 
     if (isCameraOn) {
+      // Enable switch camera button, only if not recording and multiple video sources available
+      const switchCameraControl =
+        availableDeviceIds && availableDeviceIds.length >= 2 && !isRecording ? (
+          <SwitchCameraView onClick={this.handleSwitchCamera} />
+        ) : null
+
       return (
         <CameraView key='camera'>
           <Video
@@ -728,7 +802,9 @@ export default class VideoRecorder extends Component {
             ref={(el) => (this.cameraVideo = el)}
             autoPlay
             muted
+            playsInline
           />
+          {switchCameraControl}
         </CameraView>
       )
     }
@@ -760,13 +836,16 @@ export default class VideoRecorder extends Component {
       showReplayControls,
       replayVideoAutoplayAndLoopOff,
       renderActions,
-      useVideoInput
+      t,
+      useVideoInput,
+      wrapperClassName
     } = this.props
 
     return (
-      <Wrapper>
+      <Wrapper className={wrapperClassName}>
         {this.renderCameraView()}
         {renderActions({
+          t,
           isVideoInputSupported,
           isInlineRecordingSupported,
           thereWasAnError,
@@ -783,7 +862,8 @@ export default class VideoRecorder extends Component {
           replayVideoAutoplayAndLoopOff,
           useVideoInput,
 
-          onTurnOnCamera: this.turnOnCamera,
+          onTurnOnCamera: () => this.turnOnCamera(),
+          onSwitchCamera: this.handleSwitchCamera,
           onTurnOffCamera: this.turnOffCamera,
           onOpenVideoInput: this.handleOpenVideoInput,
           onStartRecording: this.handleStartRecording,
