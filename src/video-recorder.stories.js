@@ -102,3 +102,16 @@ stories.add(
 stories.add('with isFlipped=false', () => (
   <VideoRecorder isFlipped={false} showReplayControls {...actionLoggers} />
 ))
+
+stories.add(
+  'with showReplayControls=true videoControlsList="nodownload" disablepictureinpicture',
+  () => (
+    <VideoRecorder
+      isOnInitially
+      showReplayControls
+      videoControlsList='nodownload'
+      disablePictureInPicture
+      {...actionLoggers}
+    />
+  )
+)

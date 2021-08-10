@@ -100,6 +100,10 @@ export default class VideoRecorder extends Component {
     chunkSize: PropTypes.number,
     dataAvailableTimeout: PropTypes.number,
     useVideoInput: PropTypes.bool,
+    /** Use this to configure the replaying video element's controlslist attribute */
+    videoControlsList: PropTypes.string,
+    /** Use this to disable picture in picture mode on the replaying video element */
+    disablePictureInPicture: PropTypes.bool,
 
     renderDisconnectedView: PropTypes.func,
     renderLoadingView: PropTypes.func,
@@ -718,6 +722,8 @@ export default class VideoRecorder extends Component {
     const {
       cameraViewClassName,
       showReplayControls,
+      videoControlsList,
+      disablePictureInPicture,
       replayVideoAutoplayAndLoopOff,
       renderDisconnectedView,
       renderVideoInputView,
@@ -770,6 +776,8 @@ export default class VideoRecorder extends Component {
             controls={showReplayControls}
             onClick={this.handleReplayVideoClick}
             onDurationChange={this.handleDurationChange}
+            controlsList={videoControlsList}
+            disablePictureInPicture={disablePictureInPicture}
           />
           {videoInput}
         </CameraView>
