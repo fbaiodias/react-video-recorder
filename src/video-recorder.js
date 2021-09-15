@@ -104,6 +104,8 @@ export default class VideoRecorder extends Component {
     videoControlsList: PropTypes.string,
     /** Use this to disable picture in picture mode on the replaying video element */
     disablePictureInPicture: PropTypes.bool,
+    /** Use this to change what element is rendered for the switch camera view button */
+    switchCameraViewElement: PropTypes.element,
 
     renderDisconnectedView: PropTypes.func,
     renderLoadingView: PropTypes.func,
@@ -733,6 +735,7 @@ export default class VideoRecorder extends Component {
       renderUnsupportedView,
       renderErrorView,
       renderLoadingView,
+      switchCameraViewElement,
       useVideoInput,
       videoClassName
     } = this.props
@@ -803,7 +806,13 @@ export default class VideoRecorder extends Component {
       // Enable switch camera button, only if not recording and multiple video sources available
       const switchCameraControl =
         availableDeviceIds && availableDeviceIds.length >= 2 && !isRecording ? (
-          <SwitchCameraView onClick={this.handleSwitchCamera} />
+          switchCameraViewElement ? (
+            <span onClick={this.handleSwitchCamera}>
+              {switchCameraViewElement}
+            </span>
+          ) : (
+            <SwitchCameraView onClick={this.handleSwitchCamera} />
+          )
         ) : null
 
       return (
