@@ -46,8 +46,8 @@
     "styled-components": "^4.1.1"
   },
   "dependencies": {
-    "react-svg-inline": "^2.1.0",
-    "ts-ebml": "^2.0.2"
+    "fix-webm-duration": "^1.0.4",
+    "react-svg-inline": "^2.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
