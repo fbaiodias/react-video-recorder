@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
-import { Decoder, tools, Reader } from 'ts-ebml'
+import fixWebmDuration from 'fix-webm-duration'
 
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
@@ -153,6 +153,9 @@ export default class VideoRecorder extends Component {
   isComponentUnmounted = false
 
   timeSinceInactivity = 0
+
+  lastRecordingTimestamp = 0
+  recordingDuration = 0
 
   state = {
     isRecording: false,
@@ -446,6 +449,9 @@ export default class VideoRecorder extends Component {
     }
   }
 
+  getTotalEllapsedTimeInMs = () =>
+    Date.now() - this.lastRecordingTimestamp + this.recordingDuration
+
   handleStopRecording = () => {
     if (this.props.onStopRecording) {
       this.props.onStopRecording()
@@ -457,6 +463,7 @@ export default class VideoRecorder extends Component {
     }
 
     this.mediaRecorder.stop()
+    this.recordingDuration = this.getTotalEllapsedTimeInMs()
   }
 
   handlePauseRecording = () => {
@@ -470,6 +477,7 @@ export default class VideoRecorder extends Component {
     }
 
     this.mediaRecorder.pause()
+    this.recordingDuration = this.getTotalEllapsedTimeInMs()
   }
 
   handleResumeRecording = () => {
@@ -483,6 +491,7 @@ export default class VideoRecorder extends Component {
     }
 
     this.mediaRecorder.resume()
+    this.lastRecordingTimestamp = Date.now()
   }
 
   handleStartRecording = () => {
@@ -523,6 +532,8 @@ export default class VideoRecorder extends Component {
 
         const { timeLimit, chunkSize, dataAvailableTimeout } = this.props
         this.mediaRecorder.start(chunkSize) // collect 10ms of data
+        this.lastRecordingTimestamp = Date.now()
+        this.recordingDuration = 0
 
         if (timeLimit) {
           this.timeLimitTimeout = setTimeout(() => {
@@ -607,33 +618,7 @@ export default class VideoRecorder extends Component {
       return new Response(this).arrayBuffer()
     }
 
-    return rawVideoBlob.arrayBuffer().then((buffer) => {
-      const decoder = new Decoder()
-      let elements = decoder.decode(buffer)
-      // see https://github.com/legokichi/ts-ebml/issues/33#issuecomment-888800828
-      const validEmlType = ['m', 'u', 'i', 'f', 's', '8', 'b', 'd']
-      elements = elements?.filter((elm) => validEmlType.includes(elm.type))
-
-      const reader = new Reader()
-      reader.logging = false
-      reader.drop_default_duration = false
-      elements.forEach((element) => reader.read(element))
-      reader.stop()
-
-      const seekableMetadata = tools.makeMetadataSeekable(
-        reader.metadatas,
-        reader.duration,
-        reader.cues
-      )
-
-      const blobBody = buffer.slice(reader.metadataSize)
-
-      const result = new Blob([seekableMetadata, blobBody], {
-        type: rawVideoBlob.type
-      })
-
-      return result
-    })
+    return fixWebmDuration(rawVideoBlob, this.recordingDuration)
   }
 
   handleVideoSelected = (e) => {
