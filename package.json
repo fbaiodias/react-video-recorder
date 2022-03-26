@@ -11,7 +11,7 @@
     "jest:browser": "jest -c test/browser/jest.config.js",
     "test:browser": "start-server-and-test storybook http-get://localhost:6006 jest:browser",
     "lint": "eslint .",
-    "clean": "rm -rf lib",
+    "clean": "rimraf -rf lib",
     "build": "babel src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "build:watch": "babel --watch src -d lib --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
     "prebuild": "yarn run clean",
@@ -90,6 +90,7 @@
     "puppeteer": "^1.18.1",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
+    "rimraf": "^3.0.2",
     "semantic-release": "^17.2.3",
     "start-server-and-test": "^1.7.11",
     "styled-components": "4"
