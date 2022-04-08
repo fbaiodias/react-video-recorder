@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import cloneDeep from 'lodash.clonedeep'
 import styled, { css } from 'styled-components'
 import fixWebmDuration from 'fix-webm-duration'
 
@@ -254,14 +255,16 @@ export default class VideoRecorder extends Component {
           video: true
         }
 
-        const currentConstraints = {
-          ...this.props.constraints,
-          video: {
-            deviceId: {
-              exact: currentDeviceId
+        const currentConstraints = cloneDeep(
+          {
+            video: {
+              deviceId: {
+                exact: currentDeviceId
+              }
             }
-          }
-        }
+          },
+          this.props.constraints
+        )
 
         navigator.mediaDevices
           .getUserMedia(currentConstraints)
