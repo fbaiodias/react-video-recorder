@@ -21,7 +21,7 @@ import VideoRecorder from 'react-video-recorder'
 
 const App = () => (
   <VideoRecorder
-    onRecordingComplete={videoBlob => {
+    onRecordingComplete={(videoBlob) => {
       // Do something with the video...
       console.log('videoBlob', videoBlob)
     }}
@@ -100,3 +100,7 @@ Run the storybook demo
 ```sh
 yarn start
 ```
+
+### Committing
+
+To commit run yarn start then commit. We use Husky to verify before committing.
