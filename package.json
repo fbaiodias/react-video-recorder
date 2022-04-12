@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "fix-webm-duration": "^1.0.4",
-    "lodash.clonedeep": "^4.5.0",
+    "lodash.merge": "^4.5.0",
     "react-svg-inline": "^2.1.0"
   },
   "devDependencies": {
