@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import cloneDeep from 'lodash.clonedeep'
+import merge from 'lodash.merge'
 import styled, { css } from 'styled-components'
 import fixWebmDuration from 'fix-webm-duration'
 
@@ -255,7 +255,7 @@ export default class VideoRecorder extends Component {
           video: true
         }
 
-        const currentConstraints = cloneDeep(
+        const currentConstraints = merge(
           {
             video: {
               deviceId: {
