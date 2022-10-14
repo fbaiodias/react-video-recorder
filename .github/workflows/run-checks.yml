@@ -3,10 +3,10 @@ name: Run checks
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   run-checks:
@@ -48,7 +48,7 @@ jobs:
         run: yarn test:browser
 
       - name: Semantic Release
-        if: contains(github.ref, 'refs/heads/master')
+        if: contains(github.ref, 'refs/heads/main')
         uses: cycjimmy/semantic-release-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
