@@ -36,6 +36,7 @@ const actionLoggers = {
   onRecordingComplete: handleRecordingComplete,
   onOpenVideoInput: action('onOpenVideoInput'),
   onStopReplaying: action('onStopReplaying'),
+  onSwitchCamera: action('onSwitchCamera'),
   onError: action('onError')
 }
 
@@ -115,3 +116,35 @@ stories.add(
     />
   )
 )
+
+stories.add('with custom element used for switch camera view button', () => (
+  <VideoRecorder
+    isOnInitially
+    showReplayControls
+    switchCameraViewElement={
+      <svg
+        width='80'
+        height='40'
+        style={{
+          position: 'absolute',
+          right: '4px',
+          bottom: '4px',
+          zIndex: '10',
+          cursor: 'pointer'
+        }}
+      >
+        <rect
+          x='10'
+          y='10'
+          width='60'
+          height='20'
+          style={{ fill: 'blue', fillOpacity: 0.5 }}
+        />
+        <text x='16' y='24' fill='white'>
+          Switch
+        </text>
+      </svg>
+    }
+    {...actionLoggers}
+  />
+))
