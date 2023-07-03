@@ -9,7 +9,11 @@ yarn add react-video-recorder
 #       so if you're starting from scratch run this instead:
 yarn add react-video-recorder react react-dom prop-types styled-components
 ```
-
+### Typescript
+If using Typescript, typing is available via:
+```sh
+yarn add -D @types/react-video-recorder
+```
 ## Usage
 
 Basic usage [(edit in stakblitz)](https://stackblitz.com/edit/react-video-recorder-demo):
