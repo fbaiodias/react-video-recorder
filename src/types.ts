@@ -49,7 +49,11 @@ export interface UseVideoRecorderOptions extends VideoRecorderCallbacks {
   constraints?: MediaStreamConstraints
   /** How often MediaRecorder hands over recorded data (in ms). Default: 250 */
   chunkSize?: number
-  /** Fail when no data arrives this long after recording starts (in ms), or null to skip the check. Default: 500 */
+  /**
+   * Fail when no data has arrived this long (in ms) after the first chunk was
+   * due, i.e. chunkSize + dataAvailableTimeout ms into the recording. null
+   * skips the check. Default: 500
+   */
   dataAvailableTimeout?: number | null
   /** Use a file input instead of recording inline */
   useVideoInput?: boolean

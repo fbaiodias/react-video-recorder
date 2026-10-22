@@ -521,18 +521,15 @@ function createRecorder (
           }, timeLimit)
         }
 
-        // mediaRecorder.ondataavailable should be called every 10ms,
-        // as that's what we're passing to mediaRecorder.start() above
+        // The first data is due after chunkSize ms. Fail if it hasn't come
+        // dataAvailableTimeout ms after that.
         if (Number.isInteger(dataAvailableTimeout)) {
+          const wait = chunkSize + (dataAvailableTimeout as number)
           r.dataAvailableTimeout = setTimeout(() => {
             if (r.recordedBlobs.length === 0) {
-              handleError(
-                new ReactVideoRecorderDataAvailableTimeoutError(
-                  dataAvailableTimeout as number
-                )
-              )
+              handleError(new ReactVideoRecorderDataAvailableTimeoutError(wait))
             }
-          }, dataAvailableTimeout as number)
+          }, wait)
         }
       } catch (err) {
         console.error("Couldn't create MediaRecorder", err, options)

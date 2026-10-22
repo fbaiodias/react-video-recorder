@@ -145,7 +145,7 @@ describe('recording a video inline', () => {
     expect(await videoBlob.text()).toBe('chunk-1')
   })
 
-  it('fails when chunkSize is longer than dataAvailableTimeout', async () => {
+  it.runIf(IS_LEGACY)('[known bug] fails when chunkSize is longer than dataAvailableTimeout', async () => {
     installFakeMedia()
     const r = renderRecorder({ chunkSize: 1000 })
     await turnOnCamera(r)
@@ -155,6 +155,16 @@ describe('recording a video inline', () => {
       'ReactVideoRecorderDataAvailableTimeoutError'
     )
     takeConsole('error')
+  })
+
+  it.skipIf(IS_LEGACY)('waits for the first chunk before checking for data', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder({ chunkSize: 1000 })
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(3000)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    expect(media.lastRecorder.state).toBe('recording')
   })
 
   it('passes chunkSize to MediaRecorder.start()', async () => {
@@ -412,7 +422,7 @@ describe('pausing and resuming', () => {
 })
 
 describe('recording errors', () => {
-  it('fails when no data arrives within dataAvailableTimeout', async () => {
+  it.runIf(IS_LEGACY)('fails when no data arrives within dataAvailableTimeout', async () => {
     const media = installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder()
     await turnOnCamera(r)
@@ -427,6 +437,28 @@ describe('recording errors', () => {
       "Method mediaRecorder.ondataavailable wasn't called after 500ms"
     )
     expect(error.dataAvailableTimeout).toBe(500)
+    expect(r.container.textContent).toContain('Oh snap!')
+    expect(r.byQa('stop-recording')).toBeNull()
+    expect(media.lastStream.isStopped).toBe(true)
+    expect(r.events.slice(-2)).toEqual(['onError', 'onTurnOffCamera'])
+    expect(takeConsole('error')).toEqual([['Captured error', error]])
+  })
+
+  it.skipIf(IS_LEGACY)('fails when no data arrives chunkSize + dataAvailableTimeout ms into the recording', async () => {
+    const media = installFakeMedia({ recorderEmitsData: false })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(749)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    await advance(1)
+
+    const [error] = r.callbacks.onError.mock.calls[0]
+    expect(error.name).toBe('ReactVideoRecorderDataAvailableTimeoutError')
+    expect(error.message).toBe(
+      "Method mediaRecorder.ondataavailable wasn't called after 750ms"
+    )
+    expect(error.dataAvailableTimeout).toBe(750)
     expect(r.container.textContent).toContain('Oh snap!')
     expect(r.byQa('stop-recording')).toBeNull()
     expect(media.lastStream.isStopped).toBe(true)
@@ -471,12 +503,24 @@ describe('recording errors', () => {
     expect(media.lastRecorder.state).toBe('recording')
   })
 
-  it('honours a custom dataAvailableTimeout', async () => {
+  it.runIf(IS_LEGACY)('honours a custom dataAvailableTimeout', async () => {
     installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder({ dataAvailableTimeout: 2000 })
     await turnOnCamera(r)
     await startRecording(r)
     await advance(1999)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    await advance(1)
+    expect(r.callbacks.onError).toHaveBeenCalledTimes(1)
+    takeConsole('error')
+  })
+
+  it.skipIf(IS_LEGACY)('honours a custom dataAvailableTimeout after the first chunk', async () => {
+    installFakeMedia({ recorderEmitsData: false })
+    const r = renderRecorder({ dataAvailableTimeout: 2000 })
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(2249)
     expect(r.callbacks.onError).not.toHaveBeenCalled()
     await advance(1)
     expect(r.callbacks.onError).toHaveBeenCalledTimes(1)
