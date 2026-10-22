@@ -477,13 +477,14 @@ describe('the replay video', () => {
 })
 
 describe('styles that depend on props', () => {
-  const transformOf = (element) => getComputedStyle(element).transform
+  const transformOf = (element) =>
+    getComputedStyle(element).transform.replace(/\s/g, '')
 
   it('mirrors the camera by default', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%) scaleX(-1)')
+    expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
   })
 
   it('does not mirror the camera with isFlipped={false}', async () => {

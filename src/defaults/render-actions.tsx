@@ -1,7 +1,6 @@
 import React from 'react'
 import type { ReactNode } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 import Button from './button'
 import RecordButton from './record-button'
 import StopButton from './stop-button'
@@ -44,16 +43,6 @@ export interface RenderActionsProps {
   onStopReplaying: () => void
 }
 
-const ActionsWrapper = styled.div`
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
 const Actions = ({
   t,
   isVideoInputSupported,
@@ -81,6 +70,8 @@ const Actions = ({
   onStopReplaying,
   onConfirm
 }: RenderActionsProps & { onConfirm?: () => void }) => {
+  // Called as a plain function by VideoRecorder (not rendered as a
+  // component), so no hooks here: VideoRecorder injects the styles.
   const renderContent = () => {
     const shouldUseVideoInput =
       !isInlineRecordingSupported && isVideoInputSupported
@@ -152,7 +143,7 @@ const Actions = ({
     <div>
       {isRecording && <Timer timeLimit={timeLimit} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
-      <ActionsWrapper>{renderContent()}</ActionsWrapper>
+      <div className='rvr-actions'>{renderContent()}</div>
     </div>
   )
 }

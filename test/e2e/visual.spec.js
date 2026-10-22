@@ -132,3 +132,26 @@ test('camera ready without mirroring', async ({ page }) => {
   await page.locator(qa('start-recording')).waitFor()
   await screenshot(page, 'camera-ready')
 })
+
+test.describe('hover', () => {
+  test('default button', async ({ page }) => {
+    await openHarness(page)
+    await page.hover(qa('turn-on-camera'))
+    await screenshot(page, 'hover-button')
+  })
+
+  test('record and stop buttons', async ({ page }) => {
+    await page.clock.install()
+    await openHarness(page, { dataAvailableTimeout: null })
+    await page.click(qa('turn-on-camera'))
+    await page.locator('video').waitFor({ state: 'attached' })
+    await page.clock.runFor(200)
+    await page.hover(qa('start-recording'))
+    await screenshot(page, 'hover-record-button')
+
+    await page.click(qa('start-recording'))
+    await page.clock.runFor(3000)
+    await page.hover(qa('stop-recording'))
+    await screenshot(page, 'hover-stop-button')
+  })
+})

@@ -1,7 +1,6 @@
 import React, { forwardRef, useImperativeHandle } from 'react'
 import type { ReactElement } from 'react'
 import PropTypes from 'prop-types'
-import styled, { css } from 'styled-components'
 
 import UnsupportedView from './defaults/unsupported-view'
 import ErrorView from './defaults/error-view'
@@ -10,52 +9,8 @@ import LoadingView from './defaults/loading-view'
 import SwitchCameraView from './defaults/switch-camera-view'
 import defaultRenderActions from './defaults/render-actions'
 import { useVideoRecorder } from './use-video-recorder'
+import { cx, useStyles } from './styles'
 import type { VideoRecorderHandle, VideoRecorderProps } from './types'
-
-const Wrapper = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  min-height: 300px;
-  background-color: #000;
-  color: white;
-  box-sizing: border-box;
-  * {
-    box-sizing: inherit;
-  }
-`
-
-const CameraView = styled.div`
-  width: 100%;
-  height: 100%;
-`
-
-const Video = styled.video<{ isFlipped?: boolean }>`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-height: 100%;
-  min-width: 100%;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  ${(props) =>
-    props.isFlipped &&
-    css`
-      transform: translate(-50%, -50%) scaleX(-1);
-    `};
-  ${(props) =>
-    props.onClick &&
-    css`
-      cursor: pointer;
-    `};
-`
 
 const defaultRenderUnsupportedView = () => <UnsupportedView />
 const defaultRenderErrorView = () => <ErrorView />
@@ -91,6 +46,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       wrapperClassName
     } = props
 
+    useStyles()
     const recorder = useVideoRecorder(props)
     const { state } = recorder
 
@@ -146,10 +102,13 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
 
       if (isReplayingVideo) {
         return (
-          <CameraView key='replay' className={cameraViewClassName}>
-            <Video
+          <div
+            key='replay'
+            className={cx('rvr-camera-view', cameraViewClassName)}
+          >
+            <video
               ref={recorder.replayVideoRef}
-              className={videoClassName}
+              className={cx('rvr-video', 'rvr-video--clickable', videoClassName)}
               src={state.videoUrl}
               loop
               muted={isReplayVideoMuted}
@@ -161,7 +120,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
               disablePictureInPicture={disablePictureInPicture}
             />
             {videoInput}
-          </CameraView>
+          </div>
         )
       }
 
@@ -187,16 +146,16 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
             : null
 
         return (
-          <CameraView key='camera'>
-            <Video
-              isFlipped={isFlipped}
+          <div key='camera' className='rvr-camera-view'>
+            <video
+              className={cx('rvr-video', isFlipped && 'rvr-video--flipped')}
               ref={recorder.cameraVideoRef}
               autoPlay
               muted
               playsInline
             />
             {switchCameraControl}
-          </CameraView>
+          </div>
         )
       }
 
@@ -208,7 +167,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
     }
 
     return (
-      <Wrapper className={wrapperClassName}>
+      <div className={cx('rvr-wrapper', wrapperClassName)}>
         {renderCameraView()}
         {renderActions({
           t,
@@ -238,7 +197,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
           onResumeRecording: recorder.resumeRecording,
           onStopReplaying: recorder.stopReplaying
         })}
-      </Wrapper>
+      </div>
     )
   }
 )

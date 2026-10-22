@@ -86,6 +86,7 @@ describe('published package', () => {
       'lib/defaults/unsupported-view.js',
       'lib/get-video-info.js',
       'lib/index.js',
+      'lib/styles.js',
       'lib/types.js',
       'lib/use-video-recorder.js',
       'lib/video-recorder.js',
