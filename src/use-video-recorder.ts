@@ -317,12 +317,14 @@ function createRecorder (
 
     console.error('Captured error', err)
 
-    clearTimeout(r.timeLimitTimeout)
+    const wasCountingDown = getState().isRunningCountdown
+    discardRecording()
 
     setState({
       isConnecting: false,
       isRecording: false,
       isPaused: false,
+      ...(wasCountingDown ? { isRunningCountdown: false } : {}),
       thereWasAnError: true,
       error: err
     })
@@ -732,11 +734,15 @@ function createRecorder (
     r.initialActionPending = false
 
     clearTimeout(r.streamReadyTimeout)
+    discardRecording()
+  }
+
+  // Cancels the countdown and stops any recording without reporting it.
+  function discardRecording () {
     clearTimeout(r.countdownTimeout)
     clearTimeout(r.timeLimitTimeout)
     clearTimeout(r.dataAvailableTimeout)
 
-    // Stop recording without reporting anything to an unmounted component.
     const { mediaRecorder } = r
     if (mediaRecorder) {
       mediaRecorder.removeEventListener('stop', handleStop)
@@ -744,6 +750,7 @@ function createRecorder (
       mediaRecorder.removeEventListener('dataavailable', handleDataAvailable)
       if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
     }
+    r.paused = false
   }
 
   // Shows the stream in the camera <video>.

@@ -434,7 +434,34 @@ describe('recording errors', () => {
     expect(takeConsole('error')).toEqual([['Captured error', error]])
   })
 
-  it('[known bug] leaves the MediaRecorder running after a data timeout', async () => {
+  it.skipIf(IS_LEGACY)('stops the MediaRecorder after a data timeout', async () => {
+    const media = installFakeMedia({ recorderEmitsData: false })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(500)
+    await advance(1000)
+    takeConsole('error')
+    expect(media.lastRecorder.state).toBe('inactive')
+    expect(r.callbacks.onError).toHaveBeenCalledTimes(1)
+    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
+  })
+
+  it.skipIf(IS_LEGACY)("stops the MediaRecorder after the recorder's error event", async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await act(async () => {
+      media.lastRecorder.emitError()
+    })
+    await advance(1000)
+    takeConsole('error')
+    expect(media.lastRecorder.state).toBe('inactive')
+    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
+  })
+
+  it.runIf(IS_LEGACY)('[known bug] leaves the MediaRecorder running after a data timeout', async () => {
     const media = installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder()
     await turnOnCamera(r)
