@@ -576,13 +576,10 @@ function createRecorder (
 
       turnOffCamera()
 
-      // [known bug] Throws when onRecordingComplete isn't passed.
-      getOptions().onRecordingComplete!(
-        fixedVideoBlob,
-        startedAt,
-        thumbnailBlob,
-        duration
-      )
+      const { onRecordingComplete } = getOptions()
+      if (onRecordingComplete) {
+        onRecordingComplete(fixedVideoBlob, startedAt, thumbnailBlob, duration)
+      }
     })
   }
 
@@ -638,13 +635,10 @@ function createRecorder (
           videoUrl: window.URL.createObjectURL(video)
         })
 
-        getOptions().onRecordingComplete!(
-          video,
-          startedAt,
-          thumbnail,
-          duration,
-          extension
-        )
+        const { onRecordingComplete } = getOptions()
+        if (onRecordingComplete) {
+          onRecordingComplete(video, startedAt, thumbnail, duration, extension)
+        }
       })
       .catch((err) => {
         if (isCurrent(generation)) handleError(err)

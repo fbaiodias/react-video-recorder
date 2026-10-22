@@ -115,6 +115,14 @@ describe('recording a video inline', () => {
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
   })
 
+  // The class threw from a promise when onRecordingComplete was missing.
+  it.skipIf(IS_LEGACY)('records without an onRecordingComplete callback', async () => {
+    installFakeMedia()
+    const r = renderRecorder({ onRecordingComplete: undefined })
+    await recordVideo(r)
+    expect(r.byQa('start-replaying')).not.toBeNull()
+  })
+
   it('turns the camera back on after replaying when isOnInitially is set', async () => {
     const media = installFakeMedia()
     const r = renderRecorder({ isOnInitially: true })
