@@ -576,36 +576,36 @@ describe('the replay video', () => {
   })
 })
 
-describe('styles that depend on props', () => {
-  const transformOf = (element) =>
-    getComputedStyle(element).transform.replace(/\s/g, '')
+// jsdom ignores styles inside @layer, so these check the classes; the
+// browser and screenshot tests check how they render.
+describe('classes that depend on props', () => {
+  const classesOf = (element) => [...element.classList].sort()
 
   it('mirrors the camera by default', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
+    expect(classesOf(r.video())).toEqual(['rvr-video', 'rvr-video--flipped'])
   })
 
   it('does not mirror a rear camera', async () => {
     installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
     const r = renderRecorder()
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
+    expect(classesOf(r.video())).toEqual(['rvr-video'])
   })
 
   it('does not mirror the camera with isFlipped={false}', async () => {
     installFakeMedia()
     const r = renderRecorder({ isFlipped: false })
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
+    expect(classesOf(r.video())).toEqual(['rvr-video'])
   })
 
-  it('never mirrors the replay', async () => {
+  it('never mirrors the replay, which is clickable', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await recordVideo(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
-    expect(getComputedStyle(r.video()).cursor).toBe('pointer')
+    expect(classesOf(r.video())).toEqual(['rvr-video', 'rvr-video--clickable'])
   })
 })

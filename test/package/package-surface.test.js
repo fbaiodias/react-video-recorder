@@ -288,7 +288,9 @@ describe('published package', () => {
 
   it('resolves the stylesheet', () => {
     const path = requireFromConsumer.resolve('react-video-recorder/styles.css')
-    expect(readFileSync(path, 'utf8')).toMatch(/^\.rvr-wrapper \{/)
+    expect(readFileSync(path, 'utf8')).toMatch(
+      /^@layer react-video-recorder \{\n  \.rvr-wrapper \{/
+    )
   })
 
   it('ships declarations next to every module', () => {
