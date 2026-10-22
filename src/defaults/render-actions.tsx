@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import PropTypes from 'prop-types'
 import Button from './button.tsx'
 import RecordButton from './record-button.tsx'
 import StopButton from './stop-button.tsx'
@@ -149,35 +148,6 @@ const Actions = ({
       <div className='rvr-actions'>{renderContent()}</div>
     </div>
   )
-}
-
-Actions.propTypes = {
-  t: PropTypes.func,
-  isVideoInputSupported: PropTypes.bool,
-  isInlineRecordingSupported: PropTypes.bool,
-  thereWasAnError: PropTypes.bool,
-  isRecording: PropTypes.bool,
-  isPaused: PropTypes.bool,
-  isCameraOn: PropTypes.bool,
-  streamIsReady: PropTypes.bool,
-  isConnecting: PropTypes.bool,
-  isRunningCountdown: PropTypes.bool,
-  countdownTime: PropTypes.number,
-  timeLimit: PropTypes.number,
-  showReplayControls: PropTypes.bool,
-  replayVideoAutoplayAndLoopOff: PropTypes.bool,
-  isReplayingVideo: PropTypes.bool,
-  useVideoInput: PropTypes.bool,
-
-  onTurnOnCamera: PropTypes.func,
-  onTurnOffCamera: PropTypes.func,
-  onOpenVideoInput: PropTypes.func,
-  onStartRecording: PropTypes.func,
-  onStopRecording: PropTypes.func,
-  onPauseRecording: PropTypes.func,
-  onResumeRecording: PropTypes.func,
-  onStopReplaying: PropTypes.func,
-  onConfirm: PropTypes.func
 }
 
 export default Actions

@@ -4,13 +4,77 @@ on:
   push:
     branches:
       - main
+      - next
   pull_request:
     branches:
       - main
+      - next
 
 jobs:
   run-checks:
-    name: Run checks
+    name: Run checks (React ${{ matrix.react }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Development uses the lowest supported React; 19 is checked here.
+        react: [18, 19]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Use React 19
+        if: matrix.react == 19
+        run: yarn add --dev react@^19 react-dom@^19
+
+      - name: Run commit message linter
+        if: matrix.react == 18
+        uses: wagoid/commitlint-github-action@v4
+
+      - name: Run linter
+        run: yarn lint
+
+      - name: Type-check
+        run: yarn typecheck
+
+      - name: Run unit and package tests
+        run: yarn test
+
+      - name: Check the published package (publint, are-the-types-wrong)
+        if: matrix.react == 18
+        run: yarn check:package
+
+      - name: Install browsers for browser tests
+        run: yarn playwright install --with-deps chromium firefox
+
+      - name: Run browser tests
+        run: yarn test:e2e
+
+      - name: Upload browser test traces
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces-react-${{ matrix.react }}
+          path: test-results
+          retention-days: 7
+
+  release:
+    name: Release
+    needs: run-checks
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -28,37 +92,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run commit message linter
-        uses: wagoid/commitlint-github-action@v4
-
-      - name: Run linter
-        run: yarn lint
-
-      - name: Type-check
-        run: yarn typecheck
-
-      - name: Run unit and package tests
-        run: yarn test
-
-      - name: Check the published package (publint, are-the-types-wrong)
-        run: yarn check:package
-
-      - name: Install browsers for browser tests
-        run: yarn playwright install --with-deps chromium firefox
-
-      - name: Run browser tests
-        run: yarn test:e2e
-
-      - name: Upload browser test traces
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-traces
-          path: test-results
-          retention-days: 7
-
+      # Publishes from main, and prereleases (e.g. 4.0.0-next.1) from next.
       - name: Semantic Release
-        if: contains(github.ref, 'refs/heads/main')
         uses: cycjimmy/semantic-release-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

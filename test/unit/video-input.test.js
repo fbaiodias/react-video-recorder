@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen } from '@testing-library/react'
 import { installFakeMedia } from './fake-media'
 import { takeConsole } from './console-capture'
-import { IS_LEGACY, advance, click, renderRecorder } from './helpers'
+import { advance, click, renderRecorder } from './helpers'
 
 // Simulates picking a file the way browsers do: `files` is set, and assigning
 // an empty value (or null) clears it again.
@@ -184,28 +184,7 @@ describe('falling back to the native camera (no MediaRecorder)', () => {
     expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
   })
 
-  it.runIf(IS_LEGACY)('[known bug] hides the error when reading the file fails', async () => {
-    inlineUnsupported()
-    const detachedVideos = captureDetachedVideos()
-    const r = renderRecorder()
-    await advance(0)
-
-    await act(async () => selectFile(r.fileInput(), videoFile()))
-    const [probe] = detachedVideos()
-    Object.defineProperty(probe, 'duration', { value: 3 })
-    HTMLCanvasElement.prototype.getContext.mockImplementation(() => null)
-    await act(async () => probe.dispatchEvent(new Event('loadeddata')))
-
-    const [error] = r.callbacks.onError.mock.calls[0]
-    expect(error).toBeInstanceOf(TypeError)
-    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
-    // The input view is still shown instead of the error view. (3.x also hid
-    // every button; that part was in the shared default actions.)
-    expect(r.container.textContent).not.toContain('Oh snap!')
-    expect(takeConsole('error')).toEqual([['Captured error', error]])
-  })
-
-  it.skipIf(IS_LEGACY)('shows the error and lets you pick another file when reading one fails', async () => {
+  it('shows the error and lets you pick another file when reading one fails', async () => {
     inlineUnsupported()
     vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
     const detachedVideos = captureDetachedVideos()

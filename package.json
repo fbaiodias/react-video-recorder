@@ -57,8 +57,8 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "test:unit": "vitest run --project \"unit-*\"",
-    "test:watch": "vitest --project unit-hooks",
+    "test:unit": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
     "test:e2e": "playwright test --project chromium --project firefox",
     "test:visual": "playwright test --project visual",
     "lint": "eslint .",
@@ -92,17 +92,19 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      {
+        "name": "next",
+        "prerelease": true
+      }
     ]
   },
   "peerDependencies": {
-    "prop-types": "^15.7.2",
-    "react": "^16.8.3 || ^17.0.0",
-    "react-dom": "^16.8.3 || ^17.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "fix-webm-duration": "^1.0.4",
-    "lodash.merge": "^4.5.0"
+    "fix-webm-duration": "^1.0.4"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -113,10 +115,8 @@
     "@storybook/react-vite": "^10.6.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
-    "@types/lodash.merge": "^4.6.9",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@types/styled-components": "^5.1.36",
     "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",
@@ -126,14 +126,12 @@
     "lint-staged": "^10.4.0",
     "neostandard": "^0.14.1",
     "prettier": "^2.1.2",
-    "prop-types": "^15.7.2",
     "publint": "^0.3.25",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^3.0.2",
     "semantic-release": "^17.2.3",
     "storybook": "^10.6.3",
-    "styled-components": "4",
     "typescript": "~6.0.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"

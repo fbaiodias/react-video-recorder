@@ -1,6 +1,5 @@
 import { forwardRef, useImperativeHandle } from 'react'
 import type { ReactElement } from 'react'
-import PropTypes from 'prop-types'
 
 import UnsupportedView from './defaults/unsupported-view.tsx'
 import ErrorView from './defaults/error-view.tsx'
@@ -222,50 +221,5 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
     )
   }
 )
-
-VideoRecorder.propTypes = {
-  isOnInitially: PropTypes.bool,
-  isFlipped: PropTypes.bool,
-  mimeType: PropTypes.string,
-  countdownTime: PropTypes.number,
-  timeLimit: PropTypes.number,
-  showReplayControls: PropTypes.bool,
-  replayVideoAutoplayAndLoopOff: PropTypes.bool,
-  constraints: PropTypes.shape({
-    audio: PropTypes.any,
-    video: PropTypes.any
-  }),
-  chunkSize: PropTypes.number,
-  dataAvailableTimeout: PropTypes.number,
-  useVideoInput: PropTypes.bool,
-  videoControlsList: PropTypes.string,
-  disablePictureInPicture: PropTypes.bool,
-
-  renderDisconnectedView: PropTypes.func,
-  renderLoadingView: PropTypes.func,
-  renderVideoInputView: PropTypes.func,
-  renderUnsupportedView: PropTypes.func,
-  renderErrorView: PropTypes.func,
-  renderActions: PropTypes.func,
-
-  cameraViewClassName: PropTypes.string,
-  videoClassName: PropTypes.string,
-  wrapperClassName: PropTypes.string,
-
-  t: PropTypes.func,
-
-  onCameraOn: PropTypes.func,
-  onTurnOnCamera: PropTypes.func,
-  onSwitchCamera: PropTypes.func,
-  onTurnOffCamera: PropTypes.func,
-  onStartRecording: PropTypes.func,
-  onStopRecording: PropTypes.func,
-  onPauseRecording: PropTypes.func,
-  onResumeRecording: PropTypes.func,
-  onRecordingComplete: PropTypes.func,
-  onOpenVideoInput: PropTypes.func,
-  onStopReplaying: PropTypes.func,
-  onError: PropTypes.func
-} as never
 
 export default VideoRecorder

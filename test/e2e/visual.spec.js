@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { openHarness, qa } from './helpers'
 
-// Screenshots of every view and overlay, taken from the current
-// styled-components UI. When the styling moves to plain CSS, these should
-// still match pixel for pixel. Run with `yarn test:visual`; baselines are
-// macOS-specific, so CI skips this project.
+// Screenshots of every view and overlay. The baselines were taken from the
+// 3.x styled-components UI, which the plain CSS matches pixel for pixel.
+// Run with `yarn test:visual`; baselines are macOS-specific, so CI skips this
+// project.
 
 test.use({ viewport: { width: 640, height: 480 } })
 

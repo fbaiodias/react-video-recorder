@@ -155,8 +155,9 @@ export interface VideoRecorderController {
 }
 
 /**
- * What a ref to <VideoRecorder> exposes. These are the method names the class
- * component had, kept so apps that called them through a ref keep working.
+ * What a ref to <VideoRecorder> exposes. These are the method names the 3.x
+ * class component had, kept so apps that called them through a ref keep
+ * working.
  */
 export interface VideoRecorderHandle {
   turnOnCamera: (deviceId?: string | null) => void

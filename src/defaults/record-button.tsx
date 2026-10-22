@@ -1,5 +1,4 @@
 import type { ComponentPropsWithoutRef } from 'react'
-import PropTypes from 'prop-types'
 import type { Translate } from './render-actions.tsx'
 import { cx, useStyles } from '../styles.ts'
 
@@ -35,10 +34,6 @@ const RecordButton = ({
       </div>
     </div>
   )
-}
-
-RecordButton.propTypes = {
-  t: PropTypes.func
 }
 
 export default RecordButton

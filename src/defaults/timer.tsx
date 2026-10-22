@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
-import PropTypes from 'prop-types'
 import { cx, useStyles } from '../styles.ts'
 
 export interface TimerProps extends ComponentPropsWithoutRef<'div'> {
@@ -55,12 +54,6 @@ const Timer = ({
       {formatSeconds(seconds) || defaultText || '0:00'}
     </div>
   )
-}
-
-Timer.propTypes = {
-  timeLimit: PropTypes.number,
-  defaultText: PropTypes.string,
-  isPaused: PropTypes.bool
 }
 
 export default Timer

@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react'
 import { useVideoRecorder } from '../../src/use-video-recorder'
 import { installFakeMedia, mediaError } from './fake-media'
 import { takeConsole } from './console-capture'
-import { IS_LEGACY, advance } from './helpers'
+import { advance } from './helpers'
 
 // A minimal custom UI on top of the hook, like an app would build.
 let controller
@@ -24,7 +24,7 @@ const CustomRecorder = (options) => {
 const status = () => screen.getByTestId('status').textContent
 const run = (fn) => act(async () => fn())
 
-describe.skipIf(IS_LEGACY)('useVideoRecorder', () => {
+describe('useVideoRecorder', () => {
   it('reports its status through a recording', async () => {
     const media = installFakeMedia()
     const onRecordingComplete = () => {}

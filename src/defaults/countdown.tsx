@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import { useStyles } from '../styles.ts'
 
 export interface CountdownProps {
@@ -19,10 +18,6 @@ const Countdown = ({ countdownTime }: CountdownProps) => {
   }, [number])
 
   return <div className='rvr-countdown'>{number !== 0 ? number : null}</div>
-}
-
-Countdown.propTypes = {
-  countdownTime: PropTypes.number
 }
 
 export default Countdown

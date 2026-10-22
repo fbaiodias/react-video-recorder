@@ -8,7 +8,6 @@ import {
 } from './fake-media'
 import { takeConsole } from './console-capture'
 import {
-  IS_LEGACY,
   actionCallbackNames,
   actionFlags,
   advance,
@@ -44,31 +43,23 @@ describe('renderActions', () => {
     const r = renderRecorder({ timeLimit: 5000, showReplayControls: true })
     const states = {}
 
-    const pausedFlags = []
-    const flags = (args) => {
-      // The class never passed isPaused; the rest must match.
-      const { isPaused, ...rest } = actionFlags(args)
-      pausedFlags.push(isPaused)
-      return rest
-    }
-    states.firstRender = flags(r.renderActions.mock.calls[0][0])
+    states.firstRender = actionFlags(r.renderActions.mock.calls[0][0])
     await advance(0)
-    states.disconnected = flags(r.actions())
+    states.disconnected = actionFlags(r.actions())
     await click(r.byQa('turn-on-camera'))
-    states.connecting = flags(r.actions())
+    states.connecting = actionFlags(r.actions())
     await act(async () => pending.resolve(new FakeMediaStream({})))
-    states.cameraOnNotReady = flags(r.actions())
+    states.cameraOnNotReady = actionFlags(r.actions())
     await advance(200)
-    states.ready = flags(r.actions())
+    states.ready = actionFlags(r.actions())
     await click(r.byQa('start-recording'))
-    states.countdown = flags(r.actions())
+    states.countdown = actionFlags(r.actions())
     await advance(3000)
-    states.recording = flags(r.actions())
+    states.recording = actionFlags(r.actions())
     await advance(1000)
     await click(r.byQa('stop-recording'))
-    states.replaying = flags(r.actions())
+    states.replaying = actionFlags(r.actions())
 
-    expect(new Set(pausedFlags)).toEqual(new Set([IS_LEGACY ? undefined : false]))
     expect(states).toMatchInlineSnapshot(`
       {
         "cameraOnNotReady": {
@@ -76,6 +67,7 @@ describe('renderActions', () => {
           "isCameraOn": true,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -93,6 +85,7 @@ describe('renderActions', () => {
           "isCameraOn": false,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -110,6 +103,7 @@ describe('renderActions', () => {
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -127,6 +121,7 @@ describe('renderActions', () => {
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -144,6 +139,7 @@ describe('renderActions', () => {
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": null,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -161,6 +157,7 @@ describe('renderActions', () => {
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -178,6 +175,7 @@ describe('renderActions', () => {
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": true,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -195,6 +193,7 @@ describe('renderActions', () => {
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": false,
           "isReplayingVideo": true,
@@ -219,14 +218,13 @@ describe('renderActions', () => {
     const r = renderRecorder()
     await click(r.byQa('turn-on-camera'))
     takeConsole('error')
-    const { isPaused, ...flags } = r.flags()
-    expect(isPaused).toBe(IS_LEGACY ? undefined : false)
-    expect(flags).toMatchInlineSnapshot(`
+    expect(r.flags()).toMatchInlineSnapshot(`
       {
         "countdownTime": 3000,
         "isCameraOn": false,
         "isConnecting": false,
         "isInlineRecordingSupported": true,
+        "isPaused": false,
         "isRecording": false,
         "isReplayVideoMuted": true,
         "isReplayingVideo": false,
@@ -360,26 +358,7 @@ describe('class name props', () => {
     )
   })
 
-  it.runIf(IS_LEGACY)('[known bug] applies cameraViewClassName and videoClassName only to the replay', async () => {
-    installFakeMedia()
-    const r = renderRecorder({
-      cameraViewClassName: 'my-camera-view',
-      videoClassName: 'my-video'
-    })
-    await turnOnCamera(r)
-    expect(r.container.querySelector('.my-camera-view')).toBeNull()
-    expect(r.container.querySelector('.my-video')).toBeNull()
-
-    await startRecording(r)
-    await advance(500)
-    await click(r.byQa('stop-recording'))
-    expect(r.video().classList.contains('my-video')).toBe(true)
-    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(
-      true
-    )
-  })
-
-  it.skipIf(IS_LEGACY)('applies cameraViewClassName and videoClassName to the camera and the replay', async () => {
+  it('applies cameraViewClassName and videoClassName to the camera and the replay', async () => {
     installFakeMedia()
     const r = renderRecorder({
       cameraViewClassName: 'my-camera-view',
@@ -519,14 +498,7 @@ describe('styles that depend on props', () => {
     expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
   })
 
-  it.runIf(IS_LEGACY)('[known bug] mirrors a rear camera too', async () => {
-    installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
-    const r = renderRecorder()
-    await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
-  })
-
-  it.skipIf(IS_LEGACY)('does not mirror a rear camera', async () => {
+  it('does not mirror a rear camera', async () => {
     installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
     const r = renderRecorder()
     await turnOnCamera(r)
