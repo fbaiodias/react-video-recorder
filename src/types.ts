@@ -131,17 +131,17 @@ export interface VideoRecorderController {
   stopRecording: () => void
   pauseRecording: () => void
   resumeRecording: () => void
-  /** Opens the file input (needs videoInputRef on an <input type="file">) */
+  /** Opens the file input (needs setVideoInput on an <input type="file">) */
   openVideoInput: () => void
   /** Leaves the replay: back to the camera (with isOnInitially) or the start */
   stopReplaying: () => void
 
   /** Attach to the <video> that shows the camera */
-  cameraVideoRef: (element: HTMLVideoElement | null) => void
+  setCameraVideo: (element: HTMLVideoElement | null) => void
   /** Attach to the <video> that replays the recording */
-  replayVideoRef: (element: HTMLVideoElement | null) => void
+  setReplayVideo: (element: HTMLVideoElement | null) => void
   /** Attach to the <input type="file"> used for picking or capturing a video */
-  videoInputRef: (element: HTMLInputElement | null) => void
+  setVideoInput: (element: HTMLInputElement | null) => void
   /** The file input's onChange handler */
   handleVideoInputChange: (event: Event | { target: EventTarget | null }) => void
   /** The replay video's onClick handler: toggles mute (and plays if paused) */

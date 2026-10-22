@@ -735,13 +735,13 @@ function createRecorder (
     mount,
     runInitialAction,
     unmount,
-    cameraVideoRef: (element: HTMLVideoElement | null) => {
+    setCameraVideo: (element: HTMLVideoElement | null) => {
       r.cameraVideo = element
     },
-    replayVideoRef: (element: HTMLVideoElement | null) => {
+    setReplayVideo: (element: HTMLVideoElement | null) => {
       r.replayVideo = element
     },
-    videoInputRef: (element: HTMLInputElement | null) => {
+    setVideoInput: (element: HTMLInputElement | null) => {
       r.videoInput = element
     }
   }
@@ -800,8 +800,8 @@ export function useVideoRecorder (
     stopReplaying: recorder.stopReplaying,
     handleVideoInputChange: recorder.handleVideoInputChange,
     handleReplayVideoClick: recorder.handleReplayVideoClick,
-    cameraVideoRef: recorder.cameraVideoRef,
-    replayVideoRef: recorder.replayVideoRef,
-    videoInputRef: recorder.videoInputRef
+    setCameraVideo: recorder.setCameraVideo,
+    setReplayVideo: recorder.setReplayVideo,
+    setVideoInput: recorder.setVideoInput
   }
 }

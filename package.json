@@ -69,8 +69,8 @@
     "prebuild": "yarn run clean",
     "prepack": "yarn run build",
     "start": "yarn run storybook",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "semantic-release": "semantic-release"
   },
   "husky": {
@@ -106,22 +106,11 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@babel/core": "^7.3.3",
-    "@babel/plugin-proposal-class-properties": "^7.3.3",
-    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
-    "@babel/plugin-transform-runtime": "^7.2.0",
-    "@babel/plugin-transform-typescript": "^7.28.6",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/preset-react": "^7.0.0",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "@playwright/test": "^1.64.1",
-    "@storybook/addon-actions": "^6.0.21",
-    "@storybook/addon-info": "^5.3.21",
-    "@storybook/addon-knobs": "^6.0.21",
-    "@storybook/addon-options": "^5.3.21",
-    "@storybook/addons": "^6.0.21",
-    "@storybook/react": "^6.0.21",
+    "@storybook/addon-docs": "^10.6.3",
+    "@storybook/react-vite": "^10.6.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/lodash.merge": "^4.6.9",
@@ -129,8 +118,6 @@
     "@types/react-dom": "^18.3.7",
     "@types/styled-components": "^5.1.36",
     "@vitest/eslint-plugin": "^1.6.27",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-styled-components": "^1.10.6",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -145,6 +132,7 @@
     "react-dom": "^18.3.1",
     "rimraf": "^3.0.2",
     "semantic-release": "^17.2.3",
+    "storybook": "^10.6.3",
     "styled-components": "4",
     "typescript": "~6.0.3",
     "vite": "^8.3.5",
@@ -157,6 +145,11 @@
   },
   "license": "MIT",
   "resolutions": {
-    "@types/react": "^18.3.31"
+    "@types/react": "^18.3.31",
+    "@babel/parser": "^7.29.9",
+    "@babel/types": "^7.29.8",
+    "@babel/traverse": "^7.29.10",
+    "@babel/generator": "^7.29.8",
+    "@babel/template": "^7.29.7"
   }
 }

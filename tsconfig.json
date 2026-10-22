@@ -16,5 +16,6 @@
     "types": []
   },
   "include": ["src"],
-  "exclude": ["src/**/*.stories.js"]
+  // Stories run in Storybook (Vite), whose types bring in Node's timers.
+  "exclude": ["src/**/*.stories.tsx"]
 }

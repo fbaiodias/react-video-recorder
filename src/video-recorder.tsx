@@ -89,7 +89,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       const videoInput = shouldUseVideoInput
         ? (
             <input
-              ref={recorder.videoInputRef}
+              ref={recorder.setVideoInput}
               key='videoInput'
               type='file'
               accept='video/*'
@@ -107,7 +107,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
             className={cx('rvr-camera-view', cameraViewClassName)}
           >
             <video
-              ref={recorder.replayVideoRef}
+              ref={recorder.setReplayVideo}
               className={cx('rvr-video', 'rvr-video--clickable', videoClassName)}
               src={state.videoUrl}
               loop
@@ -149,7 +149,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
           <div key='camera' className='rvr-camera-view'>
             <video
               className={cx('rvr-video', isFlipped && 'rvr-video--flipped')}
-              ref={recorder.cameraVideoRef}
+              ref={recorder.setCameraVideo}
               autoPlay
               muted
               playsInline

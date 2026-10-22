@@ -8,5 +8,5 @@
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src"
   },
-  "exclude": ["src/**/*.stories.js", "src/**/*.legacy.tsx"]
+  "exclude": ["src/**/*.stories.tsx", "src/**/*.legacy.tsx"]
 }
