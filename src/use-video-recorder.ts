@@ -255,8 +255,11 @@ function createRecorder (
     }
 
     stopStream(r.stream)
+    clearTimeout(r.countdownTimeout)
     setState({
-      isCameraOn: false
+      isCameraOn: false,
+      // A countdown can't end in a recording without the camera.
+      ...(getState().isRunningCountdown ? { isRunningCountdown: false } : {})
     })
   }
 
@@ -489,6 +492,7 @@ function createRecorder (
   }
 
   function recordAfterCountdown () {
+    // Rejects when the camera <video> is gone; handleError reports it.
     captureThumb(r.cameraVideo!).then((thumbnail) => {
       r.thumbnail = thumbnail
 
@@ -535,7 +539,7 @@ function createRecorder (
         console.error("Couldn't create MediaRecorder", err, options)
         handleError(err as Error)
       }
-    })
+    }, handleError)
   }
 
   function handleStop (event: Event) {

@@ -195,6 +195,19 @@ describe('recording a video inline', () => {
     expect(media.recorders).toHaveLength(1)
   })
 
+  it.skipIf(IS_LEGACY)('cancels the countdown when the camera turns off', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await click(r.byQa('start-recording'))
+    await act(async () => r.actions().onTurnOffCamera())
+    expect(r.flags().isRunningCountdown).toBe(false)
+    await advance(5000)
+    expect(media.recorders).toHaveLength(0)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    expect(r.byQa('turn-on-camera')).not.toBeNull()
+  })
+
   it('starts right away with countdownTime 0', async () => {
     const media = installFakeMedia()
     const r = renderRecorder({ countdownTime: 0 })
