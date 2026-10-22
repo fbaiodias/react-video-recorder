@@ -126,6 +126,16 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
         )
       }
 
+      if (shouldUseVideoInput && thereWasAnError) {
+        // Keep the hidden input, so picking another file can retry.
+        return (
+          <>
+            {renderErrorView({ error })}
+            {videoInput}
+          </>
+        )
+      }
+
       if (shouldUseVideoInput) {
         return renderVideoInputView({ videoInput })
       }

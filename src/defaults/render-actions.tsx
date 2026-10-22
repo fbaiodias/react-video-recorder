@@ -79,7 +79,9 @@ const Actions = ({
 
     if (
       (!isInlineRecordingSupported && !isVideoInputSupported) ||
-      thereWasAnError ||
+      // With a file input there's nothing to restart: picking another file
+      // is the way to retry, so its button stays.
+      (thereWasAnError && !useVideoInput && !shouldUseVideoInput) ||
       isConnecting ||
       isRunningCountdown
     ) {

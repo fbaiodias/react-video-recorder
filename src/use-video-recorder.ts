@@ -614,6 +614,10 @@ function createRecorder (
       (e as unknown as DragEvent).dataTransfer!.files
     if (files.length === 0) return
 
+    if (getState().thereWasAnError) {
+      setState({ thereWasAnError: false, error: null })
+    }
+
     const startedAt = new Date().getTime()
     const video = files[0]
 
