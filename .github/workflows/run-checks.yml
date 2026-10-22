@@ -45,7 +45,7 @@ jobs:
 
       - name: Run commit message linter
         if: matrix.react == 18
-        uses: wagoid/commitlint-github-action@v4
+        uses: wagoid/commitlint-github-action@v6
 
       - name: Run linter
         run: pnpm lint
