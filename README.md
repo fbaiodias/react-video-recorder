@@ -66,7 +66,8 @@ const App = () => (
   time, and `extension` is `'mov'` for QuickTime files.
 - `onError(error)`: an `Error` (see [errors](#errors)), a `DOMException` from
   the browser (e.g. `NotAllowedError` when camera access is denied), or the
-  MediaRecorder's `error` event. The error view is shown.
+  MediaRecorder's `error` event. The error view is shown. `getErrorCode(error)`
+  tells what kind of problem it is.
 - `onTurnOnCamera`, `onCameraOn` (the stream arrived), `onTurnOffCamera`,
   `onSwitchCamera`, `onStartRecording` (the countdown starts),
   `onStopRecording`, `onPauseRecording`, `onResumeRecording`,
@@ -78,7 +79,8 @@ Each view can be replaced:
 
 - `renderDisconnectedView()`: before the camera is on.
 - `renderLoadingView()`: while the camera starts.
-- `renderErrorView({ error })`
+- `renderErrorView({ error, errorCode, t })`: see [errors](#errors) for the
+  codes. The default view says when the camera is blocked, missing or in use.
 - `renderUnsupportedView()`: the browser can't record video.
 - `renderVideoInputView({ videoInput })`: the file input fallback. Render
   `videoInput`, a hidden `<input type="file">`.
@@ -86,11 +88,20 @@ Each view can be replaced:
 `renderActions(props)` draws everything on top of the views: the buttons, the
 countdown and the timer. It receives the recorder's state (`isCameraOn`,
 `streamIsReady`, `isConnecting`, `isRunningCountdown`, `isRecording`,
-`isPaused`, `isReplayingVideo`, `thereWasAnError`, ...), some props
-(`countdownTime`, `timeLimit`, `useVideoInput`, `t`, ...) and the actions:
-`onTurnOnCamera`, `onTurnOffCamera`, `onSwitchCamera`, `onStartRecording`,
-`onStopRecording`, `onPauseRecording`, `onResumeRecording`,
-`onOpenVideoInput` and `onStopReplaying`. The type is `RenderActionsProps`.
+`isPaused`, `isReplayingVideo`, `thereWasAnError`, ...), the cameras
+(`devices`, `currentDeviceId`), some props (`countdownTime`, `timeLimit`,
+`useVideoInput`, `t`, ...) and the actions: `onTurnOnCamera`,
+`onTurnOffCamera`, `onSwitchCamera`, `onSelectDevice(deviceId)`,
+`onStartRecording`, `onStopRecording`, `onPauseRecording`,
+`onResumeRecording`, `onOpenVideoInput` and `onStopReplaying`. The type is
+`RenderActionsProps`.
+
+The record button becomes available once the camera's video is playing (or
+after 1 second if it doesn't), so recordings don't start on a camera that's
+still warming up.
+
+The default controls have accessible names ("Start recording", "Stop
+recording", "Switch camera"), translated through `t` like the other texts.
 
 The default implementations can be reused:
 
@@ -105,8 +116,31 @@ import Countdown from 'react-video-recorder/lib/defaults/countdown'
 
 The default UI uses plain CSS classes starting with `rvr-` (`rvr-wrapper`,
 `rvr-video`, `rvr-button`, `rvr-record-button`, `rvr-timer`, ...). The styles
-are added to the page on first render, before any other stylesheet, so your
-own rules with the same specificity win.
+are added to the page on first render, in a cascade layer
+(`@layer react-video-recorder`), so any style of your own overrides them,
+whatever its specificity. (Browsers from before cascade layers, such as
+Safari before 15.4, ignore the default styles.)
+
+To restyle without overriding rules, set the theme variables, e.g. on
+`:root` or a parent element:
+
+```css
+.my-recorder {
+  --rvr-background: #111; /* behind the video */
+  --rvr-color: white; /* text */
+  --rvr-accent: rgb(0 120 255 / 0.8); /* record and stop buttons */
+  --rvr-accent-hover: rgb(0 120 255);
+  --rvr-highlight: #4af; /* "REC" */
+  --rvr-ring: rgb(255 255 255 / 0.4); /* around the record and stop buttons */
+  --rvr-recording-dot: red; /* in the timer */
+  --rvr-button-background: white; /* "Turn my camera ON", ... */
+  --rvr-button-color: black;
+  --rvr-button-hover-background: #eee;
+  --rvr-switch-camera-background: rgb(0 0 0 / 0.3);
+  --rvr-font-family: system-ui;
+  --rvr-mono-font-family: ui-monospace, monospace; /* countdown and timer */
+}
+```
 
 If your Content-Security-Policy doesn't allow inline styles, load the
 stylesheet yourself:
@@ -125,7 +159,7 @@ import { useVideoRecorder } from 'react-video-recorder'
 const Recorder = () => {
   const {
     status, // 'idle', 'connecting', 'ready', 'countdown', 'recording', 'paused', 'replaying', 'error', ...
-    state, // e.g. state.videoUrl, state.error, state.availableDeviceIds
+    state, // e.g. state.videoUrl, state.devices, state.permission, state.errorCode
     setCameraVideo,
     setReplayVideo,
     turnOnCamera,
@@ -161,21 +195,43 @@ const Recorder = () => {
 It takes the same options and callbacks as the component's behavior props
 (everything but the `render*`, class name, `t`, `isFlipped` and replay
 attribute props). Besides the actions above it returns `turnOffCamera`,
-`switchCamera`, `pauseRecording`, `resumeRecording`, `openVideoInput`, and,
-for a file input fallback, `setVideoInput` and `handleVideoInputChange`.
-Destructure the result: the React Compiler's lint rules treat an object
-holding callback refs as a ref.
+`switchCamera`, `selectDevice(deviceId)`, `pauseRecording`,
+`resumeRecording`, `openVideoInput`, and, for a file input fallback,
+`setVideoInput` and `handleVideoInputChange`. Destructure the result: the
+React Compiler's lint rules treat an object holding callback refs as a ref.
+
+Some of the state:
+
+- `devices`: the cameras as `{ deviceId, label }`, for a camera picker.
+  Browsers only give labels once camera access is granted, so it fills in
+  when the camera turns on, and updates when cameras are plugged in or out.
+- `permission`: `'prompt'`, `'granted'` or `'denied'`, kept up to date
+  through the Permissions API, or `'unknown'` where the browser can't say.
+- `errorCode`: see [errors](#errors).
+
+Without a camera preview (no `setCameraVideo`), the camera is ready as soon
+as its stream arrives.
+
+The component, the hook and the default UI pieces are marked
+`'use client'`, so they work from React Server Components (e.g. Next.js's
+App Router) without a wrapper.
 
 ### Ref
 
 A ref to `<VideoRecorder>` has the actions under their 3.x names:
 `turnOnCamera`, `turnOffCamera`, `handleSwitchCamera`, `handleStartRecording`,
 `handleStopRecording`, `handlePauseRecording`, `handleResumeRecording`,
-`handleOpenVideoInput` and `handleStopReplaying`, plus the current `state`.
+`handleOpenVideoInput` and `handleStopReplaying`, plus `selectDevice` and the
+current `state`.
 
 ### Errors
 
-These are exported, and `onError` can receive them (check `error.name`):
+`getErrorCode(error)` (exported) sorts what `onError` receives into:
+`'permission-denied'`, `'no-camera'`, `'camera-in-use'`, `'no-data'`,
+`'recorder-failed'` or `'unknown'`. The hook's state has it as `errorCode`.
+
+These error classes are exported, and `onError` can receive them (check
+`error.name`):
 
 - `ReactVideoRecorderDataAvailableTimeoutError`: no data arrived in time
   (see `dataAvailableTimeout`).
@@ -196,8 +252,9 @@ The props, callbacks, `renderActions` arguments, default UI and import paths
 - **Built-in types.** Uninstall `@types/react-video-recorder`.
 - **Styles.** The default UI is plain CSS and looks the same, but the
   generated `sc-*` class names are gone: target the `rvr-*` classes or the
-  `*ClassName` props. The default `Button` takes `color` and `backgroundColor`
-  as before, but not styled-components' `as` prop.
+  `*ClassName` props. The styles are in a cascade layer, so your own rules
+  now win even when they're less specific. The default `Button` takes `color`
+  and `backgroundColor` as before, but not styled-components' `as` prop.
 - **Function component.** A ref exposes the actions and `state` (see
   [Ref](#ref)), not other class internals, and `VideoRecorder.defaultProps` is
   gone.
@@ -208,9 +265,13 @@ The props, callbacks, `renderActions` arguments, default UI and import paths
   forced the first camera's `deviceId`, which overrode `facingMode`.
   Switching cameras asks for the next camera's `deviceId`. Rear cameras
   aren't mirrored.
-- **Timing.** `dataAvailableTimeout` now counts from when the first chunk is
-  due, so the error comes `chunkSize` ms later (750ms by default). With a
-  `timeLimit`, paused time no longer counts.
+- **Timing.** The record button appears when the camera's video plays,
+  instead of a fixed 200ms after the stream arrives. `dataAvailableTimeout`
+  now counts from when the first chunk is due, so the error comes `chunkSize`
+  ms later (750ms by default). With a `timeLimit`, paused time no longer
+  counts.
+- **Error view.** It says when the camera is blocked, missing or in use, and
+  its texts go through `t`. Other errors keep the 3.x message.
 - **Fixes.** It works under `React.StrictMode`, cleans up the camera and
   recorder on unmount, stops recording on errors, shows the new camera after
   switching, pauses the timer, and doesn't require `onRecordingComplete`.
