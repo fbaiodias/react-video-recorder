@@ -605,12 +605,6 @@ function createRecorder(
     if (isSafari) {
       return Promise.resolve(rawVideoBlob)
     }
-    // see https://stackoverflow.com/a/63568311
-    // oxlint-disable-next-line typescript/unbound-method -- only checks it exists
-    Blob.prototype.arrayBuffer ??= function (this: Blob) {
-      return new Response(this).arrayBuffer()
-    }
-
     return fixWebmDuration(rawVideoBlob, r.recordingDuration)
   }
 
