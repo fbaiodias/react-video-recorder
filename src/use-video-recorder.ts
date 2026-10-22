@@ -91,6 +91,10 @@ export function getStatus(state: VideoRecorderState): VideoRecorderStatus {
 
 type Timeout = ReturnType<typeof setTimeout>
 
+// How long to wait for the camera <video> to play before enabling recording
+// anyway.
+const STREAM_READY_FALLBACK_MS = 1000
+
 // The constraints, asking for this exact camera.
 function withDevice(
   constraints: MediaStreamConstraints,
@@ -121,6 +125,7 @@ interface Internals {
   generation: number
   initialActionPending: boolean
   stream?: MediaStream
+  readyStream?: MediaStream
   mediaRecorder?: MediaRecorder
   recordedBlobs: Blob[]
   thumbnail: Blob | null
@@ -297,16 +302,6 @@ function createRecorder(
         })
       })
       .catch(() => {})
-
-    // there is probably a better way
-    // but this makes sure the start recording button
-    // gives the stream a couple miliseconds to be ready
-    r.streamReadyTimeout = setTimeout(() => {
-      setState({
-        isConnecting: false,
-        streamIsReady: true
-      })
-    }, 200)
   }
 
   function handleError(err: VideoRecorderError) {
@@ -764,14 +759,39 @@ function createRecorder(
   }
 
   // Shows the stream in the camera <video>.
+  // Shows the stream in the camera <video>. The camera counts as ready (and
+  // the record button appears) once that video plays, so recording doesn't
+  // start on a camera that's still warming up.
   function showStream(stream: MediaStream | undefined) {
-    // Only if the cameraVideo ref is available
-    if (window.URL && r.cameraVideo) {
-      r.cameraVideo.srcObject = stream!
-    } else {
-      // For browsers without srcObject. Throws when the ref isn't set.
-      r.cameraVideo!.src = stream as unknown as string
+    const video = r.cameraVideo
+    if (!stream) return
+    if (!video) {
+      // A custom UI without a camera preview: nothing to wait for.
+      markStreamReady(stream)
+      return
     }
+
+    video.srcObject = stream
+    video.addEventListener('playing', () => markStreamReady(stream), {
+      once: true
+    })
+    // A hidden tab or blocked autoplay can keep it from playing.
+    clearTimeout(r.streamReadyTimeout)
+    r.streamReadyTimeout = setTimeout(
+      () => markStreamReady(stream),
+      STREAM_READY_FALLBACK_MS
+    )
+  }
+
+  function markStreamReady(stream: MediaStream) {
+    // Ignore a stream that was replaced, or one that's already ready.
+    if (stream !== r.stream || r.readyStream === stream) return
+    r.readyStream = stream
+    clearTimeout(r.streamReadyTimeout)
+    setState({
+      isConnecting: false,
+      streamIsReady: true
+    })
   }
 
   return {

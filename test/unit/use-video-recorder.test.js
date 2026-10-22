@@ -74,6 +74,21 @@ describe('useVideoRecorder', () => {
     expect(status()).toBe('idle')
   })
 
+  it('is ready as soon as the stream arrives without a camera preview', async () => {
+    installFakeMedia({ videoPlaysAfter: null })
+    const NoPreview = () => {
+      const { status, turnOnCamera } = useVideoRecorder()
+      useLayoutEffect(() => {
+        controller = { turnOnCamera }
+      })
+      return <p data-testid='status'>{status}</p>
+    }
+    render(<NoPreview />)
+    await advance(0)
+    await run(() => controller.turnOnCamera())
+    expect(status()).toBe('ready')
+  })
+
   it("reports 'error' with the error in state", async () => {
     const media = installFakeMedia()
     const error = mediaError('NotAllowedError')

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { act, screen } from '@testing-library/react'
 import fixWebmDuration from 'fix-webm-duration'
-import { installFakeMedia } from './fake-media'
+import { installFakeMedia, videoDevice } from './fake-media'
 import { takeConsole } from './console-capture'
 import {
   advance,
@@ -29,9 +29,7 @@ describe('recording a video inline', () => {
     expect(r.video().srcObject).toBe(media.lastStream)
     expect(r.video().autoplay).toBe(true)
     expect(r.video().muted).toBe(true)
-    // The record button waits 200ms after the stream arrives.
-    expect(r.byQa('start-recording')).toBeNull()
-    await advance(199)
+    // The record button waits for the camera video to play.
     expect(r.byQa('start-recording')).toBeNull()
     await advance(1)
     expect(r.byQa('start-recording').textContent).toBe('')
@@ -90,7 +88,7 @@ describe('recording a video inline', () => {
     ])
 
     const replay = r.video()
-    expect(replay.srcObject).toBeUndefined()
+    expect(replay.srcObject).toBeNull()
     expect(replay.getAttribute('src')).toBe('blob:fake/1')
     expect(URL.createObjectURL).toHaveBeenCalledWith(videoBlob)
     expect(replay.loop).toBe(true)
@@ -113,6 +111,48 @@ describe('recording a video inline', () => {
     const r = renderRecorder({ onRecordingComplete: undefined })
     await recordVideo(r)
     expect(r.byQa('start-replaying')).not.toBeNull()
+  })
+
+  it('enables recording when the camera video starts playing', async () => {
+    installFakeMedia({ videoPlaysAfter: 600 })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.flags()).toMatchObject({ isCameraOn: true, isConnecting: true })
+    await advance(599)
+    expect(r.byQa('start-recording')).toBeNull()
+    await advance(1)
+    expect(r.byQa('start-recording')).not.toBeNull()
+    expect(r.flags()).toMatchObject({
+      isConnecting: false,
+      streamIsReady: true
+    })
+  })
+
+  it("enables recording after 1s if the camera video doesn't play", async () => {
+    installFakeMedia({ videoPlaysAfter: null })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    await advance(999)
+    expect(r.byQa('start-recording')).toBeNull()
+    await advance(1)
+    expect(r.byQa('start-recording')).not.toBeNull()
+  })
+
+  it('waits for the new camera to play after switching', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')],
+      videoPlaysAfter: 300
+    })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    await advance(300)
+    await click(r.video().nextElementSibling)
+    expect(r.flags().isConnecting).toBe(true)
+    await advance(299)
+    expect(r.flags().isConnecting).toBe(true)
+    await advance(1)
+    expect(r.flags().isConnecting).toBe(false)
+    expect(r.video().srcObject).toBe(media.lastStream)
   })
 
   it('turns the camera back on after replaying when isOnInitially is set', async () => {

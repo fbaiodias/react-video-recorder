@@ -142,6 +142,9 @@ export function installFakeMedia({
   recorderEmitsData = true,
   // Like browsers, list cameras with empty ids until access is granted.
   hideDeviceIdsUntilPermission = false,
+  // When a <video> fires `playing` after getting a camera stream, in ms, or
+  // null for never (jsdom doesn't play media).
+  videoPlaysAfter = 0,
   supportedMimeTypes = [
     'video/webm;codecs="vp8,opus"',
     'video/webm;codecs=h264',
@@ -209,6 +212,23 @@ export function installFakeMedia({
     delete navigator.mediaDevices
   }
 
+  const streams = new WeakMap()
+  Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', {
+    configurable: true,
+    get() {
+      return streams.get(this) ?? null
+    },
+    set(stream) {
+      streams.set(this, stream)
+      if (stream && videoPlaysAfter !== null) {
+        setTimeout(
+          () => this.dispatchEvent(new Event('playing')),
+          videoPlaysAfter
+        )
+      }
+    }
+  })
+
   if (mediaRecorder) {
     media.MediaRecorder = createFakeMediaRecorder(media)
     window.MediaRecorder = media.MediaRecorder
@@ -236,6 +256,7 @@ export function installFakeMedia({
 export function uninstallFakeMedia() {
   delete navigator.mediaDevices
   delete window.MediaRecorder
+  delete HTMLMediaElement.prototype.srcObject
   if (inputCaptureDescriptor) {
     Object.defineProperty(
       HTMLInputElement.prototype,

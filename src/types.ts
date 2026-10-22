@@ -94,7 +94,7 @@ export interface VideoRecorderState {
   isVideoInputSupported: boolean | null
   isConnecting: boolean
   isCameraOn: boolean
-  /** Turns true 200ms after the first camera stream arrives */
+  /** Turns true once the camera video first plays (or 1s after the stream arrives) */
   streamIsReady: boolean
   /** undefined until the first recording starts */
   isRunningCountdown?: boolean
