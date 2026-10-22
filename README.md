@@ -9,11 +9,15 @@ yarn add react-video-recorder
 #       so if you're starting from scratch run this instead:
 yarn add react-video-recorder react react-dom prop-types styled-components
 ```
+
 ### Typescript
+
 If using Typescript, typing is available via:
+
 ```sh
 yarn add -D @types/react-video-recorder
 ```
+
 ## Usage
 
 Basic usage [(edit in stakblitz)](https://stackblitz.com/edit/react-video-recorder-demo):
@@ -91,7 +95,7 @@ Overlay that's rendered on top of the views and that contains the elements like 
 
 Requirements
 
-`node version ">=8.3"`
+`node version ">=22.12"`
 
 Install packages
 
@@ -104,6 +108,20 @@ Run the storybook demo
 ```sh
 yarn start
 ```
+
+### Testing
+
+```sh
+yarn test          # unit tests (jsdom, fake camera) and published-package checks
+yarn test:e2e      # real recordings in Chromium and Firefox with fake cameras
+yarn test:visual   # screenshots of every UI state (macOS baselines, not run in CI)
+```
+
+The browser tests need Playwright's browsers once: `yarn playwright install chromium firefox`.
+
+The unit tests describe what the component does today, bugs included; those
+are named `[known bug] ...`. Fixing one of those bugs should make its test fail,
+and the fix updates the test.
 
 ### Committing
 
