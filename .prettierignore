@@ -4,4 +4,4 @@ test-results
 playwright-report
 test/assets
 test/e2e/visual.spec.js-snapshots
-yarn.lock
+pnpm-lock.yaml

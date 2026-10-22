@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  // Formatting is Prettier's job; this config is about bugs. `yarn lint` runs
+  // Formatting is Prettier's job; this config is about bugs. `pnpm lint` runs
   // it with --type-aware, which adds the TypeScript rules that need types.
   "plugins": [
     "typescript",

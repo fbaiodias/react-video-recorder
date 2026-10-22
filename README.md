@@ -10,9 +10,11 @@ See the [Storybook](https://react-video-recorder.vercel.app/) for demos.
 ## Installation
 
 ```sh
-yarn add react-video-recorder
-# or
 npm install react-video-recorder
+# or
+pnpm add react-video-recorder
+# or
+yarn add react-video-recorder
 ```
 
 It needs `react` and `react-dom` 18 or 19. TypeScript types are included.
@@ -215,29 +217,30 @@ The props, callbacks, `renderActions` arguments, default UI and import paths
 
 ## Development
 
-Requires Node.js 22.12 or newer.
+Requires Node.js 22.12 or newer and [pnpm](https://pnpm.io/installation). The
+version in `packageManager` is downloaded automatically.
 
 ```sh
-yarn install
-yarn start         # Storybook on http://localhost:6006
+pnpm install
+pnpm start         # Storybook on http://localhost:6006
 ```
 
 ### Checks
 
 ```sh
-yarn lint            # Oxlint (with type information) and Prettier's check
-yarn format          # format everything with Prettier
-yarn typecheck       # TypeScript
-yarn test            # unit tests (jsdom with a fake camera) and checks of the built package
-yarn check:package   # publint and are-the-types-wrong on the packed tarball
-yarn test:e2e        # real recordings in Chromium and Firefox with fake cameras
-yarn test:visual     # screenshots of every UI state (macOS baselines, not run in CI)
+pnpm lint            # Oxlint (with type information) and Prettier's check
+pnpm format          # format everything with Prettier
+pnpm typecheck       # TypeScript
+pnpm test            # unit tests (jsdom with a fake camera) and checks of the built package
+pnpm check:package   # publint and are-the-types-wrong on the packed tarball
+pnpm test:e2e        # real recordings in Chromium and Firefox with fake cameras
+pnpm test:visual     # screenshots of every UI state (macOS baselines, not run in CI)
 ```
 
 The browser tests need Playwright's browsers once:
-`yarn playwright install chromium firefox`.
+`pnpm exec playwright install chromium firefox`.
 
-`yarn build` compiles `src/` to `lib/` (CommonJS) and `lib/esm/` (ES modules)
+`pnpm build` compiles `src/` to `lib/` (CommonJS) and `lib/esm/` (ES modules)
 with `tsc`.
 
 ### Committing

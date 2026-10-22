@@ -64,21 +64,16 @@
     "lint": "oxlint --type-aware && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc",
-    "check:package": "yarn run build && publint --pack npm && attw --pack . --exclude-entrypoints styles.css",
+    "check:package": "pnpm run build && publint --pack npm && attw --pack . --exclude-entrypoints styles.css",
     "clean": "rimraf lib",
     "build": "tsc -p tsconfig.build.cjs.json && tsc -p tsconfig.build.esm.json && node scripts/finish-build.mjs",
-    "prebuild": "yarn run clean",
-    "prepack": "yarn run build",
-    "start": "yarn run storybook",
+    "prebuild": "pnpm run clean",
+    "prepack": "pnpm run build",
+    "start": "pnpm run storybook",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "semantic-release": "semantic-release"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && yarn test",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
+    "semantic-release": "semantic-release",
+    "prepare": "husky"
   },
   "lint-staged": {
     "*.{js,mjs,ts,tsx}": [
@@ -116,7 +111,7 @@
     "@testing-library/react": "^16.3.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "husky": "^4.3.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^10.4.0",
     "oxlint": "^1.89.0",
@@ -138,12 +133,5 @@
     "url": "git+https://github.com/fbaiodias/react-video-recorder.git"
   },
   "license": "MIT",
-  "resolutions": {
-    "@types/react": "^18.3.31",
-    "@babel/parser": "^7.29.9",
-    "@babel/types": "^7.29.8",
-    "@babel/traverse": "^7.29.10",
-    "@babel/generator": "^7.29.8",
-    "@babel/template": "^7.29.7"
-  }
+  "packageManager": "pnpm@12.15.0"
 }

@@ -52,7 +52,10 @@ let consumerDir
 let requireFromConsumer
 
 beforeAll(() => {
-  execFileSync('yarn', ['--silent', 'build'], { cwd: root, stdio: 'pipe' })
+  execFileSync('pnpm', ['--silent', 'run', 'build'], {
+    cwd: root,
+    stdio: 'pipe'
+  })
 
   // Resolve the package by name, as an app with it in node_modules would.
   consumerDir = mkdtempSync(join(tmpdir(), 'rvr-consumer-'))

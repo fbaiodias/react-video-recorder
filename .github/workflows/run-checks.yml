@@ -27,41 +27,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Use React 19
         if: matrix.react == 19
-        run: yarn add --dev react@^19 react-dom@^19
+        run: pnpm add --save-dev react@^19 react-dom@^19
 
       - name: Run commit message linter
         if: matrix.react == 18
         uses: wagoid/commitlint-github-action@v4
 
       - name: Run linter
-        run: yarn lint
+        run: pnpm lint
 
       - name: Type-check
-        run: yarn typecheck
+        run: pnpm typecheck
 
       - name: Run unit and package tests
-        run: yarn test
+        run: pnpm test
 
       - name: Check the published package (publint, are-the-types-wrong)
         if: matrix.react == 18
-        run: yarn check:package
+        run: pnpm check:package
 
       - name: Install browsers for browser tests
-        run: yarn playwright install --with-deps chromium firefox
+        run: pnpm exec playwright install --with-deps chromium firefox
 
       - name: Run browser tests
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
       - name: Upload browser test traces
         if: failure()
@@ -83,14 +86,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       # Publishes from main, and prereleases (e.g. 4.0.0-next.1) from next.
       - name: Semantic Release
