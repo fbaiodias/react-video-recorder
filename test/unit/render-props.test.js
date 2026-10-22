@@ -1,4 +1,3 @@
-import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen } from '@testing-library/react'
 import { FakeMediaStream, installFakeMedia, mediaError } from './fake-media'

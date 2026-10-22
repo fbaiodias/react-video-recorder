@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react'
-import type { RenderActionsProps, Translate } from './defaults/render-actions'
+import type { RenderActionsProps, Translate } from './defaults/render-actions.tsx'
 
 export type { RenderActionsProps, Translate }
 

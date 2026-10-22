@@ -1,0 +1,12 @@
+{
+  // Shared by the CommonJS (lib/) and ES module (lib/esm/) builds. ES2019
+  // output keeps ?. and ?? out of lib/ for older bundlers such as webpack 4.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src"
+  },
+  "exclude": ["src/**/*.stories.js", "src/**/*.legacy.tsx"]
+}

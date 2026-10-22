@@ -40,6 +40,9 @@ jobs:
       - name: Run unit and package tests
         run: yarn test
 
+      - name: Check the published package (publint, are-the-types-wrong)
+        run: yarn check:package
+
       - name: Install browsers for browser tests
         run: yarn playwright install --with-deps chromium firefox
 

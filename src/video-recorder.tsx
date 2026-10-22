@@ -1,16 +1,16 @@
-import React, { forwardRef, useImperativeHandle } from 'react'
+import { forwardRef, useImperativeHandle } from 'react'
 import type { ReactElement } from 'react'
 import PropTypes from 'prop-types'
 
-import UnsupportedView from './defaults/unsupported-view'
-import ErrorView from './defaults/error-view'
-import DisconnectedView from './defaults/disconnected-view'
-import LoadingView from './defaults/loading-view'
-import SwitchCameraView from './defaults/switch-camera-view'
-import defaultRenderActions from './defaults/render-actions'
-import { useVideoRecorder } from './use-video-recorder'
-import { cx, useStyles } from './styles'
-import type { VideoRecorderHandle, VideoRecorderProps } from './types'
+import UnsupportedView from './defaults/unsupported-view.tsx'
+import ErrorView from './defaults/error-view.tsx'
+import DisconnectedView from './defaults/disconnected-view.tsx'
+import LoadingView from './defaults/loading-view.tsx'
+import SwitchCameraView from './defaults/switch-camera-view.tsx'
+import defaultRenderActions from './defaults/render-actions.tsx'
+import { useVideoRecorder } from './use-video-recorder.ts'
+import { cx, useStyles } from './styles.ts'
+import type { VideoRecorderHandle, VideoRecorderProps } from './types.ts'
 
 const defaultRenderUnsupportedView = () => <UnsupportedView />
 const defaultRenderErrorView = () => <ErrorView />

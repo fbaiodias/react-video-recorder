@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { useStyles } from '../styles'
+import { useStyles } from '../styles.ts'
 
 export interface CountdownProps {
   /** In milliseconds */

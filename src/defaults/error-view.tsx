@@ -1,5 +1,3 @@
-import React from 'react'
-
 const ErrorView = () => (
   <div>
     Oh snap! Your browser failed to record your video.

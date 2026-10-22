@@ -2,21 +2,21 @@ import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
 import merge from 'lodash.merge'
 import fixWebmDuration from 'fix-webm-duration'
 
-import getVideoInfo, { captureThumb } from './get-video-info'
+import getVideoInfo, { captureThumb } from './get-video-info.ts'
 import {
   ReactVideoRecorderDataIssueError,
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
   ReactVideoRecorderMediaRecorderUnavailableError,
   ReactVideoRecorderDeviceUnavailableError
-} from './custom-errors'
+} from './custom-errors.ts'
 import type {
   UseVideoRecorderOptions,
   VideoRecorderController,
   VideoRecorderError,
   VideoRecorderState,
   VideoRecorderStatus
-} from './types'
+} from './types.ts'
 
 const MIME_TYPES = [
   'video/webm;codecs="vp8,opus"',

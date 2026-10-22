@@ -17,6 +17,7 @@ export default [
     settings: { react: { version: 'detect' } },
     rules: {
       ...react.configs.flat.recommended.rules,
+      ...react.configs.flat['jsx-runtime'].rules,
       // TypeScript checks props.
       'react/prop-types': 'off'
     }

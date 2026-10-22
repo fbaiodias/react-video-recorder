@@ -1,32 +1,26 @@
+// Only Storybook uses Babel now; lib/ is built with tsc.
 const plugins = [
   '@babel/plugin-proposal-object-rest-spread',
-  '@babel/plugin-proposal-class-properties',
-  [
-    'babel-plugin-styled-components',
-    {
-      displayName: true,
-      fileName: true
-    }
-  ]
-]
-
-// Types are stripped before any other plugin runs, so `declare` class fields
-// disappear instead of reaching class-properties as `this.x = undefined`.
-const typescript = (isTSX) => [
-  '@babel/plugin-transform-typescript',
-  { isTSX, allowDeclareFields: true }
+  '@babel/plugin-proposal-class-properties'
 ]
 
 module.exports = {
-  presets: ['@babel/preset-react', '@babel/preset-env'],
+  presets: [
+    ['@babel/preset-react', { runtime: 'automatic' }],
+    '@babel/preset-env'
+  ],
   overrides: [
     { test: /\.jsx?$/, plugins },
-    { test: /\.ts$/, plugins: [typescript(false), ...plugins] },
-    { test: /\.tsx$/, plugins: [typescript(true), ...plugins] }
-  ],
-  env: {
-    test: {
-      plugins: ['@babel/plugin-transform-runtime']
+    {
+      // Types go first, so `declare` fields never reach class-properties.
+      test: /\.tsx?$/,
+      plugins: [
+        [
+          '@babel/plugin-transform-typescript',
+          { isTSX: true, allowDeclareFields: true }
+        ],
+        ...plugins
+      ]
     }
-  }
+  ]
 }

@@ -1,8 +1,7 @@
 import { transformWithOxc } from 'vite'
 
-// The source keeps JSX in .js files (like the Babel build expects), which Vite
-// doesn't parse by default. Compile those with the classic runtime, matching
-// what @babel/preset-react produces for lib/.
+// Tests and the e2e harness keep JSX in .js files, which Vite doesn't parse
+// by default.
 export default function jsxInJs () {
   return {
     name: 'jsx-in-js',
@@ -13,7 +12,7 @@ export default function jsxInJs () {
       }
       const result = await transformWithOxc(code, id, {
         lang: 'jsx',
-        jsx: { runtime: 'classic' }
+        jsx: { runtime: 'automatic' }
       })
       return { code: result.code, map: result.map }
     }

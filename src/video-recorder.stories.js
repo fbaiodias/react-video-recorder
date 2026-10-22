@@ -1,3 +1,5 @@
+// Storybook 6 compiles stories with the classic JSX runtime.
+// eslint-disable-next-line no-unused-vars
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'

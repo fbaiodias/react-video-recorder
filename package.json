@@ -1,6 +1,56 @@
 {
   "name": "react-video-recorder",
-  "main": "lib",
+  "type": "commonjs",
+  "main": "./lib/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    },
+    "./styles.css": "./lib/styles.css",
+    "./lib": {
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    },
+    "./lib/*.js": {
+      "import": {
+        "types": "./lib/esm/*.d.ts",
+        "default": "./lib/esm/*.js"
+      },
+      "require": {
+        "types": "./lib/*.d.ts",
+        "default": "./lib/*.js"
+      }
+    },
+    "./lib/*": {
+      "import": {
+        "types": "./lib/esm/*.d.ts",
+        "default": "./lib/esm/*.js"
+      },
+      "require": {
+        "types": "./lib/*.d.ts",
+        "default": "./lib/*.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
   "files": [
     "lib",
     "README.md"
@@ -13,11 +63,11 @@
     "test:visual": "playwright test --project visual",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "clean": "rimraf -rf lib",
-    "build": "babel src -d lib --extensions .ts,.tsx,.js --ignore '**/*.stories.js,**/*.legacy.tsx'",
-    "build:watch": "babel --watch src -d lib --extensions .ts,.tsx,.js --ignore '**/*.stories.js,**/*.legacy.tsx'",
+    "check:package": "yarn run build && publint --pack npm && attw --pack . --exclude-entrypoints styles.css",
+    "clean": "rimraf lib",
+    "build": "tsc -p tsconfig.build.cjs.json && tsc -p tsconfig.build.esm.json && node scripts/finish-build.mjs",
     "prebuild": "yarn run clean",
-    "prepublish": "cross-env NODE_ENV=production yarn run build",
+    "prepack": "yarn run build",
     "start": "yarn run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -55,7 +105,7 @@
     "lodash.merge": "^4.5.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
+    "@arethetypeswrong/cli": "^0.18.5",
     "@babel/core": "^7.3.3",
     "@babel/plugin-proposal-class-properties": "^7.3.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
@@ -81,7 +131,6 @@
     "@vitest/eslint-plugin": "^1.6.27",
     "babel-loader": "^8.0.5",
     "babel-plugin-styled-components": "^1.10.6",
-    "cross-env": "^7.0.3",
     "eslint": "^9.39.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -91,6 +140,7 @@
     "neostandard": "^0.14.1",
     "prettier": "^2.1.2",
     "prop-types": "^15.7.2",
+    "publint": "^0.3.25",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^3.0.2",
@@ -103,7 +153,7 @@
   "version": "0.0.0-development",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbaiodias/react-video-recorder.git"
+    "url": "git+https://github.com/fbaiodias/react-video-recorder.git"
   },
   "license": "MIT",
   "resolutions": {

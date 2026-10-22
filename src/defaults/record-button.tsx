@@ -1,8 +1,7 @@
-import React from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 import PropTypes from 'prop-types'
-import type { Translate } from './render-actions'
-import { cx, useStyles } from '../styles'
+import type { Translate } from './render-actions.tsx'
+import { cx, useStyles } from '../styles.ts'
 
 export interface RecordButtonProps extends ComponentPropsWithoutRef<'button'> {
   t: Translate

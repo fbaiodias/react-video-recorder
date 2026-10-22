@@ -5,21 +5,21 @@ import merge from 'lodash.merge'
 import styled, { css } from 'styled-components'
 import fixWebmDuration from 'fix-webm-duration'
 
-import UnsupportedView from './defaults/unsupported-view'
-import ErrorView from './defaults/error-view'
-import DisconnectedView from './defaults/disconnected-view'
-import LoadingView from './defaults/loading-view'
-import SwitchCameraView from './defaults/switch-camera-view'
-import renderActions from './defaults/render-actions'
-import type { RenderActionsProps, Translate } from './defaults/render-actions'
-import getVideoInfo, { captureThumb } from './get-video-info'
+import UnsupportedView from './defaults/unsupported-view.tsx'
+import ErrorView from './defaults/error-view.tsx'
+import DisconnectedView from './defaults/disconnected-view.tsx'
+import LoadingView from './defaults/loading-view.tsx'
+import SwitchCameraView from './defaults/switch-camera-view.tsx'
+import renderActions from './defaults/render-actions.tsx'
+import type { RenderActionsProps, Translate } from './defaults/render-actions.tsx'
+import getVideoInfo, { captureThumb } from './get-video-info.ts'
 import {
   ReactVideoRecorderDataIssueError,
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
   ReactVideoRecorderMediaRecorderUnavailableError,
   ReactVideoRecorderDeviceUnavailableError
-} from './custom-errors'
+} from './custom-errors.ts'
 
 const MIME_TYPES = [
   'video/webm;codecs="vp8,opus"',

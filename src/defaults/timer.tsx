@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 import PropTypes from 'prop-types'
-import { cx, useStyles } from '../styles'
+import { cx, useStyles } from '../styles.ts'
 
 export interface TimerProps extends ComponentPropsWithoutRef<'div'> {
   /** In milliseconds. When set, the timer counts down from it. */

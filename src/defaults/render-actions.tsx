@@ -1,11 +1,10 @@
-import React from 'react'
 import type { ReactNode } from 'react'
 import PropTypes from 'prop-types'
-import Button from './button'
-import RecordButton from './record-button'
-import StopButton from './stop-button'
-import Timer from './timer'
-import Countdown from './countdown'
+import Button from './button.tsx'
+import RecordButton from './record-button.tsx'
+import StopButton from './stop-button.tsx'
+import Timer from './timer.tsx'
+import Countdown from './countdown.tsx'
 
 /** Localizes the default UI's texts, e.g. `t('Turn my camera ON')` */
 export type Translate = (text: string) => ReactNode
