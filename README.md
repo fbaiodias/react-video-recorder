@@ -243,8 +243,14 @@ The browser tests need Playwright's browsers once:
 `pnpm build` compiles `src/` to `lib/` (CommonJS) and `lib/esm/` (ES modules)
 with `tsc`.
 
-### Committing
+### Committing and releasing
 
-Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/):
-semantic-release publishes from `main` and prereleases from `next`. Husky lints
-and runs the unit tests before each commit.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+Husky lints the staged files and runs the unit tests before each commit.
+
+CI releases with semantic-release: from `main`, and prereleases (e.g.
+`4.0.0-next.1`, under npm's `next` tag) from `next`. It publishes through
+[npm trusted publishing](https://docs.npmjs.com/trusted-publishers), so there's
+no npm token to store. This needs a one-time setup on npmjs.com: in the
+package's settings, add a trusted publisher for GitHub Actions with this
+repository and the `run-checks.yml` workflow.
