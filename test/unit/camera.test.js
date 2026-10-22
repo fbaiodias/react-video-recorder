@@ -334,6 +334,79 @@ describe('switching cameras', () => {
     takeConsole('error')
   })
 
+  it('lists the cameras with labels once access is granted', async () => {
+    installFakeMedia({
+      devices: [
+        videoDevice('front', 'Front camera'),
+        audioDevice('mic-1'),
+        videoDevice('back', 'Back camera')
+      ],
+      hideDeviceIdsUntilPermission: true
+    })
+    const r = renderRecorder()
+    expect(r.flags().devices).toEqual([])
+    await turnOnCamera(r)
+
+    expect(r.flags().devices).toEqual([
+      { deviceId: 'front', label: 'Front camera' },
+      { deviceId: 'back', label: 'Back camera' }
+    ])
+    expect(r.flags().currentDeviceId).toBe('front')
+  })
+
+  it('switches to a camera picked from the list', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await act(async () => r.actions().onSelectDevice('camera-2'))
+
+    expect(media.streams[0].isStopped).toBe(true)
+    expect(media.getUserMedia).toHaveBeenLastCalledWith({
+      audio: true,
+      video: { deviceId: { exact: 'camera-2' } }
+    })
+    await advance(200)
+    expect(r.flags().currentDeviceId).toBe('camera-2')
+    expect(r.events.slice(-3)).toEqual([
+      'onSwitchCamera',
+      'onTurnOnCamera',
+      'onCameraOn'
+    ])
+  })
+
+  it('updates the list when a camera is plugged in or out', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(r.flags().devices).toHaveLength(2)
+
+    media.devices = [...media.devices, videoDevice('camera-3', 'USB camera')]
+    await act(async () => media.emitDeviceChange())
+    expect(r.flags().devices.map((device) => device.deviceId)).toEqual([
+      'camera-1',
+      'camera-2',
+      'camera-3'
+    ])
+
+    media.devices = [videoDevice('camera-1')]
+    await act(async () => media.emitDeviceChange())
+    expect(r.flags().devices).toEqual([
+      { deviceId: 'camera-1', label: 'camera-1' }
+    ])
+    // One camera left: no switch button.
+    expect(r.video().nextElementSibling).toBeNull()
+  })
+
+  it('stops listening for camera changes when unmounted', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    r.unmount()
+    const calls = media.enumerateDevices.mock.calls.length
+    await act(async () => media.emitDeviceChange())
+    expect(media.enumerateDevices.mock.calls.length).toBe(calls)
+  })
+
   it('also switches through the renderActions callback', async () => {
     const media = twoCameras()
     const r = renderRecorder()

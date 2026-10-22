@@ -109,12 +109,24 @@ export interface VideoRecorderState {
   facingMode?: string
   currentDeviceId: string | null
   availableDeviceIds: string[]
+  /**
+   * The cameras, for a camera picker. Browsers only give labels (and real
+   * ids) once camera access is granted, so this fills in when the camera
+   * turns on, and updates when cameras are plugged in or out.
+   */
+  devices: VideoRecorderDevice[]
   /** Object URL of the video being replayed */
   videoUrl?: string
   /** The picked file, when replaying one */
   videoBlob?: Blob
   /** The recording, when replaying one */
   fixedVideoBlob?: Blob
+}
+
+export interface VideoRecorderDevice {
+  deviceId: string
+  /** e.g. "FaceTime HD Camera". Empty before camera access is granted. */
+  label: string
 }
 
 export type VideoRecorderStatus =
@@ -136,7 +148,10 @@ export interface VideoRecorderController {
 
   turnOnCamera: (deviceId?: string | null) => void
   turnOffCamera: () => void
+  /** Turns on the next camera in state.devices */
   switchCamera: () => void
+  /** Turns on this camera from state.devices */
+  selectDevice: (deviceId: string) => void
   /** Runs the countdown, then records */
   startRecording: () => void
   stopRecording: () => void
@@ -170,6 +185,7 @@ export interface VideoRecorderHandle {
   turnOnCamera: (deviceId?: string | null) => void
   turnOffCamera: () => void
   handleSwitchCamera: () => void
+  selectDevice: (deviceId: string) => void
   handleStartRecording: () => void
   handleStopRecording: () => void
   handlePauseRecording: () => void

@@ -19,6 +19,7 @@ export type {
   UseVideoRecorderOptions,
   VideoRecorderCallbacks,
   VideoRecorderController,
+  VideoRecorderDevice,
   VideoRecorderError,
   VideoRecorderHandle,
   VideoRecorderProps,

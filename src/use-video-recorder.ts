@@ -66,7 +66,8 @@ const initialState: VideoRecorderState = {
   isVideoInputSupported: null,
   stream: undefined,
   currentDeviceId: null,
-  availableDeviceIds: []
+  availableDeviceIds: [],
+  devices: []
 }
 
 // State updates merge, like a class component's setState().
@@ -90,6 +91,11 @@ export function getStatus(state: VideoRecorderState): VideoRecorderStatus {
 }
 
 type Timeout = ReturnType<typeof setTimeout>
+
+const cameraList = (videoDevices: MediaDeviceInfo[]) => ({
+  availableDeviceIds: videoDevices.map((x) => x.deviceId),
+  devices: videoDevices.map(({ deviceId, label }) => ({ deviceId, label }))
+})
 
 // How long to wait for the camera <video> to play before enabling recording
 // anyway.
@@ -196,7 +202,7 @@ function createRecorder(
           // Corrected from the stream's settings once it arrives.
           currentDeviceId:
             deviceId || (videoDevices[0] && videoDevices[0].deviceId) || null,
-          availableDeviceIds: videoDevices.map((x) => x.deviceId),
+          ...cameraList(videoDevices),
           error: null
         })
 
@@ -233,6 +239,16 @@ function createRecorder(
           )
       })
       .catch((err) => isCurrent(generation) && handleError(err))
+  }
+
+  // Switches to a camera from state.devices.
+  function selectDevice(deviceId: string) {
+    const { onSwitchCamera } = getOptions()
+    if (onSwitchCamera) {
+      onSwitchCamera()
+    }
+    stopStream(r.stream)
+    turnOnCamera(deviceId)
   }
 
   function switchCamera() {
@@ -290,16 +306,21 @@ function createRecorder(
       onCameraOn()
     }
 
-    // With access granted, the camera list has real ids to switch between.
+    // With access granted, the camera list has real ids and labels.
+    refreshDevices()
+  }
+
+  // Reads the camera list again, e.g. after access is granted or a camera
+  // was plugged in or out.
+  function refreshDevices() {
+    const generation = r.generation
     navigator.mediaDevices
       .enumerateDevices()
       .then((mediaDevices) => {
         if (!isCurrent(generation)) return
-        setState({
-          availableDeviceIds: mediaDevices
-            .filter((x) => x.kind === 'videoinput')
-            .map((x) => x.deviceId)
-        })
+        setState(
+          cameraList(mediaDevices.filter((x) => x.kind === 'videoinput'))
+        )
       })
       .catch(() => {})
   }
@@ -707,6 +728,9 @@ function createRecorder(
   function mount() {
     r.mounted = true
     r.initialActionPending = true
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', refreshDevices)
+    }
     setState({
       isInlineRecordingSupported:
         !!window.MediaRecorder && !!navigator.mediaDevices,
@@ -734,6 +758,9 @@ function createRecorder(
 
   function unmount() {
     turnOffCamera()
+    if (navigator.mediaDevices && navigator.mediaDevices.removeEventListener) {
+      navigator.mediaDevices.removeEventListener('devicechange', refreshDevices)
+    }
     r.mounted = false
     r.generation += 1
     r.initialActionPending = false
@@ -803,6 +830,7 @@ function createRecorder(
     turnOnCamera,
     turnOffCamera,
     switchCamera,
+    selectDevice,
     startRecording,
     stopRecording,
     pauseRecording,
@@ -871,6 +899,7 @@ export function useVideoRecorder(
     turnOnCamera: recorder.turnOnCamera,
     turnOffCamera: recorder.turnOffCamera,
     switchCamera: recorder.switchCamera,
+    selectDevice: recorder.selectDevice,
     startRecording: recorder.startRecording,
     stopRecording: recorder.stopRecording,
     pauseRecording: recorder.pauseRecording,

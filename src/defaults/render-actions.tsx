@@ -33,9 +33,13 @@ export interface RenderActionsProps {
   showReplayControls: boolean | undefined
   replayVideoAutoplayAndLoopOff: boolean | undefined
   useVideoInput: boolean | undefined
+  /** The cameras, once camera access is granted (see VideoRecorderState) */
+  devices: { deviceId: string; label: string }[]
+  currentDeviceId: string | null
 
   onTurnOnCamera: () => void
   onSwitchCamera: () => void
+  onSelectDevice: (deviceId: string) => void
   onTurnOffCamera: () => void
   onOpenVideoInput: () => void
   onStartRecording: () => void

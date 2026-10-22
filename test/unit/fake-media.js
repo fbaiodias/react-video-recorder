@@ -172,7 +172,11 @@ export function installFakeMedia({
   media.enumerateDevices = vi.fn(() =>
     Promise.resolve(
       hideDeviceIdsUntilPermission && media.streams.length === 0
-        ? media.devices.map((device) => ({ ...device, deviceId: '' }))
+        ? media.devices.map((device) => ({
+            ...device,
+            deviceId: '',
+            label: ''
+          }))
         : media.devices
     )
   )
@@ -201,12 +205,16 @@ export function installFakeMedia({
   })
 
   if (mediaDevices) {
+    const mediaDevicesTarget = Object.assign(new EventTarget(), {
+      enumerateDevices: (...args) => media.enumerateDevices(...args),
+      getUserMedia: (...args) => media.getUserMedia(...args)
+    })
+    // Like a camera being plugged in or out.
+    media.emitDeviceChange = () =>
+      mediaDevicesTarget.dispatchEvent(new Event('devicechange'))
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
-      value: {
-        enumerateDevices: (...args) => media.enumerateDevices(...args),
-        getUserMedia: (...args) => media.getUserMedia(...args)
-      }
+      value: mediaDevicesTarget
     })
   } else {
     delete navigator.mediaDevices

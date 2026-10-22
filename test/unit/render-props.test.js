@@ -26,6 +26,7 @@ describe('renderActions', () => {
       'onOpenVideoInput',
       'onPauseRecording',
       'onResumeRecording',
+      'onSelectDevice',
       'onStartRecording',
       'onStopRecording',
       'onStopReplaying',
@@ -64,6 +65,13 @@ describe('renderActions', () => {
       {
         "cameraOnNotReady": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
@@ -82,6 +90,13 @@ describe('renderActions', () => {
         },
         "connecting": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": false,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
@@ -100,6 +115,13 @@ describe('renderActions', () => {
         },
         "countdown": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
@@ -118,6 +140,8 @@ describe('renderActions', () => {
         },
         "disconnected": {
           "countdownTime": 3000,
+          "currentDeviceId": null,
+          "devices": [],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
@@ -136,6 +160,8 @@ describe('renderActions', () => {
         },
         "firstRender": {
           "countdownTime": 3000,
+          "currentDeviceId": null,
+          "devices": [],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": null,
@@ -154,6 +180,13 @@ describe('renderActions', () => {
         },
         "ready": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
@@ -172,6 +205,13 @@ describe('renderActions', () => {
         },
         "recording": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
@@ -190,6 +230,13 @@ describe('renderActions', () => {
         },
         "replaying": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
@@ -221,6 +268,13 @@ describe('renderActions', () => {
     expect(r.flags()).toMatchInlineSnapshot(`
       {
         "countdownTime": 3000,
+        "currentDeviceId": "camera-1",
+        "devices": [
+          {
+            "deviceId": "camera-1",
+            "label": "camera-1",
+          },
+        ],
         "isCameraOn": false,
         "isConnecting": false,
         "isInlineRecordingSupported": true,
