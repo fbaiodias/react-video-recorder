@@ -270,6 +270,7 @@ function createRecorder (
     setState({
       isCameraOn: true,
       stream,
+      facingMode: settings.facingMode,
       currentDeviceId: settings.deviceId || getState().currentDeviceId
     })
     const { onCameraOn } = getOptions()

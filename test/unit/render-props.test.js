@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen } from '@testing-library/react'
-import { FakeMediaStream, installFakeMedia, mediaError } from './fake-media'
+import {
+  FakeMediaStream,
+  installFakeMedia,
+  mediaError,
+  videoDevice
+} from './fake-media'
 import { takeConsole } from './console-capture'
 import {
+  IS_LEGACY,
   actionCallbackNames,
   actionFlags,
   advance,
@@ -484,6 +490,20 @@ describe('styles that depend on props', () => {
     const r = renderRecorder()
     await turnOnCamera(r)
     expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
+  })
+
+  it.runIf(IS_LEGACY)('[known bug] mirrors a rear camera too', async () => {
+    installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(transformOf(r.video())).toBe('translate(-50%,-50%)scaleX(-1)')
+  })
+
+  it.skipIf(IS_LEGACY)('does not mirror a rear camera', async () => {
+    installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
   })
 
   it('does not mirror the camera with isFlipped={false}', async () => {

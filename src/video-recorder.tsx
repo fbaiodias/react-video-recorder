@@ -79,7 +79,8 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       isRecording,
       availableDeviceIds,
       streamIsReady,
-      isRunningCountdown
+      isRunningCountdown,
+      facingMode
     } = state
 
     const renderCameraView = () => {
@@ -148,7 +149,11 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
         return (
           <div key='camera' className='rvr-camera-view'>
             <video
-              className={cx('rvr-video', isFlipped && 'rvr-video--flipped')}
+              className={cx(
+                'rvr-video',
+                // Mirror like a mirror: a camera facing away shows the scene as is.
+                isFlipped && facingMode !== 'environment' && 'rvr-video--flipped'
+              )}
               ref={recorder.setCameraVideo}
               autoPlay
               muted

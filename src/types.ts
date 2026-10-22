@@ -56,7 +56,7 @@ export interface UseVideoRecorderOptions extends VideoRecorderCallbacks {
 }
 
 export interface VideoRecorderProps extends UseVideoRecorderOptions {
-  /** Whether or not to display the video flipped (makes sense for user facing camera). Default: true */
+  /** Whether or not to display the camera mirrored. Cameras that report facingMode 'environment' never are. Default: true */
   isFlipped?: boolean
   /** Use this to configure the replaying video element's controlslist attribute */
   videoControlsList?: string
@@ -96,6 +96,8 @@ export interface VideoRecorderState {
   thereWasAnError: boolean
   error: VideoRecorderError | null
   stream: MediaStream | undefined
+  /** The camera's facingMode, when the browser reports it ('user', 'environment', ...) */
+  facingMode?: string
   currentDeviceId: string | null
   availableDeviceIds: string[]
   /** Object URL of the video being replayed */
