@@ -113,6 +113,7 @@ function getVideoSettings (stream: MediaStream): MediaTrackSettings {
 // Everything that isn't rendered: media objects, timers and DOM elements.
 interface Internals {
   mounted: boolean
+  paused: boolean
   // Bumped on unmount. Async work started before then is ignored, and any
   // stream it produces is stopped.
   generation: number
@@ -146,6 +147,7 @@ function createRecorder (
 
   const r: Internals = {
     mounted: false,
+    paused: false,
     generation: 0,
     initialActionPending: false,
     recordedBlobs: [],
@@ -421,7 +423,9 @@ function createRecorder (
     }
 
     r.mediaRecorder.stop()
-    r.recordingDuration = getTotalEllapsedTimeInMs()
+    // While paused, recordingDuration already has the recorded time.
+    if (!r.paused) r.recordingDuration = getTotalEllapsedTimeInMs()
+    r.paused = false
   }
 
   function pauseRecording () {
@@ -435,8 +439,12 @@ function createRecorder (
       return
     }
 
+    if (r.paused) return
     r.mediaRecorder.pause()
+    r.paused = true
     r.recordingDuration = getTotalEllapsedTimeInMs()
+    // The time limit counts recorded time only.
+    clearTimeout(r.timeLimitTimeout)
     setState({ isPaused: true })
   }
 
@@ -451,8 +459,16 @@ function createRecorder (
       return
     }
 
+    if (!r.paused) return
     r.mediaRecorder.resume()
+    r.paused = false
     r.lastRecordingTimestamp = Date.now()
+    const { timeLimit } = getOptions()
+    if (timeLimit) {
+      r.timeLimitTimeout = setTimeout(() => {
+        stopRecording()
+      }, timeLimit - r.recordingDuration)
+    }
     setState({ isPaused: false })
   }
 
@@ -495,6 +511,7 @@ function createRecorder (
         r.mediaRecorder.start(chunkSize) // collect 10ms of data
         r.lastRecordingTimestamp = Date.now()
         r.recordingDuration = 0
+        r.paused = false
 
         if (timeLimit) {
           r.timeLimitTimeout = setTimeout(() => {

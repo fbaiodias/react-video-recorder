@@ -18,6 +18,7 @@ export interface RenderActionsProps {
   isInlineRecordingSupported: boolean | null
   thereWasAnError: boolean
   isRecording: boolean
+  isPaused: boolean
   isCameraOn: boolean
   streamIsReady: boolean
   isConnecting: boolean
@@ -48,6 +49,7 @@ const Actions = ({
   isInlineRecordingSupported,
   thereWasAnError,
   isRecording,
+  isPaused,
   isCameraOn,
   streamIsReady,
   isConnecting,
@@ -140,7 +142,7 @@ const Actions = ({
 
   return (
     <div>
-      {isRecording && <Timer timeLimit={timeLimit} />}
+      {isRecording && <Timer timeLimit={timeLimit} isPaused={isPaused} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
       <div className='rvr-actions'>{renderContent()}</div>
     </div>
@@ -153,6 +155,7 @@ Actions.propTypes = {
   isInlineRecordingSupported: PropTypes.bool,
   thereWasAnError: PropTypes.bool,
   isRecording: PropTypes.bool,
+  isPaused: PropTypes.bool,
   isCameraOn: PropTypes.bool,
   streamIsReady: PropTypes.bool,
   isConnecting: PropTypes.bool,

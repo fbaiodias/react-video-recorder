@@ -44,23 +44,31 @@ describe('renderActions', () => {
     const r = renderRecorder({ timeLimit: 5000, showReplayControls: true })
     const states = {}
 
-    states.firstRender = actionFlags(r.renderActions.mock.calls[0][0])
+    const pausedFlags = []
+    const flags = (args) => {
+      // The class never passed isPaused; the rest must match.
+      const { isPaused, ...rest } = actionFlags(args)
+      pausedFlags.push(isPaused)
+      return rest
+    }
+    states.firstRender = flags(r.renderActions.mock.calls[0][0])
     await advance(0)
-    states.disconnected = r.flags()
+    states.disconnected = flags(r.actions())
     await click(r.byQa('turn-on-camera'))
-    states.connecting = r.flags()
+    states.connecting = flags(r.actions())
     await act(async () => pending.resolve(new FakeMediaStream({})))
-    states.cameraOnNotReady = r.flags()
+    states.cameraOnNotReady = flags(r.actions())
     await advance(200)
-    states.ready = r.flags()
+    states.ready = flags(r.actions())
     await click(r.byQa('start-recording'))
-    states.countdown = r.flags()
+    states.countdown = flags(r.actions())
     await advance(3000)
-    states.recording = r.flags()
+    states.recording = flags(r.actions())
     await advance(1000)
     await click(r.byQa('stop-recording'))
-    states.replaying = r.flags()
+    states.replaying = flags(r.actions())
 
+    expect(new Set(pausedFlags)).toEqual(new Set([IS_LEGACY ? undefined : false]))
     expect(states).toMatchInlineSnapshot(`
       {
         "cameraOnNotReady": {
@@ -211,7 +219,9 @@ describe('renderActions', () => {
     const r = renderRecorder()
     await click(r.byQa('turn-on-camera'))
     takeConsole('error')
-    expect(r.flags()).toMatchInlineSnapshot(`
+    const { isPaused, ...flags } = r.flags()
+    expect(isPaused).toBe(IS_LEGACY ? undefined : false)
+    expect(flags).toMatchInlineSnapshot(`
       {
         "countdownTime": 3000,
         "isCameraOn": false,

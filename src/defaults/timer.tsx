@@ -7,6 +7,8 @@ export interface TimerProps extends ComponentPropsWithoutRef<'div'> {
   /** In milliseconds. When set, the timer counts down from it. */
   timeLimit?: number
   defaultText?: string
+  /** Stops the clock while the recording is paused */
+  isPaused?: boolean
 }
 
 const pad = (unit: number) => {
@@ -24,7 +26,13 @@ const formatSeconds = (seconds: number) => {
 }
 
 /** Shows the recording time, or the time left with a timeLimit. */
-const Timer = ({ timeLimit, defaultText, className, ...props }: TimerProps) => {
+const Timer = ({
+  timeLimit,
+  defaultText,
+  isPaused = false,
+  className,
+  ...props
+}: TimerProps) => {
   useStyles()
   const [seconds, setSeconds] = useState(() =>
     timeLimit ? timeLimit / 1000 : 0
@@ -34,11 +42,12 @@ const Timer = ({ timeLimit, defaultText, className, ...props }: TimerProps) => {
   // doesn't change once it has started.
   const [countsDown] = useState(!!timeLimit)
   useEffect(() => {
+    if (isPaused) return
     const timer = setInterval(() => {
       setSeconds((seconds) => (countsDown ? seconds - 1 : seconds + 1))
     }, 1000)
     return () => clearInterval(timer)
-  }, [countsDown])
+  }, [countsDown, isPaused])
 
   return (
     <div className={cx('rvr-timer', className)} {...props}>
@@ -50,7 +59,8 @@ const Timer = ({ timeLimit, defaultText, className, ...props }: TimerProps) => {
 
 Timer.propTypes = {
   timeLimit: PropTypes.number,
-  defaultText: PropTypes.string
+  defaultText: PropTypes.string,
+  isPaused: PropTypes.bool
 }
 
 export default Timer

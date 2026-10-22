@@ -80,6 +80,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       availableDeviceIds,
       streamIsReady,
       isRunningCountdown,
+      isPaused,
       facingMode
     } = state
 
@@ -180,6 +181,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
           isInlineRecordingSupported,
           thereWasAnError,
           isRecording,
+          isPaused,
           isCameraOn,
           streamIsReady,
           isConnecting,

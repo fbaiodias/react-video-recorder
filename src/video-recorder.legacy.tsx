@@ -1014,7 +1014,8 @@ export default class VideoRecorder extends Component<Props, State> {
           onPauseRecording: this.handlePauseRecording,
           onResumeRecording: this.handleResumeRecording,
           onStopReplaying: this.handleStopReplaying
-        })}
+          // The class never passed isPaused (added in 4.0).
+        } as RenderActionsProps)}
       </Wrapper>
     )
   }

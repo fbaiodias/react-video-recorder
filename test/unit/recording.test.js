@@ -4,6 +4,7 @@ import fixWebmDuration from 'fix-webm-duration'
 import { installFakeMedia } from './fake-media'
 import { takeConsole } from './console-capture'
 import {
+  IS_LEGACY,
   advance,
   click,
   recordVideo,
@@ -304,7 +305,7 @@ describe('pausing and resuming', () => {
     expect(r.callbacks.onRecordingComplete.mock.calls[0][3]).toBe(3500)
   })
 
-  it('[known bug] counts the time before a pause twice when stopping while paused', async () => {
+  it.runIf(IS_LEGACY)('[known bug] counts the time before a pause twice when stopping while paused', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
@@ -318,7 +319,7 @@ describe('pausing and resuming', () => {
     expect(fixWebmDuration.mock.calls[0][1]).toBe(4000)
   })
 
-  it('[known bug] keeps the timer running while paused', async () => {
+  it.runIf(IS_LEGACY)('[known bug] keeps the timer running while paused', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
@@ -327,6 +328,78 @@ describe('pausing and resuming', () => {
     await act(async () => r.actions().onPauseRecording())
     await advance(2000)
     expect(screen.getByText('3s')).toBeTruthy()
+  })
+
+  it.skipIf(IS_LEGACY)('writes only the recorded time when stopping while paused', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    await advance(2000)
+    await stopRecording(r)
+
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(1000)
+  })
+
+  it.skipIf(IS_LEGACY)('ignores pausing twice and resuming while recording', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onResumeRecording())
+    await act(async () => r.actions().onPauseRecording())
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    await advance(1000)
+    await act(async () => r.actions().onResumeRecording())
+    await advance(500)
+    await stopRecording(r)
+
+    expect(media.lastRecorder.calls).toEqual([
+      ['start', 250],
+      ['pause'],
+      ['resume'],
+      ['stop']
+    ])
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(1500)
+  })
+
+  it.skipIf(IS_LEGACY)('stops the timer while paused', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    expect(r.flags().isPaused).toBe(true)
+    await advance(2000)
+    expect(screen.getByText('1s')).toBeTruthy()
+
+    await act(async () => r.actions().onResumeRecording())
+    expect(r.flags().isPaused).toBe(false)
+    await advance(1000)
+    expect(screen.getByText('2s')).toBeTruthy()
+  })
+
+  it.skipIf(IS_LEGACY)('counts only recorded time toward timeLimit', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder({ timeLimit: 2000 })
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    await advance(5000)
+    expect(media.lastRecorder.state).toBe('paused')
+
+    await act(async () => r.actions().onResumeRecording())
+    await advance(999)
+    expect(media.lastRecorder.state).toBe('recording')
+    await advance(1)
+    expect(media.lastRecorder.calls.at(-1)).toEqual(['stop'])
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(2000)
   })
 
   it('does not render pause or resume buttons by default', async () => {
