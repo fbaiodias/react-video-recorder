@@ -1,7 +1,8 @@
 import React from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 import styled from 'styled-components'
 
-const Button = styled.button`
+const Button = styled.button<{ color?: string, backgroundColor?: string }>`
   background: ${(props) => props.backgroundColor};
   color: ${(props) => props.color};
   border-radius: 4px;
@@ -30,7 +31,9 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-export default (props) => (
+// Anonymous on purpose for now: naming it changes the published code.
+// eslint-disable-next-line react/display-name
+export default (props: ComponentPropsWithoutRef<'button'>) => (
   <Border>
     <Button {...props} />
   </Border>

@@ -109,9 +109,11 @@ Run the storybook demo
 yarn start
 ```
 
-### Testing
+### Checks
 
 ```sh
+yarn lint          # ESLint (neostandard)
+yarn typecheck     # TypeScript, without emitting: Babel builds lib/
 yarn test          # unit tests (jsdom, fake camera) and published-package checks
 yarn test:e2e      # real recordings in Chromium and Firefox with fake cameras
 yarn test:visual   # screenshots of every UI state (macOS baselines, not run in CI)

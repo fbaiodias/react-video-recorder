@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import type { ChangeEvent, ReactElement, ReactNode } from 'react'
 import PropTypes from 'prop-types'
 import merge from 'lodash.merge'
 import styled, { css } from 'styled-components'
@@ -10,6 +11,7 @@ import DisconnectedView from './defaults/disconnected-view'
 import LoadingView from './defaults/loading-view'
 import SwitchCameraView from './defaults/switch-camera-view'
 import renderActions from './defaults/render-actions'
+import type { RenderActionsProps, Translate } from './defaults/render-actions'
 import getVideoInfo, { captureThumb } from './get-video-info'
 import {
   ReactVideoRecorderDataIssueError,
@@ -55,7 +57,7 @@ const CameraView = styled.div`
   height: 100%;
 `
 
-const Video = styled.video`
+const Video = styled.video<{ isFlipped?: boolean }>`
   position: absolute;
   top: 50%;
   left: 50%;
@@ -77,7 +79,114 @@ const Video = styled.video`
     `};
 `
 
-export default class VideoRecorder extends Component {
+/** What onError and renderErrorView receive: an Error, or MediaRecorder's error event */
+export type VideoRecorderError = Error | Event
+
+export interface VideoRecorderProps {
+  /** Whether or not to start the camera initially */
+  isOnInitially?: boolean
+  /** Whether or not to display the video flipped (makes sense for user facing camera) */
+  isFlipped?: boolean
+  /** Pass this if you want to force a specific mime-type for the video */
+  mimeType?: string
+  /** How much time to wait until it starts recording (in ms) */
+  countdownTime?: number
+  /** Use this if you want to set a time limit for the video (in ms) */
+  timeLimit?: number
+  /** Use this if you want to show play/pause/etc. controls on the replay video */
+  showReplayControls?: boolean
+  /** Use this to turn off autoplay and looping of the replay video. It is recommended to also showReplayControls in order to play */
+  replayVideoAutoplayAndLoopOff?: boolean
+  /** Use this if you want to customize the constraints passed to getUserMedia() */
+  constraints?: MediaStreamConstraints
+  /** How often MediaRecorder hands over recorded data (in ms) */
+  chunkSize?: number
+  /** Fail when no data arrives this long after recording starts (in ms), or null to skip the check */
+  dataAvailableTimeout?: number | null
+  /** Use a file input instead of recording inline */
+  useVideoInput?: boolean
+  /** Use this to configure the replaying video element's controlslist attribute */
+  videoControlsList?: string
+  /** Use this to disable picture in picture mode on the replaying video element */
+  disablePictureInPicture?: boolean
+
+  renderDisconnectedView?: () => ReactNode
+  renderLoadingView?: () => ReactNode
+  renderVideoInputView?: (props: { videoInput: ReactElement | null }) => ReactNode
+  renderUnsupportedView?: () => ReactNode
+  renderErrorView?: (props: { error: VideoRecorderError | null }) => ReactNode
+  renderActions?: (props: RenderActionsProps) => ReactNode
+
+  cameraViewClassName?: string
+  videoClassName?: string
+  wrapperClassName?: string
+
+  /** Use this to localize the texts */
+  t?: Translate
+
+  onCameraOn?: () => void
+  onTurnOnCamera?: () => void
+  onSwitchCamera?: () => void
+  onTurnOffCamera?: () => void
+  onStartRecording?: () => void
+  onStopRecording?: () => void
+  onPauseRecording?: () => void
+  onResumeRecording?: () => void
+  /**
+   * Called with the recorded (or picked) video. `duration` is in ms; it and
+   * the thumbnail are null when a picked file can't be read in time.
+   */
+  onRecordingComplete?: (
+    videoBlob: Blob,
+    startedAt: number,
+    thumbnailBlob: Blob | null,
+    duration: number | null,
+    extension?: string
+  ) => void
+  onOpenVideoInput?: () => void
+  onStopReplaying?: () => void
+  onError?: (err: VideoRecorderError) => void
+}
+
+type DefaultedProps =
+  | 'renderUnsupportedView'
+  | 'renderErrorView'
+  | 'renderVideoInputView'
+  | 'renderDisconnectedView'
+  | 'renderLoadingView'
+  | 't'
+  | 'renderActions'
+  | 'isFlipped'
+  | 'countdownTime'
+  | 'constraints'
+  | 'chunkSize'
+  | 'dataAvailableTimeout'
+
+// Inside the class, props that have defaults are always set.
+type Props = VideoRecorderProps &
+  Required<Pick<VideoRecorderProps, DefaultedProps>>
+
+interface State {
+  isRecording: boolean
+  isCameraOn: boolean
+  isConnecting: boolean
+  isReplayingVideo: boolean
+  isReplayVideoMuted: boolean
+  thereWasAnError: boolean
+  error: VideoRecorderError | null
+  streamIsReady: boolean
+  isInlineRecordingSupported: boolean | null
+  isVideoInputSupported: boolean | null
+  stream: MediaStream | undefined
+  currentDeviceId: string | null
+  availableDeviceIds: string[]
+  isRunningCountdown?: boolean
+  videoUrl?: string
+  videoBlob?: Blob
+  fixedVideoBlob?: Blob
+}
+
+export default class VideoRecorder extends Component<Props, State> {
   static propTypes = {
     /** Whether or not to start the camera initially */
     isOnInitially: PropTypes.bool,
@@ -137,10 +246,14 @@ export default class VideoRecorder extends Component {
   static defaultProps = {
     renderUnsupportedView: () => <UnsupportedView />,
     renderErrorView: () => <ErrorView />,
-    renderVideoInputView: ({ videoInput }) => <>{videoInput}</>,
+    renderVideoInputView: ({
+      videoInput
+    }: {
+      videoInput: ReactElement | null
+    }) => <>{videoInput}</>,
     renderDisconnectedView: () => <DisconnectedView />,
     renderLoadingView: () => <LoadingView />,
-    t: (x) => x,
+    t: (x: string) => x,
     renderActions,
     isFlipped: true,
     countdownTime: 3000,
@@ -149,7 +262,7 @@ export default class VideoRecorder extends Component {
     dataAvailableTimeout: 500
   }
 
-  videoInput = React.createRef()
+  videoInput = React.createRef<HTMLInputElement>()
 
   isComponentUnmounted = false
 
@@ -158,7 +271,20 @@ export default class VideoRecorder extends Component {
   lastRecordingTimestamp = 0
   recordingDuration = 0
 
-  state = {
+  declare cameraVideo: HTMLVideoElement | null
+  declare replayVideo: HTMLVideoElement | null
+  declare stream: MediaStream | undefined
+  declare mediaRecorder: MediaRecorder | undefined
+  declare recordedBlobs: Blob[]
+  declare thumbnail: Blob | null
+  declare startedAt: number
+  declare timeLimitTimeout: ReturnType<typeof setTimeout> | undefined
+  // Cleared in turnOffCamera() but never set.
+  declare inactivityTimer: ReturnType<typeof setInterval> | undefined
+  // [known bug] Passed as the replay's onDurationChange but never defined.
+  declare handleDurationChange: undefined
+
+  state: State = {
     isRecording: false,
     isCameraOn: false,
     isConnecting: false,
@@ -204,7 +330,7 @@ export default class VideoRecorder extends Component {
     )
   }
 
-  componentDidUpdate (prevProps, prevState) {
+  componentDidUpdate (prevProps: Props, prevState: State) {
     if (
       this.replayVideo &&
       this.state.isReplayingVideo &&
@@ -219,9 +345,10 @@ export default class VideoRecorder extends Component {
     ) {
       // Only if the cameraVideo ref is available
       if (window.URL && this.cameraVideo) {
-        this.cameraVideo.srcObject = this.state.stream
+        this.cameraVideo.srcObject = this.state.stream!
       } else {
-        this.cameraVideo.src = this.state.stream
+        // For browsers without srcObject. Throws when the ref isn't set.
+        this.cameraVideo!.src = this.state.stream as unknown as string
       }
     }
   }
@@ -231,7 +358,7 @@ export default class VideoRecorder extends Component {
     this.isComponentUnmounted = true
   }
 
-  turnOnCamera = (deviceId = null) => {
+  turnOnCamera = (deviceId: string | null = null) => {
     if (this.props.onTurnOnCamera) {
       this.props.onTurnOnCamera()
     }
@@ -330,7 +457,7 @@ export default class VideoRecorder extends Component {
     clearInterval(this.inactivityTimer)
   }
 
-  handleSuccess = (stream) => {
+  handleSuccess = (stream: MediaStream) => {
     // Since handleSuccess is an async function, we may be in a situation where this was called after the
     // component was unmounted
     if (this.isComponentUnmounted) {
@@ -340,7 +467,7 @@ export default class VideoRecorder extends Component {
     this.stream = stream
     this.setState({
       isCameraOn: true,
-      stream: stream
+      stream
     })
     if (this.props.onCameraOn) {
       this.props.onCameraOn()
@@ -357,7 +484,7 @@ export default class VideoRecorder extends Component {
     }, 200)
   }
 
-  handleError = (err) => {
+  handleError = (err: VideoRecorderError) => {
     const { onError } = this.props
 
     if (onError) {
@@ -384,7 +511,7 @@ export default class VideoRecorder extends Component {
     }
   }
 
-  handleDataIssue = (event) => {
+  handleDataIssue = (event: Event) => {
     const error = new ReactVideoRecorderDataIssueError(event)
     console.error(error.message, event)
     this.handleError(error)
@@ -403,7 +530,7 @@ export default class VideoRecorder extends Component {
     return (this.mediaRecorder && this.mediaRecorder.mimeType) || mimeType || ''
   }
 
-  isDataHealthOK = (event) => {
+  isDataHealthOK = (event: BlobEvent) => {
     if (!event.data) return this.handleDataIssue(event)
 
     const { chunkSize } = this.props
@@ -424,7 +551,7 @@ export default class VideoRecorder extends Component {
   }
 
   tryToUnmuteReplayVideo = () => {
-    const video = this.replayVideo
+    const video = this.replayVideo!
     video.muted = false
 
     const playPromise = video.play()
@@ -452,7 +579,7 @@ export default class VideoRecorder extends Component {
       })
   }
 
-  handleDataAvailable = (event) => {
+  handleDataAvailable = (event: BlobEvent) => {
     if (this.isDataHealthOK(event)) {
       this.recordedBlobs.push(event.data)
     }
@@ -517,7 +644,8 @@ export default class VideoRecorder extends Component {
   }
 
   startRecording = () => {
-    captureThumb(this.cameraVideo).then((thumbnail) => {
+    // [known bug] cameraVideo is null if this runs after unmounting.
+    captureThumb(this.cameraVideo!).then((thumbnail) => {
       this.thumbnail = thumbnail
 
       this.recordedBlobs = []
@@ -531,7 +659,7 @@ export default class VideoRecorder extends Component {
           isRecording: true
         })
         this.startedAt = new Date().getTime()
-        this.mediaRecorder = new window.MediaRecorder(this.stream, options)
+        this.mediaRecorder = new window.MediaRecorder(this.stream!, options)
         this.mediaRecorder.addEventListener('stop', this.handleStop)
         this.mediaRecorder.addEventListener('error', this.handleError)
         this.mediaRecorder.addEventListener(
@@ -557,20 +685,20 @@ export default class VideoRecorder extends Component {
             if (this.recordedBlobs.length === 0) {
               this.handleError(
                 new ReactVideoRecorderDataAvailableTimeoutError(
-                  dataAvailableTimeout
+                  dataAvailableTimeout as number
                 )
               )
             }
-          }, dataAvailableTimeout)
+          }, dataAvailableTimeout as number)
         }
       } catch (err) {
         console.error("Couldn't create MediaRecorder", err, options)
-        this.handleError(err)
+        this.handleError(err as Error)
       }
     })
   }
 
-  handleStop = (event) => {
+  handleStop = (event: Event) => {
     const endedAt = new Date().getTime()
 
     if (!this.recordedBlobs || this.recordedBlobs.length <= 0) {
@@ -594,7 +722,7 @@ export default class VideoRecorder extends Component {
     const duration = endedAt - startedAt
 
     // if this gets executed too soon, the last chunk of data is lost on FF
-    this.mediaRecorder.ondataavailable = null
+    this.mediaRecorder!.ondataavailable = null
 
     this.fixVideoMetadata(videoBlob).then((fixedVideoBlob) => {
       this.setState({
@@ -607,7 +735,8 @@ export default class VideoRecorder extends Component {
 
       this.turnOffCamera()
 
-      this.props.onRecordingComplete(
+      // [known bug] Throws when onRecordingComplete isn't passed.
+      this.props.onRecordingComplete!(
         fixedVideoBlob,
         startedAt,
         thumbnailBlob,
@@ -617,33 +746,38 @@ export default class VideoRecorder extends Component {
   }
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
-  fixVideoMetadata = (rawVideoBlob) => {
+  fixVideoMetadata = (rawVideoBlob: Blob): Promise<Blob> => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
       return Promise.resolve(rawVideoBlob)
     }
     // see https://stackoverflow.com/a/63568311
-    Blob.prototype.arrayBuffer ??= function () {
+    Blob.prototype.arrayBuffer ??= function (this: Blob) {
       return new Response(this).arrayBuffer()
     }
 
     return fixWebmDuration(rawVideoBlob, this.recordingDuration)
   }
 
-  handleVideoSelected = (e) => {
+  // Called with React's change event, and with the native one from the
+  // listener handleOpenVideoInput() adds.
+  handleVideoSelected = (e: Event | ChangeEvent<HTMLInputElement>) => {
     if (this.state.isReplayingVideo) {
       this.setState({
         isReplayingVideo: false
       })
     }
 
-    const files = e.target.files || e.dataTransfer.files
+    const files =
+      (e.target as HTMLInputElement).files ||
+      (e as unknown as DragEvent).dataTransfer!.files
     if (files.length === 0) return
 
     const startedAt = new Date().getTime()
     const video = files[0]
 
-    e.target.value = null
+    // null clears the selection, like ''.
+    ;(e.target as HTMLInputElement).value = null as unknown as string
 
     const extension = video.type === 'video/quicktime' ? 'mov' : undefined
 
@@ -657,7 +791,7 @@ export default class VideoRecorder extends Component {
           videoUrl: window.URL.createObjectURL(video)
         })
 
-        this.props.onRecordingComplete(
+        this.props.onRecordingComplete!(
           video,
           startedAt,
           thumbnail,
@@ -675,11 +809,11 @@ export default class VideoRecorder extends Component {
       this.props.onOpenVideoInput()
     }
 
-    this.videoInput.current.value = null
-    this.videoInput.current.click()
+    this.videoInput.current!.value = null as unknown as string
+    this.videoInput.current!.click()
 
     // fixes a bug on iPhone where it doesn't save the recorded video on the second time (if you press the 'Use another video' button)
-    this.videoInput.current.addEventListener('change', this.handleVideoSelected)
+    this.videoInput.current!.addEventListener('change', this.handleVideoSelected)
   }
 
   handleStopReplaying = () => {
@@ -703,8 +837,8 @@ export default class VideoRecorder extends Component {
   }
 
   handleReplayVideoClick = () => {
-    if (this.replayVideo.paused && !this.props.showReplayControls) {
-      this.replayVideo.play()
+    if (this.replayVideo!.paused && !this.props.showReplayControls) {
+      this.replayVideo!.play()
     }
 
     // fixes bug where seeking control during autoplay is not available until the video is almost completely played through
@@ -747,17 +881,19 @@ export default class VideoRecorder extends Component {
     const shouldUseVideoInput =
       useVideoInput || (!isInlineRecordingSupported && isVideoInputSupported)
 
-    const videoInput = shouldUseVideoInput ? (
-      <input
-        ref={this.videoInput}
-        key='videoInput'
-        type='file'
-        accept='video/*'
-        capture={useVideoInput ? undefined : 'user'}
-        style={{ display: 'none' }}
-        onChange={this.handleVideoSelected}
-      />
-    ) : null
+    const videoInput = shouldUseVideoInput
+      ? (
+          <input
+            ref={this.videoInput}
+            key='videoInput'
+            type='file'
+            accept='video/*'
+            capture={useVideoInput ? undefined : 'user'}
+            style={{ display: 'none' }}
+            onChange={this.handleVideoSelected}
+          />
+        )
+      : null
 
     if (isReplayingVideo) {
       return (
@@ -796,9 +932,11 @@ export default class VideoRecorder extends Component {
     if (isCameraOn) {
       // Enable switch camera button, only if not recording and multiple video sources available
       const switchCameraControl =
-        availableDeviceIds && availableDeviceIds.length >= 2 && !isRecording ? (
-          <SwitchCameraView onClick={this.handleSwitchCamera} />
-        ) : null
+        availableDeviceIds && availableDeviceIds.length >= 2 && !isRecording
+          ? (
+              <SwitchCameraView onClick={this.handleSwitchCamera} />
+            )
+          : null
 
       return (
         <CameraView key='camera'>

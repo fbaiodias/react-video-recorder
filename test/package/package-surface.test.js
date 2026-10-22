@@ -95,15 +95,12 @@ describe('published package', () => {
   })
 
   it.each(PUBLIC_MODULES)(
-    'react-video-recorder%s is CommonJS with a default export',
+    'react-video-recorder%s is CommonJS with ES module interop',
     (subpath) => {
       const mod = requireFromConsumer(`react-video-recorder${subpath}`)
-      if (subpath === '/lib/custom-errors') {
-        expect(mod.__esModule).toBe(true)
-        return
-      }
       expect(mod.__esModule).toBe(true)
-      expect(mod.default).toBeDefined()
+      // Every module but custom-errors has a default export.
+      expect(subpath === '/lib/custom-errors' || mod.default !== undefined).toBe(true)
     }
   )
 

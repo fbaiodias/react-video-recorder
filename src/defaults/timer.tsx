@@ -21,13 +21,26 @@ const RecIcon = styled.div`
   margin-left: 0;
 `
 
-class Timer extends Component {
+export interface TimerProps {
+  /** In milliseconds. When set, the timer counts down from it. */
+  timeLimit?: number
+  defaultText?: string
+}
+
+interface TimerState {
+  seconds: number
+  human: string
+}
+
+class Timer extends Component<TimerProps, TimerState> {
   static propTypes = {
     timeLimit: PropTypes.number,
     defaultText: PropTypes.string
   }
 
-  constructor (props) {
+  declare timer: ReturnType<typeof setInterval>
+
+  constructor (props: TimerProps) {
     super(props)
 
     const nextSeconds = props.timeLimit ? props.timeLimit / 1000 : 0
@@ -50,13 +63,13 @@ class Timer extends Component {
     }, 1000)
   }
 
-  pad (unit) {
-    var str = '' + unit
-    var pad = '00'
+  pad (unit: number) {
+    const str = '' + unit
+    const pad = '00'
     return pad.substring(0, pad.length - str.length) + str
   }
 
-  getState (seconds) {
+  getState (seconds: number): TimerState {
     const minutes = Math.floor(seconds / 60)
 
     const humanTime =
@@ -65,7 +78,7 @@ class Timer extends Component {
         : `${seconds - minutes * 60}s`
 
     return {
-      seconds: seconds,
+      seconds,
       human: humanTime
     }
   }
@@ -73,7 +86,8 @@ class Timer extends Component {
   render () {
     const defaultText = this.props.defaultText || '0:00'
     return (
-      <Text {...this.props}>
+      // The props pass through to the styled div, which drops the unknown ones.
+      <Text {...(this.props as object)}>
         <RecIcon />
         {this.state.human || defaultText}
       </Text>

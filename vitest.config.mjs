@@ -3,6 +3,8 @@ import jsxInJs from './test/jsx-in-js.mjs'
 
 export default defineConfig({
   plugins: [jsxInJs()],
+  // Match the classic JSX runtime that Babel uses for lib/.
+  oxc: { jsx: { runtime: 'classic' } },
   test: {
     // Known bug pinned by test/unit/lifecycle.test.js: unmounting during the
     // countdown still runs startRecording(), which throws in a promise nobody

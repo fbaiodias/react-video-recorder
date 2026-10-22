@@ -1,6 +1,11 @@
 import styled from 'styled-components'
 
-const Button = styled.button`
+interface ButtonProps {
+  color?: string
+  backgroundColor?: string
+}
+
+const Button = styled.button<ButtonProps>`
   background: ${(props) => props.backgroundColor};
   color: ${(props) => props.color};
   border-radius: 4px;

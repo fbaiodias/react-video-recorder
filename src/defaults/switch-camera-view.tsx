@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 import SVGInline from 'react-svg-inline'
 import styled from 'styled-components'
 
@@ -23,7 +24,7 @@ const icon = `
 </svg>
 `
 
-const SwitchCameraView = (props) => (
+const SwitchCameraView = (props: ComponentPropsWithoutRef<'div'>) => (
   <SVGWrapper {...props}>
     <SVGInline svg={icon} fill='white' />
   </SVGWrapper>
