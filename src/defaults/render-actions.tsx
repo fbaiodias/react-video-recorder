@@ -6,6 +6,7 @@ import RecordButton from './record-button.tsx'
 import StopButton from './stop-button.tsx'
 import Timer from './timer.tsx'
 import Countdown from './countdown.tsx'
+import { translateText } from '../translate.ts'
 
 /** Localizes the default UI's texts, e.g. `t('Turn my camera ON')` */
 export type Translate = (text: string) => ReactNode
@@ -105,6 +106,7 @@ const Actions = ({
       return (
         <StopButton
           type='button'
+          aria-label={translateText(t, 'Stop recording')}
           onClick={onStopRecording}
           data-qa='stop-recording'
         />

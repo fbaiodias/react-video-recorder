@@ -9,6 +9,7 @@ const DisconnectedView = () => {
       <span className='SVGInline'>
         <svg
           className='SVGInline-svg'
+          aria-hidden='true'
           width='210px'
           height='150px'
           viewBox='0 0 210 150'

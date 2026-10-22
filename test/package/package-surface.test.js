@@ -143,6 +143,8 @@ describe('published package', () => {
       'lib/styles.css',
       'lib/styles.d.ts',
       'lib/styles.js',
+      'lib/translate.d.ts',
+      'lib/translate.js',
       'lib/types.d.ts',
       'lib/types.js',
       'lib/use-video-recorder.d.ts',

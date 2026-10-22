@@ -313,6 +313,70 @@ describe('render*View props', () => {
   })
 })
 
+describe('accessibility', () => {
+  it('names the icon-only buttons', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBe(
+      r.byQa('start-recording')
+    )
+    await startRecording(r)
+    expect(screen.getByRole('button', { name: 'Stop recording' })).toBe(
+      r.byQa('stop-recording')
+    )
+  })
+
+  it('translates the names with t, falling back to English', async () => {
+    installFakeMedia()
+    const r = renderRecorder({
+      t: (text) => (text === 'Start recording' ? 'Gravar' : <b>{text}</b>)
+    })
+    await turnOnCamera(r)
+    expect(r.byQa('start-recording').getAttribute('aria-label')).toBe('Gravar')
+    await startRecording(r)
+    expect(r.byQa('stop-recording').getAttribute('aria-label')).toBe(
+      'Stop recording'
+    )
+  })
+
+  it('makes the camera switch a named button that works with the keyboard', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')]
+    })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    const toggle = screen.getByRole('button', { name: 'Switch camera' })
+    expect(toggle.tabIndex).toBe(0)
+
+    fireEvent.keyDown(toggle, { key: 'Enter' })
+    await advance(0)
+    expect(media.getUserMedia).toHaveBeenCalledTimes(2)
+    await advance(200)
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Switch camera' }), {
+      key: ' '
+    })
+    await advance(0)
+    expect(media.getUserMedia).toHaveBeenCalledTimes(3)
+    expect(r.events.filter((name) => name === 'onSwitchCamera')).toHaveLength(2)
+  })
+
+  it('hides the decorative icons from screen readers', async () => {
+    installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')]
+    })
+    const r = renderRecorder()
+    expect(r.container.querySelector('svg').getAttribute('aria-hidden')).toBe(
+      'true'
+    )
+    await turnOnCamera(r)
+    expect(r.container.querySelector('svg').getAttribute('aria-hidden')).toBe(
+      'true'
+    )
+  })
+})
+
 describe('the t prop', () => {
   it('translates every default label', async () => {
     installFakeMedia()
@@ -329,6 +393,8 @@ describe('the t prop', () => {
     expect([...new Set(t.mock.calls.map(([text]) => text))].sort()).toEqual([
       'PRESS',
       'REC',
+      'Start recording',
+      'Stop recording',
       'Turn my camera ON',
       'Use another video',
       'WHEN READY'

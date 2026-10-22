@@ -19,7 +19,11 @@ const StopButton = ({
   useStyles()
   return (
     <div className='rvr-stop-button'>
-      <button className={cx('rvr-stop-button__button', className)} {...props} />
+      <button
+        className={cx('rvr-stop-button__button', className)}
+        aria-label='Stop recording'
+        {...props}
+      />
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import type { Translate } from './render-actions.tsx'
 import { cx, useStyles } from '../styles.ts'
+import { translateText } from '../translate.ts'
 
 export interface RecordButtonProps extends ComponentPropsWithoutRef<'button'> {
   t: Translate
@@ -31,6 +32,7 @@ const RecordButton = ({
       <div className='rvr-record-button__border'>
         <button
           className={cx('rvr-record-button__button', className)}
+          aria-label={translateText(t, 'Start recording')}
           {...props}
         />
       </div>

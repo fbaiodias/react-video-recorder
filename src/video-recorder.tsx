@@ -11,6 +11,7 @@ import SwitchCameraView from './defaults/switch-camera-view.tsx'
 import defaultRenderActions from './defaults/render-actions.tsx'
 import { useVideoRecorder } from './use-video-recorder.ts'
 import { cx, useStyles } from './styles.ts'
+import { translateText } from './translate.ts'
 import type { VideoRecorderHandle, VideoRecorderProps } from './types.ts'
 
 const defaultRenderUnsupportedView = () => <UnsupportedView />
@@ -157,7 +158,10 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
           availableDeviceIds &&
           availableDeviceIds.length >= 2 &&
           !isRecording ? (
-            <SwitchCameraView onClick={recorder.switchCamera} />
+            <SwitchCameraView
+              onClick={recorder.switchCamera}
+              aria-label={translateText(t, 'Switch camera')}
+            />
           ) : null
 
         return (

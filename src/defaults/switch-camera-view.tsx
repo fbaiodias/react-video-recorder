@@ -1,7 +1,16 @@
 'use client'
 
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react'
 import { cx, useStyles } from '../styles.ts'
+
+// Enter and Space activate it like a <button>. (A real <button> would bring
+// its own styles into the camera view.)
+const clickOnKey = (event: KeyboardEvent<HTMLDivElement>) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.currentTarget.click()
+  }
+}
 
 const SwitchCameraView = ({
   className,
@@ -9,10 +18,18 @@ const SwitchCameraView = ({
 }: ComponentPropsWithoutRef<'div'>) => {
   useStyles()
   return (
-    <div className={cx('rvr-switch-camera', className)} {...props}>
+    <div
+      className={cx('rvr-switch-camera', className)}
+      role='button'
+      tabIndex={0}
+      aria-label='Switch camera'
+      onKeyDown={clickOnKey}
+      {...props}
+    >
       <span className='SVGInline'>
         <svg
           className='SVGInline-svg'
+          aria-hidden='true'
           fill='white'
           width='64px'
           height='64px'
