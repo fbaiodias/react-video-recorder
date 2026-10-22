@@ -5,11 +5,13 @@ import { vi } from 'vitest'
 // MediaRecorder emits `dataavailable` every `timeslice` ms while recording and,
 // after stop(), one last `dataavailable` followed by `stop` in a later task.
 
-export const videoDevice = (deviceId, label = deviceId) => ({
+export const videoDevice = (deviceId, label = deviceId, facingMode) => ({
   kind: 'videoinput',
   deviceId,
   label,
-  groupId: 'group'
+  groupId: 'group',
+  // Not part of MediaDeviceInfo; the fake stream reports it in getSettings().
+  facingMode
 })
 
 export const audioDevice = (deviceId) => ({
@@ -23,26 +25,35 @@ export const mediaError = (name, message = name) =>
   Object.assign(new Error(message), { name })
 
 export class FakeMediaStreamTrack {
-  constructor (kind) {
+  constructor (kind, settings = {}) {
     this.kind = kind
+    this.settings = settings
     this.readyState = 'live'
     this.stop = vi.fn(() => {
       this.readyState = 'ended'
     })
   }
+
+  getSettings () {
+    return this.settings
+  }
 }
 
 export class FakeMediaStream {
-  constructor (constraints) {
+  constructor (constraints, videoSettings = {}) {
     this.constraints = constraints
     this.tracks = [
-      new FakeMediaStreamTrack('video'),
+      new FakeMediaStreamTrack('video', videoSettings),
       new FakeMediaStreamTrack('audio')
     ]
   }
 
   getTracks () {
     return this.tracks
+  }
+
+  getVideoTracks () {
+    return this.tracks.filter((track) => track.kind === 'video')
   }
 
   get isStopped () {
@@ -129,6 +140,8 @@ export function installFakeMedia ({
   mediaDevices = true,
   inputCapture = false,
   recorderEmitsData = true,
+  // Like browsers, list cameras with empty ids until access is granted.
+  hideDeviceIdsUntilPermission = false,
   supportedMimeTypes = [
     'video/webm;codecs="vp8,opus"',
     'video/webm;codecs=h264',
@@ -153,9 +166,30 @@ export function installFakeMedia ({
     }
   }
 
-  media.enumerateDevices = vi.fn(() => Promise.resolve(media.devices))
+  media.enumerateDevices = vi.fn(() =>
+    Promise.resolve(
+      hideDeviceIdsUntilPermission && media.streams.length === 0
+        ? media.devices.map((device) => ({ ...device, deviceId: '' }))
+        : media.devices
+    )
+  )
   media.getUserMedia = vi.fn((constraints) => {
-    const stream = new FakeMediaStream(constraints)
+    const cameras = media.devices.filter((device) => device.kind === 'videoinput')
+    const exact = constraints.video && constraints.video.deviceId
+    const requestedId = exact && (exact.exact ?? exact)
+    const camera = requestedId
+      ? cameras.find((device) => device.deviceId === requestedId)
+      : cameras.find((device) => device.facingMode === constraints.video?.facingMode) ||
+        cameras[0]
+    if (constraints.video && !camera) {
+      return Promise.reject(
+        mediaError(requestedId ? 'OverconstrainedError' : 'NotFoundError')
+      )
+    }
+    const stream = new FakeMediaStream(
+      constraints,
+      camera ? { deviceId: camera.deviceId, facingMode: camera.facingMode } : {}
+    )
     media.streams.push(stream)
     return Promise.resolve(stream)
   })

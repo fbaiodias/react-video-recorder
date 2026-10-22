@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
-import merge from 'lodash.merge'
 import fixWebmDuration from 'fix-webm-duration'
 
 import getVideoInfo, { captureThumb } from './get-video-info.ts'
@@ -90,6 +89,27 @@ export function getStatus (state: VideoRecorderState): VideoRecorderStatus {
 
 type Timeout = ReturnType<typeof setTimeout>
 
+// The constraints, asking for this exact camera.
+function withDevice (
+  constraints: MediaStreamConstraints,
+  deviceId: string
+): MediaStreamConstraints {
+  const { video } = constraints
+  if (video === false) return constraints
+  return {
+    ...constraints,
+    video: {
+      ...(typeof video === 'object' ? video : {}),
+      deviceId: { exact: deviceId }
+    }
+  }
+}
+
+function getVideoSettings (stream: MediaStream): MediaTrackSettings {
+  const track = stream.getVideoTracks && stream.getVideoTracks()[0]
+  return (track && track.getSettings && track.getSettings()) || {}
+}
+
 // Everything that isn't rendered: media objects, timers and DOM elements.
 interface Internals {
   mounted: boolean
@@ -156,22 +176,17 @@ function createRecorder (
         if (!isCurrent(generation)) return
 
         const videoDevices = mediaDevices.filter((x) => x.kind === 'videoinput')
-        if (
-          deviceId &&
-          videoDevices[0] &&
-          videoDevices.find((x) => x.deviceId) === undefined
-        ) {
+        if (deviceId && !videoDevices.some((x) => x.deviceId === deviceId)) {
           return handleError(new ReactVideoRecorderDeviceUnavailableError())
         }
-
-        const currentDeviceId =
-          typeof deviceId === 'string' ? deviceId : videoDevices[0].deviceId
 
         setState({
           isConnecting: true,
           isReplayingVideo: false,
           thereWasAnError: false,
-          currentDeviceId,
+          // Corrected from the stream's settings once it arrives.
+          currentDeviceId:
+            deviceId || (videoDevices[0] && videoDevices[0].deviceId) || null,
           availableDeviceIds: videoDevices.map((x) => x.deviceId),
           error: null
         })
@@ -181,16 +196,12 @@ function createRecorder (
           video: true
         }
 
-        const currentConstraints = merge(
-          {
-            video: {
-              deviceId: {
-                exact: currentDeviceId
-              }
-            }
-          },
-          getOptions().constraints
-        )
+        // Without a requested camera, the constraints decide (e.g. with
+        // facingMode). Browsers only list device ids after access is granted.
+        const { constraints } = getOptions()
+        const currentConstraints = deviceId
+          ? withDevice(constraints, deviceId)
+          : constraints
 
         navigator.mediaDevices
           .getUserMedia(currentConstraints)
@@ -255,14 +266,29 @@ function createRecorder (
     }
 
     r.stream = stream
+    const settings = getVideoSettings(stream)
     setState({
       isCameraOn: true,
-      stream
+      stream,
+      currentDeviceId: settings.deviceId || getState().currentDeviceId
     })
     const { onCameraOn } = getOptions()
     if (onCameraOn) {
       onCameraOn()
     }
+
+    // With access granted, the camera list has real ids to switch between.
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((mediaDevices) => {
+        if (!isCurrent(generation)) return
+        setState({
+          availableDeviceIds: mediaDevices
+            .filter((x) => x.kind === 'videoinput')
+            .map((x) => x.deviceId)
+        })
+      })
+      .catch(() => {})
 
     // there is probably a better way
     // but this makes sure the start recording button
