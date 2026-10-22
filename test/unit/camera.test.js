@@ -123,7 +123,7 @@ describe('turning the camera on', () => {
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
     expect(r.callbacks.onError).toHaveBeenCalledWith(error)
     expect(r.container.textContent).toContain(
-      'Oh snap! Your browser failed to record your video.Please restart it and try again 👍'
+      "Camera access is blocked. Allow it in your browser's site settings and try again."
     )
     expect(r.container.querySelectorAll('button')).toHaveLength(0)
     expect(r.events).toEqual(['onTurnOnCamera', 'onError'])
@@ -142,8 +142,59 @@ describe('turning the camera on', () => {
     await click(r.byQa('turn-on-camera'))
 
     expect(r.callbacks.onError).toHaveBeenCalledWith(fallbackError)
-    expect(r.container.textContent).toContain('Oh snap!')
+    expect(r.container.textContent).toContain('Camera access is blocked.')
     takeConsole('warn')
+    takeConsole('error')
+  })
+
+  it('says when the camera is in use by another app', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementation(() =>
+      Promise.reject(mediaError('NotReadableError'))
+    )
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain(
+      'The camera is in use by another app. Close it and try again.'
+    )
+    takeConsole('warn')
+    takeConsole('error')
+  })
+
+  it('keeps the general message for other errors', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('UnknownError'))
+    )
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain(
+      'Oh snap! Your browser failed to record your video.Please restart it and try again 👍'
+    )
+    takeConsole('error')
+  })
+
+  it('translates the error messages with t, falling back to English', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('NotFoundError'))
+    )
+    const dictionary = {
+      'No camera was found. Connect one and try again.': 'Nenhuma câmara.'
+    }
+    const r = renderRecorder({ t: (text) => dictionary[text] })
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain('Nenhuma câmara.')
+
+    await act(async () => r.actions().onTurnOnCamera())
+    await advance(200)
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('UnknownError'))
+    )
+    await act(async () => r.actions().onTurnOffCamera())
+    await act(async () => r.actions().onTurnOnCamera())
+    // No translation for these: English.
+    expect(r.container.textContent).toContain('Oh snap!')
     takeConsole('error')
   })
 
@@ -167,7 +218,9 @@ describe('turning the camera on', () => {
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
     const [error] = r.callbacks.onError.mock.calls[0]
     expect(error.name).toBe('NotFoundError')
-    expect(r.container.textContent).toContain('Oh snap!')
+    expect(r.container.textContent).toContain(
+      'No camera was found. Connect one and try again.'
+    )
     takeConsole('error')
   })
 

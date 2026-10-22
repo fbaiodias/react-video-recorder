@@ -185,6 +185,7 @@ describe('published package', () => {
           "ReactVideoRecorderRecordedBlobsUnavailableError: function",
           "VideoRecorder: object",
           "default: object",
+          "getErrorCode: function",
           "useVideoRecorder: function",
         ],
         "/lib": [
@@ -196,6 +197,7 @@ describe('published package', () => {
           "ReactVideoRecorderRecordedBlobsUnavailableError: function",
           "VideoRecorder: object",
           "default: object",
+          "getErrorCode: function",
           "useVideoRecorder: function",
         ],
         "/lib/custom-errors": [
@@ -204,6 +206,7 @@ describe('published package', () => {
           "ReactVideoRecorderDeviceUnavailableError: function",
           "ReactVideoRecorderMediaRecorderUnavailableError: function",
           "ReactVideoRecorderRecordedBlobsUnavailableError: function",
+          "getErrorCode: function",
         ],
         "/lib/defaults/button": [
           "default: object",
@@ -254,6 +257,7 @@ describe('published package', () => {
           "ReactVideoRecorderRecordedBlobsUnavailableError: function",
           "VideoRecorder: object",
           "default: object",
+          "getErrorCode: function",
           "useVideoRecorder: function",
         ],
         "/lib/video-recorder": [

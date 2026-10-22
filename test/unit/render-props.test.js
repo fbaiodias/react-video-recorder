@@ -334,7 +334,9 @@ describe('render*View props', () => {
     await click(r.byQa('turn-on-camera'))
 
     expect(screen.getByText('NotAllowedError')).toBeTruthy()
-    expect(renderErrorView.mock.lastCall).toEqual([{ error }])
+    expect(renderErrorView.mock.lastCall).toEqual([
+      { error, errorCode: 'permission-denied', t: expect.any(Function) }
+    ])
     takeConsole('error')
   })
 

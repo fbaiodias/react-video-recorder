@@ -58,13 +58,26 @@ test('error', async ({ page }) => {
   await page.addInitScript(() => {
     navigator.mediaDevices.getUserMedia = () =>
       Promise.reject(
-        Object.assign(new Error('denied'), { name: 'NotAllowedError' })
+        Object.assign(new Error('failed'), { name: 'UnknownError' })
       )
   })
   await openHarness(page)
   await page.click(qa('turn-on-camera'))
   await page.getByText('Oh snap!').waitFor()
   await screenshot(page, 'error')
+})
+
+test('error: camera blocked', async ({ page }) => {
+  await page.addInitScript(() => {
+    navigator.mediaDevices.getUserMedia = () =>
+      Promise.reject(
+        Object.assign(new Error('denied'), { name: 'NotAllowedError' })
+      )
+  })
+  await openHarness(page)
+  await page.click(qa('turn-on-camera'))
+  await page.getByText('Camera access is blocked.', { exact: false }).waitFor()
+  await screenshot(page, 'error-camera-blocked')
 })
 
 test('unsupported', async ({ page }) => {

@@ -9,7 +9,8 @@ import {
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
   ReactVideoRecorderMediaRecorderUnavailableError,
-  ReactVideoRecorderDeviceUnavailableError
+  ReactVideoRecorderDeviceUnavailableError,
+  getErrorCode
 } from './custom-errors.ts'
 import type {
   UseVideoRecorderOptions,
@@ -61,6 +62,8 @@ const initialState: VideoRecorderState = {
   isReplayVideoMuted: true,
   thereWasAnError: false,
   error: null,
+  errorCode: null,
+  permission: 'unknown',
   streamIsReady: false,
   isInlineRecordingSupported: null,
   isVideoInputSupported: null,
@@ -132,6 +135,7 @@ interface Internals {
   initialActionPending: boolean
   stream?: MediaStream
   readyStream?: MediaStream
+  stopWatchingPermission?: () => void
   mediaRecorder?: MediaRecorder
   recordedBlobs: Blob[]
   thumbnail: Blob | null
@@ -199,6 +203,7 @@ function createRecorder(
           isConnecting: true,
           isReplayingVideo: false,
           thereWasAnError: false,
+          errorCode: null,
           // Corrected from the stream's settings once it arrives.
           currentDeviceId:
             deviceId || (videoDevices[0] && videoDevices[0].deviceId) || null,
@@ -298,6 +303,7 @@ function createRecorder(
     setState({
       isCameraOn: true,
       stream,
+      permission: 'granted',
       facingMode: settings.facingMode,
       currentDeviceId: settings.deviceId || getState().currentDeviceId
     })
@@ -347,7 +353,11 @@ function createRecorder(
       isPaused: false,
       ...(wasCountingDown ? { isRunningCountdown: false } : {}),
       thereWasAnError: true,
-      error: err
+      error: err,
+      errorCode: getErrorCode(err),
+      ...(getErrorCode(err) === 'permission-denied'
+        ? { permission: 'denied' as const }
+        : {})
     })
 
     if (getState().isCameraOn) {
@@ -641,7 +651,7 @@ function createRecorder(
     if (files.length === 0) return
 
     if (getState().thereWasAnError) {
-      setState({ thereWasAnError: false, error: null })
+      setState({ thereWasAnError: false, error: null, errorCode: null })
     }
 
     const startedAt = new Date().getTime()
@@ -725,9 +735,29 @@ function createRecorder(
     }
   }
 
+  // Follows camera access in the Permissions API, where it's supported.
+  function watchPermission() {
+    const generation = r.generation
+    if (!navigator.permissions || !navigator.permissions.query) return
+    navigator.permissions
+      .query({ name: 'camera' })
+      .then((status) => {
+        if (!isCurrent(generation)) return
+        const update = () => {
+          if (isCurrent(generation)) setState({ permission: status.state })
+        }
+        update()
+        status.addEventListener('change', update)
+        r.stopWatchingPermission = () =>
+          status.removeEventListener('change', update)
+      })
+      .catch(() => {})
+  }
+
   function mount() {
     r.mounted = true
     r.initialActionPending = true
+    watchPermission()
     if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
       navigator.mediaDevices.addEventListener('devicechange', refreshDevices)
     }
@@ -761,6 +791,7 @@ function createRecorder(
     if (navigator.mediaDevices && navigator.mediaDevices.removeEventListener) {
       navigator.mediaDevices.removeEventListener('devicechange', refreshDevices)
     }
+    if (r.stopWatchingPermission) r.stopWatchingPermission()
     r.mounted = false
     r.generation += 1
     r.initialActionPending = false

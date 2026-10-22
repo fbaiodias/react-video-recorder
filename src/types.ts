@@ -3,8 +3,9 @@ import type {
   RenderActionsProps,
   Translate
 } from './defaults/render-actions.tsx'
+import type { VideoRecorderErrorCode } from './custom-errors.ts'
 
-export type { RenderActionsProps, Translate }
+export type { RenderActionsProps, Translate, VideoRecorderErrorCode }
 
 /** What onError and renderErrorView receive: an Error, or MediaRecorder's error event */
 export type VideoRecorderError = Error | Event
@@ -76,7 +77,12 @@ export interface VideoRecorderProps extends UseVideoRecorderOptions {
     videoInput: ReactElement | null
   }) => ReactNode
   renderUnsupportedView?: () => ReactNode
-  renderErrorView?: (props: { error: VideoRecorderError | null }) => ReactNode
+  renderErrorView?: (props: {
+    error: VideoRecorderError | null
+    /** What kind of error it is, e.g. 'permission-denied' */
+    errorCode: VideoRecorderErrorCode | null
+    t: Translate
+  }) => ReactNode
   renderActions?: (props: RenderActionsProps) => ReactNode
 
   cameraViewClassName?: string
@@ -104,6 +110,14 @@ export interface VideoRecorderState {
   isReplayVideoMuted: boolean
   thereWasAnError: boolean
   error: VideoRecorderError | null
+  /** What kind of error it is, e.g. 'permission-denied' (see getErrorCode) */
+  errorCode: VideoRecorderErrorCode | null
+  /**
+   * Camera access as the browser's Permissions API reports it, kept up to
+   * date. 'unknown' where the API can't tell (e.g. some browsers don't
+   * support querying the camera).
+   */
+  permission: VideoRecorderPermission
   stream: MediaStream | undefined
   /** The camera's facingMode, when the browser reports it ('user', 'environment', ...) */
   facingMode?: string
@@ -122,6 +136,9 @@ export interface VideoRecorderState {
   /** The recording, when replaying one */
   fixedVideoBlob?: Blob
 }
+
+export type VideoRecorderPermission =
+  'unknown' | 'prompt' | 'granted' | 'denied'
 
 export interface VideoRecorderDevice {
   deviceId: string

@@ -11,7 +11,8 @@ export {
   ReactVideoRecorderRecordedBlobsUnavailableError,
   ReactVideoRecorderDataAvailableTimeoutError,
   ReactVideoRecorderMediaRecorderUnavailableError,
-  ReactVideoRecorderDeviceUnavailableError
+  ReactVideoRecorderDeviceUnavailableError,
+  getErrorCode
 } from './custom-errors.ts'
 export type {
   RenderActionsProps,
@@ -21,6 +22,8 @@ export type {
   VideoRecorderController,
   VideoRecorderDevice,
   VideoRecorderError,
+  VideoRecorderErrorCode,
+  VideoRecorderPermission,
   VideoRecorderHandle,
   VideoRecorderProps,
   VideoRecorderState,

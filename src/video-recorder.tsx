@@ -12,10 +12,21 @@ import defaultRenderActions from './defaults/render-actions.tsx'
 import { useVideoRecorder } from './use-video-recorder.ts'
 import { cx, useStyles } from './styles.ts'
 import { translateText } from './translate.ts'
-import type { VideoRecorderHandle, VideoRecorderProps } from './types.ts'
+import type {
+  Translate,
+  VideoRecorderErrorCode,
+  VideoRecorderHandle,
+  VideoRecorderProps
+} from './types.ts'
 
 const defaultRenderUnsupportedView = () => <UnsupportedView />
-const defaultRenderErrorView = () => <ErrorView />
+const defaultRenderErrorView = ({
+  errorCode,
+  t
+}: {
+  errorCode: VideoRecorderErrorCode | null
+  t: Translate
+}) => <ErrorView errorCode={errorCode} t={t} />
 const defaultRenderVideoInputView = ({
   videoInput
 }: {
@@ -135,7 +146,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
         // Keep the hidden input, so picking another file can retry.
         return (
           <>
-            {renderErrorView({ error })}
+            {renderErrorView({ error, errorCode: state.errorCode, t })}
             {videoInput}
           </>
         )
@@ -150,7 +161,7 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       }
 
       if (thereWasAnError) {
-        return renderErrorView({ error })
+        return renderErrorView({ error, errorCode: state.errorCode, t })
       }
 
       if (isCameraOn) {

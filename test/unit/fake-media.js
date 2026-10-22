@@ -145,6 +145,9 @@ export function installFakeMedia({
   // When a <video> fires `playing` after getting a camera stream, in ms, or
   // null for never (jsdom doesn't play media).
   videoPlaysAfter = 0,
+  // The camera permission's state, or undefined for a browser without the
+  // Permissions API (like jsdom).
+  permission,
   supportedMimeTypes = [
     'video/webm;codecs="vp8,opus"',
     'video/webm;codecs=h264',
@@ -220,6 +223,26 @@ export function installFakeMedia({
     delete navigator.mediaDevices
   }
 
+  if (permission !== undefined) {
+    const status = Object.assign(new EventTarget(), { state: permission })
+    media.permissionStatus = status
+    // Like the user changing the site's camera setting.
+    media.setPermission = (state) => {
+      status.state = state
+      status.dispatchEvent(new Event('change'))
+    }
+    Object.defineProperty(navigator, 'permissions', {
+      configurable: true,
+      value: {
+        query: vi.fn(({ name }) =>
+          name === 'camera'
+            ? Promise.resolve(status)
+            : Promise.reject(new TypeError(`Unknown permission ${name}`))
+        )
+      }
+    })
+  }
+
   const streams = new WeakMap()
   Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', {
     configurable: true,
@@ -265,6 +288,7 @@ export function uninstallFakeMedia() {
   delete navigator.mediaDevices
   delete window.MediaRecorder
   delete HTMLMediaElement.prototype.srcObject
+  delete navigator.permissions
   if (inputCaptureDescriptor) {
     Object.defineProperty(
       HTMLInputElement.prototype,

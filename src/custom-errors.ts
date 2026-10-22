@@ -43,3 +43,48 @@ export class ReactVideoRecorderDeviceUnavailableError extends Error {
     this.name = 'ReactVideoRecorderDeviceUnavailableError'
   }
 }
+
+/** What kind of problem an error from the recorder is about */
+export type VideoRecorderErrorCode =
+  | 'permission-denied'
+  | 'no-camera'
+  | 'camera-in-use'
+  | 'no-data'
+  | 'recorder-failed'
+  | 'unknown'
+
+const ERROR_CODES: Record<string, VideoRecorderErrorCode> = {
+  // getUserMedia
+  NotAllowedError: 'permission-denied',
+  PermissionDeniedError: 'permission-denied',
+  SecurityError: 'permission-denied',
+  NotFoundError: 'no-camera',
+  DevicesNotFoundError: 'no-camera',
+  OverconstrainedError: 'no-camera',
+  ReactVideoRecorderDeviceUnavailableError: 'no-camera',
+  NotReadableError: 'camera-in-use',
+  TrackStartError: 'camera-in-use',
+  AbortError: 'camera-in-use',
+  // recording
+  ReactVideoRecorderDataAvailableTimeoutError: 'no-data',
+  ReactVideoRecorderDataIssueError: 'no-data',
+  ReactVideoRecorderRecordedBlobsUnavailableError: 'no-data',
+  ReactVideoRecorderMediaRecorderUnavailableError: 'recorder-failed',
+  NotSupportedError: 'recorder-failed',
+  InvalidStateError: 'recorder-failed'
+}
+
+/**
+ * Classifies what onError receives: an Error or DOMException (by its name),
+ * or the MediaRecorder's error event.
+ */
+export function getErrorCode(error: unknown): VideoRecorderErrorCode {
+  if (typeof Event !== 'undefined' && error instanceof Event) {
+    return 'recorder-failed'
+  }
+  const name =
+    error && typeof error === 'object' && 'name' in error
+      ? String(error.name)
+      : ''
+  return ERROR_CODES[name] ?? 'unknown'
+}

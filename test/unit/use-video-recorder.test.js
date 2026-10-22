@@ -102,6 +102,42 @@ describe('useVideoRecorder', () => {
     takeConsole('error')
   })
 
+  it('follows the camera permission', async () => {
+    const media = installFakeMedia({ permission: 'prompt' })
+    render(<CustomRecorder />)
+    await advance(0)
+    expect(controller.state.permission).toBe('prompt')
+
+    await act(async () => media.setPermission('denied'))
+    expect(controller.state.permission).toBe('denied')
+    await act(async () => media.setPermission('granted'))
+    expect(controller.state.permission).toBe('granted')
+  })
+
+  it('learns the permission from getUserMedia without the Permissions API', async () => {
+    const media = installFakeMedia()
+    render(<CustomRecorder />)
+    await advance(0)
+    expect(controller.state.permission).toBe('unknown')
+
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('NotAllowedError'))
+    )
+    await run(() => controller.turnOnCamera())
+    expect(controller.state).toMatchObject({
+      permission: 'denied',
+      errorCode: 'permission-denied'
+    })
+    takeConsole('error')
+
+    await run(() => controller.turnOnCamera())
+    expect(controller.state).toMatchObject({
+      permission: 'granted',
+      errorCode: null,
+      thereWasAnError: false
+    })
+  })
+
   it("reports 'unsupported' without MediaRecorder or a file input fallback", async () => {
     installFakeMedia({ mediaRecorder: false })
     render(<CustomRecorder />)
