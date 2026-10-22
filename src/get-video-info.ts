@@ -1,9 +1,15 @@
-export const captureThumb = (videoTag) =>
+export interface VideoInfo {
+  /** In milliseconds, or null when the file couldn't be read in time */
+  duration: number | null
+  thumbnail: Blob | null
+}
+
+export const captureThumb = (videoTag: HTMLVideoElement): Promise<Blob | null> =>
   new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     canvas.width = videoTag.videoWidth
     canvas.height = videoTag.videoHeight
-    canvas.getContext('2d').drawImage(
+    canvas.getContext('2d')!.drawImage(
       videoTag,
       0, // top
       0, // left
@@ -15,7 +21,7 @@ export const captureThumb = (videoTag) =>
     }, 'image/jpeg')
   })
 
-const getVideoInfo = (videoBlob) =>
+const getVideoInfo = (videoBlob: Blob): Promise<VideoInfo> =>
   new Promise((resolve, reject) => {
     const videoTag = document.createElement('video')
     videoTag.preload = 'metadata'
@@ -39,7 +45,7 @@ const getVideoInfo = (videoBlob) =>
 
     const timeout = setTimeout(handleTimeout, 1000)
 
-    const handleVideoTag = (duration) => {
+    const handleVideoTag = (duration: number) => {
       captureThumb(videoTag)
         .then((thumbnail) => {
           videoTag.pause()

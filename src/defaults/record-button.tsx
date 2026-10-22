@@ -1,8 +1,10 @@
 import React from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
+import type { Translate } from './render-actions'
 
-const Button = styled.button`
+const Button = styled.button<{ color?: string, backgroundColor?: string }>`
   background: ${(props) => props.backgroundColor};
   color: ${(props) => props.color};
   border-radius: 50%;
@@ -50,7 +52,11 @@ Button.defaultProps = {
   backgroundColor: 'white'
 }
 
-const RecordButton = ({ t, ...props }) => (
+export interface RecordButtonProps extends ComponentPropsWithoutRef<'button'> {
+  t: Translate
+}
+
+const RecordButton = ({ t, ...props }: RecordButtonProps) => (
   <RecWrapper>
     <Instructions>
       <div>{t('PRESS')} </div>

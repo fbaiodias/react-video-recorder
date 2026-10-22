@@ -5,6 +5,7 @@ import jsxInJs from '../jsx-in-js.mjs'
 export default defineConfig({
   root: fileURLToPath(new URL('./harness', import.meta.url)),
   plugins: [jsxInJs()],
+  oxc: { jsx: { runtime: 'classic' } },
   // The dependency scan doesn't go through plugins, so it needs its own hint
   // that .js files contain JSX.
   optimizeDeps: {

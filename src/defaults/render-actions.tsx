@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ReactNode } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import Button from './button'
@@ -6,6 +7,42 @@ import RecordButton from './record-button'
 import StopButton from './stop-button'
 import Timer from './timer'
 import Countdown from './countdown'
+
+/** Localizes the default UI's texts, e.g. `t('Turn my camera ON')` */
+export type Translate = (text: string) => ReactNode
+
+/** What VideoRecorder passes to `renderActions` */
+export interface RenderActionsProps {
+  t: Translate
+  /** null until the component has mounted */
+  isVideoInputSupported: boolean | null
+  /** null until the component has mounted */
+  isInlineRecordingSupported: boolean | null
+  thereWasAnError: boolean
+  isRecording: boolean
+  isCameraOn: boolean
+  streamIsReady: boolean
+  isConnecting: boolean
+  /** undefined until the first recording starts */
+  isRunningCountdown: boolean | undefined
+  isReplayingVideo: boolean
+  isReplayVideoMuted: boolean
+  countdownTime: number
+  timeLimit: number | undefined
+  showReplayControls: boolean | undefined
+  replayVideoAutoplayAndLoopOff: boolean | undefined
+  useVideoInput: boolean | undefined
+
+  onTurnOnCamera: () => void
+  onSwitchCamera: () => void
+  onTurnOffCamera: () => void
+  onOpenVideoInput: () => void
+  onStartRecording: () => void
+  onStopRecording: () => void
+  onPauseRecording: () => void
+  onResumeRecording: () => void
+  onStopReplaying: () => void
+}
 
 const ActionsWrapper = styled.div`
   position: absolute;
@@ -43,7 +80,7 @@ const Actions = ({
   onResumeRecording,
   onStopReplaying,
   onConfirm
-}) => {
+}: RenderActionsProps & { onConfirm?: () => void }) => {
   const renderContent = () => {
     const shouldUseVideoInput =
       !isInlineRecordingSupported && isVideoInputSupported
@@ -98,15 +135,17 @@ const Actions = ({
       )
     }
 
-    return shouldUseVideoInput ? (
-      <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-        {t('Record a video')}
-      </Button>
-    ) : (
-      <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
-        {t('Turn my camera ON')}
-      </Button>
-    )
+    return shouldUseVideoInput
+      ? (
+          <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
+            {t('Record a video')}
+          </Button>
+        )
+      : (
+          <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
+            {t('Turn my camera ON')}
+          </Button>
+        )
   }
 
   return (
