@@ -1,3 +1,5 @@
+'use client'
+
 import type { ReactNode } from 'react'
 import Button from './button.tsx'
 import RecordButton from './record-button.tsx'

@@ -1,3 +1,5 @@
+'use client'
+
 import type { ComponentPropsWithoutRef } from 'react'
 import type { Translate } from './render-actions.tsx'
 import { cx, useStyles } from '../styles.ts'

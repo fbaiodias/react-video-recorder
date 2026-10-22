@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
 import fixWebmDuration from 'fix-webm-duration'
 

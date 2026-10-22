@@ -1,3 +1,5 @@
+'use client'
+
 import { useStyles } from '../styles.ts'
 
 const LoadingView = () => {

@@ -1,3 +1,5 @@
+'use client'
+
 import { forwardRef, useImperativeHandle } from 'react'
 import type { ReactElement } from 'react'
 

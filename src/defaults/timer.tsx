@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import type { ComponentPropsWithoutRef } from 'react'
 import { cx, useStyles } from '../styles.ts'

@@ -298,6 +298,34 @@ describe('published package', () => {
     }
   })
 
+  it("marks the modules that use React hooks with 'use client'", () => {
+    const lib = join(root, 'lib')
+    const directive = /^(?:"use strict";\s*)?'use client';/
+    const marked = readdirSync(lib, { recursive: true })
+      .filter((file) => file.endsWith('.js'))
+      .filter((file) => directive.test(readFileSync(join(lib, file), 'utf8')))
+      .map((file) => file.replace(/^esm\//, ''))
+    // So frameworks like Next.js can render the components from server
+    // components; the index, errors and types stay usable on the server.
+    expect([...new Set(marked)].sort()).toEqual([
+      'defaults/button.js',
+      'defaults/countdown.js',
+      'defaults/disconnected-view.js',
+      'defaults/error-view.js',
+      'defaults/loading-view.js',
+      'defaults/record-button.js',
+      'defaults/render-actions.js',
+      'defaults/stop-button.js',
+      'defaults/switch-camera-view.js',
+      'defaults/timer.js',
+      'defaults/unsupported-view.js',
+      'styles.js',
+      'use-video-recorder.js',
+      'video-recorder.js'
+    ])
+    expect(marked).toHaveLength(28)
+  })
+
   it('ships ES2019 syntax, without ?. or ??, for older bundlers', () => {
     const lib = join(root, 'lib')
     const withModernSyntax = readdirSync(lib, { recursive: true })

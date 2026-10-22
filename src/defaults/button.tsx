@@ -1,3 +1,5 @@
+'use client'
+
 import { forwardRef } from 'react'
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react'
 import { cx, useStyles } from '../styles.ts'

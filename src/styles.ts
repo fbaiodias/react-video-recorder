@@ -1,3 +1,5 @@
+'use client'
+
 import { useInsertionEffect } from 'react'
 
 // The default look. Components inject it on first render, so it works without
