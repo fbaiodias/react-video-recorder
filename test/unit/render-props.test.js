@@ -434,6 +434,25 @@ describe('the replay video', () => {
     await advance(0)
   })
 
+  it('warns when play() on click is rejected', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await recordVideo(r)
+    Object.defineProperty(r.video(), 'paused', {
+      value: true,
+      configurable: true
+    })
+    const blocked = mediaError('NotAllowedError')
+    HTMLMediaElement.prototype.play.mockImplementationOnce(() =>
+      Promise.reject(blocked)
+    )
+    fireEvent.click(r.video())
+    await advance(0)
+    expect(takeConsole('warn')).toEqual([
+      ['Could not play the replay video', blocked]
+    ])
+  })
+
   it('does not call play() on click with showReplayControls', async () => {
     installFakeMedia()
     const r = renderRecorder({ showReplayControls: true })

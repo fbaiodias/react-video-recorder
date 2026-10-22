@@ -133,6 +133,21 @@ describe('recording a video inline', () => {
     ])
   })
 
+  it('reports the recording without the duration fix if that fails', async () => {
+    installFakeMedia()
+    const fixError = new Error('Could not parse the WebM')
+    fixWebmDuration.mockImplementationOnce(() => Promise.reject(fixError))
+    const r = renderRecorder()
+    await recordVideo(r)
+
+    const [videoBlob] = r.callbacks.onRecordingComplete.mock.calls[0]
+    expect(await videoBlob.text()).toBe('chunk-1chunk-2chunk-3chunk-4chunk-5')
+    expect(r.byQa('start-replaying')).not.toBeNull()
+    expect(takeConsole('warn')).toEqual([
+      ['Could not fix the WebM duration', fixError]
+    ])
+  })
+
   it('records a single-chunk video as that chunk, not a new Blob', async () => {
     installFakeMedia()
     const r = renderRecorder({ chunkSize: 10000, dataAvailableTimeout: null })

@@ -568,23 +568,35 @@ function createRecorder(
     // if this gets executed too soon, the last chunk of data is lost on FF
     r.mediaRecorder!.ondataavailable = null
 
-    fixVideoMetadata(videoBlob).then((fixedVideoBlob) => {
-      setState({
-        isRecording: false,
-        isPaused: false,
-        isReplayingVideo: true,
-        isReplayVideoMuted: true,
-        fixedVideoBlob,
-        videoUrl: window.URL.createObjectURL(fixedVideoBlob)
+    // Errors thrown by onRecordingComplete stay unhandled, for the app to see.
+    void fixVideoMetadata(videoBlob)
+      .catch((err) => {
+        // The video still plays without the duration fix; don't lose it.
+        console.warn('Could not fix the WebM duration', err)
+        return videoBlob
       })
+      .then((fixedVideoBlob) => {
+        setState({
+          isRecording: false,
+          isPaused: false,
+          isReplayingVideo: true,
+          isReplayVideoMuted: true,
+          fixedVideoBlob,
+          videoUrl: window.URL.createObjectURL(fixedVideoBlob)
+        })
 
-      turnOffCamera()
+        turnOffCamera()
 
-      const { onRecordingComplete } = getOptions()
-      if (onRecordingComplete) {
-        onRecordingComplete(fixedVideoBlob, startedAt, thumbnailBlob, duration)
-      }
-    })
+        const { onRecordingComplete } = getOptions()
+        if (onRecordingComplete) {
+          onRecordingComplete(
+            fixedVideoBlob,
+            startedAt,
+            thumbnailBlob,
+            duration
+          )
+        }
+      })
   }
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
@@ -688,7 +700,9 @@ function createRecorder(
   function handleReplayVideoClick() {
     const { showReplayControls, replayVideoAutoplayAndLoopOff } = getOptions()
     if (r.replayVideo!.paused && !showReplayControls) {
-      r.replayVideo!.play()
+      r.replayVideo!.play().catch((err) => {
+        console.warn('Could not play the replay video', err)
+      })
     }
 
     // fixes bug where seeking control during autoplay is not available until the video is almost completely played through

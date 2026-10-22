@@ -23,8 +23,6 @@
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
     "react/react-in-jsx-scope": "off",
-    // Two known violations, fixed in the next commit.
-    "typescript/no-floating-promises": "warn",
     "eslint/no-unused-vars": [
       "error",
       { "args": "none", "ignoreRestSiblings": true }
