@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { openHarness, qa } from './helpers'
 
-// Screenshots of every view and overlay, taken from the current
-// styled-components UI. When the styling moves to plain CSS, these should
-// still match pixel for pixel. Run with `yarn test:visual`; baselines are
-// macOS-specific, so CI skips this project.
+// Screenshots of every view and overlay. The baselines were taken from the
+// 3.x styled-components UI, which the plain CSS matches pixel for pixel.
+// Run with `pnpm test:visual`; baselines are macOS-specific, so CI skips this
+// project.
 
 test.use({ viewport: { width: 640, height: 480 } })
 
@@ -58,13 +58,26 @@ test('error', async ({ page }) => {
   await page.addInitScript(() => {
     navigator.mediaDevices.getUserMedia = () =>
       Promise.reject(
-        Object.assign(new Error('denied'), { name: 'NotAllowedError' })
+        Object.assign(new Error('failed'), { name: 'UnknownError' })
       )
   })
   await openHarness(page)
   await page.click(qa('turn-on-camera'))
   await page.getByText('Oh snap!').waitFor()
   await screenshot(page, 'error')
+})
+
+test('error: camera blocked', async ({ page }) => {
+  await page.addInitScript(() => {
+    navigator.mediaDevices.getUserMedia = () =>
+      Promise.reject(
+        Object.assign(new Error('denied'), { name: 'NotAllowedError' })
+      )
+  })
+  await openHarness(page)
+  await page.click(qa('turn-on-camera'))
+  await page.getByText('Camera access is blocked.', { exact: false }).waitFor()
+  await screenshot(page, 'error-camera-blocked')
 })
 
 test('unsupported', async ({ page }) => {
@@ -81,7 +94,7 @@ test('native camera fallback', async ({ page }) => {
     delete window.MediaRecorder
     Object.defineProperty(HTMLInputElement.prototype, 'capture', {
       configurable: true,
-      get () {
+      get() {
         return this.getAttribute('capture') || ''
       }
     })
@@ -131,4 +144,27 @@ test('camera ready without mirroring', async ({ page }) => {
   await openHarness(page, { isOnInitially: true, isFlipped: false })
   await page.locator(qa('start-recording')).waitFor()
   await screenshot(page, 'camera-ready')
+})
+
+test.describe('hover', () => {
+  test('default button', async ({ page }) => {
+    await openHarness(page)
+    await page.hover(qa('turn-on-camera'))
+    await screenshot(page, 'hover-button')
+  })
+
+  test('record and stop buttons', async ({ page }) => {
+    await page.clock.install()
+    await openHarness(page, { dataAvailableTimeout: null })
+    await page.click(qa('turn-on-camera'))
+    await page.locator('video').waitFor({ state: 'attached' })
+    await page.clock.runFor(200)
+    await page.hover(qa('start-recording'))
+    await screenshot(page, 'hover-record-button')
+
+    await page.click(qa('start-recording'))
+    await page.clock.runFor(3000)
+    await page.hover(qa('stop-recording'))
+    await screenshot(page, 'hover-stop-button')
+  })
 })

@@ -1,130 +1,317 @@
 # react-video-recorder
 
+A React component (and hook) that records video from the user's camera in the
+browser, shows a countdown, a timer and a replay, and hands you the recording
+as a `Blob`. Where inline recording isn't available (older iOS), it falls back
+to the device's native camera through a file input.
+
+See the [Storybook](https://react-video-recorder.vercel.app/) for demos.
+
 ## Installation
 
 ```sh
+npm install react-video-recorder
+# or
+pnpm add react-video-recorder
+# or
 yarn add react-video-recorder
-
-# Note: this project has react, react-dom, prop-types & styled-components as peerDependencies,
-#       so if you're starting from scratch run this instead:
-yarn add react-video-recorder react react-dom prop-types styled-components
 ```
 
-### Typescript
-
-If using Typescript, typing is available via:
-
-```sh
-yarn add -D @types/react-video-recorder
-```
+It needs `react` and `react-dom` 18 or 19. TypeScript types are included.
 
 ## Usage
 
-Basic usage [(edit in stakblitz)](https://stackblitz.com/edit/react-video-recorder-demo):
-
-```js
-import React from 'react'
-import { render } from 'react-dom'
+```jsx
 import VideoRecorder from 'react-video-recorder'
 
 const App = () => (
   <VideoRecorder
-    onRecordingComplete={(videoBlob) => {
-      // Do something with the video...
-      console.log('videoBlob', videoBlob)
+    onRecordingComplete={(videoBlob, startedAt, thumbnailBlob, duration) => {
+      // Upload videoBlob, show the thumbnail, ...
     }}
   />
 )
-
-render(<App />, document.getElementById('root'))
 ```
 
-Also check the [Storybook](https://react-video-recorder.vercel.app/) for more demos and usage examples.
+`VideoRecorder` is also available as a named export, as is
+`ReactVideoRecorder`.
 
-**Note:** if you click the **"Show info"** button in the top-right corner, you should be able to see a table with the supported prop-types.
+### Props
 
-### Modifying the UI
+| Prop                                                        | Default                        |                                                                                                                                                                                           |
+| ----------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOnInitially`                                             | `false`                        | Turn the camera on (or open the file picker) right away.                                                                                                                                  |
+| `isFlipped`                                                 | `true`                         | Show the camera mirrored. Cameras that report `facingMode: 'environment'` (a phone's back camera) never are.                                                                              |
+| `countdownTime`                                             | `3000`                         | Countdown before recording starts, in ms.                                                                                                                                                 |
+| `timeLimit`                                                 |                                | Stop recording after this many ms of recorded time.                                                                                                                                       |
+| `mimeType`                                                  |                                | Force a mime type. By default, the first one the browser supports out of `video/webm;codecs="vp8,opus"`, `video/webm;codecs=h264`, `video/webm;codecs=vp9`, `video/webm` and `video/mp4`. |
+| `constraints`                                               | `{ audio: true, video: true }` | Passed to [`getUserMedia()`](https://developer.mozilla.org/docs/Web/API/MediaDevices/getUserMedia), e.g. `{ audio: true, video: { facingMode: 'environment', width: 1280 } }`.            |
+| `chunkSize`                                                 | `250`                          | How often the browser hands over recorded data, in ms.                                                                                                                                    |
+| `dataAvailableTimeout`                                      | `500`                          | Fail with `ReactVideoRecorderDataAvailableTimeoutError` when no data has arrived this many ms after the first chunk was due. `null` turns the check off.                                  |
+| `useVideoInput`                                             | `false`                        | Use a file input (pick or capture a video) instead of recording inline.                                                                                                                   |
+| `showReplayControls`                                        | `false`                        | Show the browser's controls on the replay.                                                                                                                                                |
+| `replayVideoAutoplayAndLoopOff`                             | `false`                        | Don't autoplay and loop the replay (best combined with `showReplayControls`).                                                                                                             |
+| `videoControlsList`                                         |                                | The replay's [`controlslist`](https://developer.mozilla.org/docs/Web/API/HTMLMediaElement/controlsList), e.g. `'nodownload'`.                                                             |
+| `disablePictureInPicture`                                   | `false`                        | Disable picture-in-picture on the replay.                                                                                                                                                 |
+| `wrapperClassName`, `cameraViewClassName`, `videoClassName` |                                | Extra class names for the outer element, the camera/replay view and the `<video>`.                                                                                                        |
+| `t`                                                         | `(text) => text`               | Translate the default UI's texts.                                                                                                                                                         |
+| `render*`, `renderActions`                                  |                                | Replace parts of the UI, see below.                                                                                                                                                       |
 
-All the UI can be customized by passing the following props:
+### Callbacks
 
-#### `renderDisconnectedView`
+- `onRecordingComplete(videoBlob, startedAt, thumbnailBlob, duration, extension)`:
+  the recorded (or picked) video. `startedAt` is a timestamp in ms, `duration`
+  is in ms of wall-clock time (pauses included). For a picked file,
+  `thumbnailBlob` and `duration` are `null` when the file couldn't be read in
+  time, and `extension` is `'mov'` for QuickTime files.
+- `onError(error)`: an `Error` (see [errors](#errors)), a `DOMException` from
+  the browser (e.g. `NotAllowedError` when camera access is denied), or the
+  MediaRecorder's `error` event. The error view is shown. `getErrorCode(error)`
+  tells what kind of problem it is.
+- `onTurnOnCamera`, `onCameraOn` (the stream arrived), `onTurnOffCamera`,
+  `onSwitchCamera`, `onStartRecording` (the countdown starts),
+  `onStopRecording`, `onPauseRecording`, `onResumeRecording`,
+  `onOpenVideoInput`, `onStopReplaying`.
 
-View that's rendered before the user enables the camera access.
+### Customizing the UI
 
-**Default value:** `() => <DisconnectedView />`
+Each view can be replaced:
 
-[See `<DisconnectedView />` source here.](src/defaults/disconnected-view.js)
+- `renderDisconnectedView()`: before the camera is on.
+- `renderLoadingView()`: while the camera starts.
+- `renderErrorView({ error, errorCode, t })`: see [errors](#errors) for the
+  codes. The default view says when the camera is blocked, missing or in use.
+- `renderUnsupportedView()`: the browser can't record video.
+- `renderVideoInputView({ videoInput })`: the file input fallback. Render
+  `videoInput`, a hidden `<input type="file">`.
 
-#### `renderLoadingView`
+`renderActions(props)` draws everything on top of the views: the buttons, the
+countdown and the timer. It receives the recorder's state (`isCameraOn`,
+`streamIsReady`, `isConnecting`, `isRunningCountdown`, `isRecording`,
+`isPaused`, `isReplayingVideo`, `thereWasAnError`, ...), the cameras
+(`devices`, `currentDeviceId`), some props (`countdownTime`, `timeLimit`,
+`useVideoInput`, `t`, ...) and the actions: `onTurnOnCamera`,
+`onTurnOffCamera`, `onSwitchCamera`, `onSelectDevice(deviceId)`,
+`onStartRecording`, `onStopRecording`, `onPauseRecording`,
+`onResumeRecording`, `onOpenVideoInput` and `onStopReplaying`. The type is
+`RenderActionsProps`.
 
-View that's rendered while the camera is initializing.
+The record button becomes available once the camera's video is playing (or
+after 1 second if it doesn't), so recordings don't start on a camera that's
+still warming up.
 
-`() => <LoadingView />`
+The default controls have accessible names ("Start recording", "Stop
+recording", "Switch camera"), translated through `t` like the other texts.
 
-[See `<LoadingView />` source here.](src/defaults/loading-view.js)
+The default implementations can be reused:
 
-#### `renderVideoInputView`
+```js
+import renderActions from 'react-video-recorder/lib/defaults/render-actions'
+import Button from 'react-video-recorder/lib/defaults/button'
+import Timer from 'react-video-recorder/lib/defaults/timer'
+import Countdown from 'react-video-recorder/lib/defaults/countdown'
+```
 
-View that's rendered when the browser does not support inline recording but allows opening the native camera (mainly iOS).
+### Styling
 
-**Default value:** `({ videoInput }) => <Fragment>{videoInput}</Fragment/>`
+The default UI uses plain CSS classes starting with `rvr-` (`rvr-wrapper`,
+`rvr-video`, `rvr-button`, `rvr-record-button`, `rvr-timer`, ...). The styles
+are added to the page on first render, in a cascade layer
+(`@layer react-video-recorder`), so any style of your own overrides them,
+whatever its specificity. (Browsers from before cascade layers, such as
+Safari before 15.4, ignore the default styles.)
 
-#### `renderUnsupportedView`
+To restyle without overriding rules, set the theme variables, e.g. on
+`:root` or a parent element:
 
-View that's rendered when the browser does not support recording video.
+```css
+.my-recorder {
+  --rvr-background: #111; /* behind the video */
+  --rvr-color: white; /* text */
+  --rvr-accent: rgb(0 120 255 / 0.8); /* record and stop buttons */
+  --rvr-accent-hover: rgb(0 120 255);
+  --rvr-highlight: #4af; /* "REC" */
+  --rvr-ring: rgb(255 255 255 / 0.4); /* around the record and stop buttons */
+  --rvr-recording-dot: red; /* in the timer */
+  --rvr-button-background: white; /* "Turn my camera ON", ... */
+  --rvr-button-color: black;
+  --rvr-button-hover-background: #eee;
+  --rvr-switch-camera-background: rgb(0 0 0 / 0.3);
+  --rvr-font-family: system-ui;
+  --rvr-mono-font-family: ui-monospace, monospace; /* countdown and timer */
+}
+```
 
-**Default value:** `() => <UnsupportedView />`
+If your Content-Security-Policy doesn't allow inline styles, load the
+stylesheet yourself:
 
-[See `<UnsupportedView />` source here.](src/defaults/unsupported-view.js)
+```js
+import 'react-video-recorder/styles.css'
+```
 
-#### `renderErrorView`
+### Building your own UI with `useVideoRecorder`
 
-View that's rendered an unexpected error occurs.
+The hook has all the recording logic and no UI:
 
-**Default value:** `() => <ErrorView />`
+```jsx
+import { useVideoRecorder } from 'react-video-recorder'
 
-[See `<ErrorView />` source here.](src/defaults/error-view.js)
+const Recorder = () => {
+  const {
+    status, // 'idle', 'connecting', 'ready', 'countdown', 'recording', 'paused', 'replaying', 'error', ...
+    state, // e.g. state.videoUrl, state.devices, state.permission, state.errorCode
+    setCameraVideo,
+    setReplayVideo,
+    turnOnCamera,
+    startRecording,
+    stopRecording,
+    stopReplaying
+  } = useVideoRecorder({
+    countdownTime: 0,
+    onRecordingComplete: (videoBlob) => upload(videoBlob)
+  })
 
-#### `renderActions`
+  return (
+    <div>
+      {status === 'replaying' ? (
+        <video ref={setReplayVideo} src={state.videoUrl} controls />
+      ) : (
+        <video ref={setCameraVideo} autoPlay muted playsInline />
+      )}
 
-Overlay that's rendered on top of the views and that contains the elements like the buttons, the timer or the countdown.
+      {status === 'idle' && (
+        <button onClick={() => turnOnCamera()}>Turn on camera</button>
+      )}
+      {status === 'ready' && <button onClick={startRecording}>Record</button>}
+      {status === 'recording' && <button onClick={stopRecording}>Stop</button>}
+      {status === 'replaying' && (
+        <button onClick={stopReplaying}>Record again</button>
+      )}
+    </div>
+  )
+}
+```
 
-[See the default implementation here.](src/defaults/render-actions.js)
+It takes the same options and callbacks as the component's behavior props
+(everything but the `render*`, class name, `t`, `isFlipped` and replay
+attribute props). Besides the actions above it returns `turnOffCamera`,
+`switchCamera`, `selectDevice(deviceId)`, `pauseRecording`,
+`resumeRecording`, `openVideoInput`, and, for a file input fallback,
+`setVideoInput` and `handleVideoInputChange`. Destructure the result: the
+React Compiler's lint rules treat an object holding callback refs as a ref.
+
+Some of the state:
+
+- `devices`: the cameras as `{ deviceId, label }`, for a camera picker.
+  Browsers only give labels once camera access is granted, so it fills in
+  when the camera turns on, and updates when cameras are plugged in or out.
+- `permission`: `'prompt'`, `'granted'` or `'denied'`, kept up to date
+  through the Permissions API, or `'unknown'` where the browser can't say.
+- `errorCode`: see [errors](#errors).
+
+Without a camera preview (no `setCameraVideo`), the camera is ready as soon
+as its stream arrives.
+
+The component, the hook and the default UI pieces are marked
+`'use client'`, so they work from React Server Components (e.g. Next.js's
+App Router) without a wrapper.
+
+### Ref
+
+A ref to `<VideoRecorder>` has the actions under their 3.x names:
+`turnOnCamera`, `turnOffCamera`, `handleSwitchCamera`, `handleStartRecording`,
+`handleStopRecording`, `handlePauseRecording`, `handleResumeRecording`,
+`handleOpenVideoInput` and `handleStopReplaying`, plus `selectDevice` and the
+current `state`.
+
+### Errors
+
+`getErrorCode(error)` (exported) sorts what `onError` receives into:
+`'permission-denied'`, `'no-camera'`, `'camera-in-use'`, `'no-data'`,
+`'recorder-failed'` or `'unknown'`. The hook's state has it as `errorCode`.
+
+These error classes are exported, and `onError` can receive them (check
+`error.name`):
+
+- `ReactVideoRecorderDataAvailableTimeoutError`: no data arrived in time
+  (see `dataAvailableTimeout`).
+- `ReactVideoRecorderDataIssueError`: the recorder handed over empty data.
+- `ReactVideoRecorderRecordedBlobsUnavailableError`: the recording stopped
+  without any data.
+- `ReactVideoRecorderMediaRecorderUnavailableError`: stop, pause or resume
+  without a recording.
+- `ReactVideoRecorderDeviceUnavailableError`: the camera to switch to is gone.
+
+## Upgrading from 3.x
+
+The props, callbacks, `renderActions` arguments, default UI and import paths
+(including `react-video-recorder/lib/defaults/*`) are the same. What changed:
+
+- **React 18 or newer.** `prop-types` and `styled-components` are no longer
+  needed.
+- **Built-in types.** Uninstall `@types/react-video-recorder`.
+- **Styles.** The default UI is plain CSS and looks the same, but the
+  generated `sc-*` class names are gone: target the `rvr-*` classes or the
+  `*ClassName` props. The styles are in a cascade layer, so your own rules
+  now win even when they're less specific. The default `Button` takes `color`
+  and `backgroundColor` as before, but not styled-components' `as` prop.
+- **Function component.** A ref exposes the actions and `state` (see
+  [Ref](#ref)), not other class internals, and `VideoRecorder.defaultProps` is
+  gone.
+- **Package format.** `lib/` has CommonJS and `lib/esm/` ES modules, both
+  ES2019 instead of ES5, and only the paths in the `exports` map can be
+  imported (every 3.x path is in it).
+- **Cameras.** `constraints` are passed to `getUserMedia()` as given; 3.x
+  forced the first camera's `deviceId`, which overrode `facingMode`.
+  Switching cameras asks for the next camera's `deviceId`. Rear cameras
+  aren't mirrored.
+- **Timing.** The record button appears when the camera's video plays,
+  instead of a fixed 200ms after the stream arrives. `dataAvailableTimeout`
+  now counts from when the first chunk is due, so the error comes `chunkSize`
+  ms later (750ms by default). With a `timeLimit`, paused time no longer
+  counts.
+- **Error view.** It says when the camera is blocked, missing or in use, and
+  its texts go through `t`. Other errors keep the 3.x message.
+- **Fixes.** It works under `React.StrictMode`, cleans up the camera and
+  recorder on unmount, stops recording on errors, shows the new camera after
+  switching, pauses the timer, and doesn't require `onRecordingComplete`.
 
 ## Development
 
-Requirements
-
-`node version ">=22.12"`
-
-Install packages
+Requires Node.js 22.12 or newer and [pnpm](https://pnpm.io/installation). The
+version in `packageManager` is downloaded automatically.
 
 ```sh
-yarn install
-```
-
-Run the storybook demo
-
-```sh
-yarn start
+pnpm install
+pnpm start         # Storybook on http://localhost:6006
 ```
 
 ### Checks
 
 ```sh
-yarn lint          # ESLint (neostandard)
-yarn typecheck     # TypeScript, without emitting: Babel builds lib/
-yarn test          # unit tests (jsdom, fake camera) and published-package checks
-yarn test:e2e      # real recordings in Chromium and Firefox with fake cameras
-yarn test:visual   # screenshots of every UI state (macOS baselines, not run in CI)
+pnpm lint            # Oxlint (with type information) and Prettier's check
+pnpm format          # format everything with Prettier
+pnpm typecheck       # TypeScript
+pnpm test            # unit tests (jsdom with a fake camera) and checks of the built package
+pnpm check:package   # publint and are-the-types-wrong on the packed tarball
+pnpm test:e2e        # real recordings in Chromium and Firefox with fake cameras
+pnpm test:visual     # screenshots of every UI state (macOS baselines, not run in CI)
 ```
 
-The browser tests need Playwright's browsers once: `yarn playwright install chromium firefox`.
+The browser tests need Playwright's browsers once:
+`pnpm exec playwright install chromium firefox`.
 
-The unit tests describe what the component does today, bugs included; those
-are named `[known bug] ...`. Fixing one of those bugs should make its test fail,
-and the fix updates the test.
+`pnpm build` compiles `src/` to `lib/` (CommonJS) and `lib/esm/` (ES modules)
+with `tsc`.
 
-### Committing
+### Committing and releasing
 
-To commit run yarn start then commit. We use Husky to verify before committing.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+Husky lints the staged files and runs the unit tests before each commit.
+
+CI releases with semantic-release: from `main`, and prereleases (e.g.
+`4.0.0-next.1`, under npm's `next` tag) from `next`. It publishes through
+[npm trusted publishing](https://docs.npmjs.com/trusted-publishers), so there's
+no npm token to store. This needs a one-time setup on npmjs.com: in the
+package's settings, add a trusted publisher for GitHub Actions with this
+repository and the `run-checks.yml` workflow.

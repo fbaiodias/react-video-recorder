@@ -22,15 +22,16 @@ beforeEach(() => {
   )
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {})
 
-  vi.spyOn(
-    HTMLCanvasElement.prototype,
-    'getContext'
-  ).mockImplementation(() => ({ drawImage: vi.fn() }))
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+    () => ({ drawImage: vi.fn() })
+  )
   // Async like the real one, but without a timer: fake timers would push a
   // 0ms timeout scheduled mid-tick to 1ms and skew every duration.
   vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(
     (callback, type) => {
-      Promise.resolve().then(() => callback(new Blob(['thumbnail'], { type })))
+      void Promise.resolve().then(() =>
+        callback(new Blob(['thumbnail'], { type }))
+      )
     }
   )
 

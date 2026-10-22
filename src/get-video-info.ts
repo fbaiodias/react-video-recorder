@@ -4,8 +4,10 @@ export interface VideoInfo {
   thumbnail: Blob | null
 }
 
-export const captureThumb = (videoTag: HTMLVideoElement): Promise<Blob | null> =>
-  new Promise((resolve, reject) => {
+export const captureThumb = (
+  videoTag: HTMLVideoElement
+): Promise<Blob | null> =>
+  new Promise((resolve) => {
     const canvas = document.createElement('canvas')
     canvas.width = videoTag.videoWidth
     canvas.height = videoTag.videoHeight
@@ -38,8 +40,7 @@ const getVideoInfo = (videoBlob: Blob): Promise<VideoInfo> =>
         duration: null,
         thumbnail: null
       })
-      videoTag.removeEventListener &&
-        videoTag.removeEventListener('loadeddata', handleLoadedData)
+      videoTag.removeEventListener('loadeddata', handleLoadedData)
       window.URL.revokeObjectURL(videoTag.src)
     }
 

@@ -5,11 +5,13 @@ import { vi } from 'vitest'
 // MediaRecorder emits `dataavailable` every `timeslice` ms while recording and,
 // after stop(), one last `dataavailable` followed by `stop` in a later task.
 
-export const videoDevice = (deviceId, label = deviceId) => ({
+export const videoDevice = (deviceId, label = deviceId, facingMode) => ({
   kind: 'videoinput',
   deviceId,
   label,
-  groupId: 'group'
+  groupId: 'group',
+  // Not part of MediaDeviceInfo; the fake stream reports it in getSettings().
+  facingMode
 })
 
 export const audioDevice = (deviceId) => ({
@@ -23,40 +25,49 @@ export const mediaError = (name, message = name) =>
   Object.assign(new Error(message), { name })
 
 export class FakeMediaStreamTrack {
-  constructor (kind) {
+  constructor(kind, settings = {}) {
     this.kind = kind
+    this.settings = settings
     this.readyState = 'live'
     this.stop = vi.fn(() => {
       this.readyState = 'ended'
     })
   }
+
+  getSettings() {
+    return this.settings
+  }
 }
 
 export class FakeMediaStream {
-  constructor (constraints) {
+  constructor(constraints, videoSettings = {}) {
     this.constraints = constraints
     this.tracks = [
-      new FakeMediaStreamTrack('video'),
+      new FakeMediaStreamTrack('video', videoSettings),
       new FakeMediaStreamTrack('audio')
     ]
   }
 
-  getTracks () {
+  getTracks() {
     return this.tracks
   }
 
-  get isStopped () {
+  getVideoTracks() {
+    return this.tracks.filter((track) => track.kind === 'video')
+  }
+
+  get isStopped() {
     return this.tracks.every((track) => track.readyState === 'ended')
   }
 }
 
-export function createFakeMediaRecorder (media) {
+export function createFakeMediaRecorder(media) {
   return class FakeMediaRecorder extends EventTarget {
     static isTypeSupported = vi.fn((type) =>
       media.supportedMimeTypes.includes(type)
     )
 
-    constructor (stream, options = {}) {
+    constructor(stream, options = {}) {
       super()
       if (media.createRecorderError) throw media.createRecorderError
       this.stream = stream
@@ -68,11 +79,11 @@ export function createFakeMediaRecorder (media) {
       media.recorders.push(this)
     }
 
-    get emitsData () {
+    get emitsData() {
       return media.recorderEmitsData
     }
 
-    start (timeslice) {
+    start(timeslice) {
       this.calls.push(['start', timeslice])
       this.state = 'recording'
       this.interval = setInterval(() => {
@@ -80,29 +91,29 @@ export function createFakeMediaRecorder (media) {
       }, timeslice)
     }
 
-    pause () {
+    pause() {
       this.calls.push(['pause'])
       this.state = 'paused'
     }
 
-    resume () {
+    resume() {
       this.calls.push(['resume'])
       this.state = 'recording'
     }
 
-    stop () {
+    stop() {
       this.calls.push(['stop'])
       this.state = 'inactive'
       clearInterval(this.interval)
       // Browsers fire these in a later task. A microtask keeps durations exact
       // under fake timers, which turn a 0ms timeout set mid-tick into 1ms.
-      Promise.resolve().then(() => {
+      void Promise.resolve().then(() => {
         this.emitChunk()
         this.dispatchEvent(new Event('stop'))
       })
     }
 
-    emitChunk () {
+    emitChunk() {
       if (!this.emitsData) return
       this.chunkCount += 1
       const event = new Event('dataavailable')
@@ -110,7 +121,7 @@ export function createFakeMediaRecorder (media) {
       this.dispatchEvent(event)
     }
 
-    emitError () {
+    emitError() {
       const event = new Event('error')
       this.dispatchEvent(event)
       return event
@@ -123,12 +134,20 @@ const inputCaptureDescriptor = Object.getOwnPropertyDescriptor(
   'capture'
 )
 
-export function installFakeMedia ({
+export function installFakeMedia({
   devices = [videoDevice('camera-1'), audioDevice('mic-1')],
   mediaRecorder = true,
   mediaDevices = true,
   inputCapture = false,
   recorderEmitsData = true,
+  // Like browsers, list cameras with empty ids until access is granted.
+  hideDeviceIdsUntilPermission = false,
+  // When a <video> fires `playing` after getting a camera stream, in ms, or
+  // null for never (jsdom doesn't play media).
+  videoPlaysAfter = 0,
+  // The camera permission's state, or undefined for a browser without the
+  // Permissions API (like jsdom).
+  permission,
   supportedMimeTypes = [
     'video/webm;codecs="vp8,opus"',
     'video/webm;codecs=h264',
@@ -145,32 +164,101 @@ export function installFakeMedia ({
     recorders: [],
     createRecorderError: null,
     makeChunk: (count, type) => new Blob([`chunk-${count}`], { type }),
-    get lastStream () {
+    get lastStream() {
       return this.streams[this.streams.length - 1]
     },
-    get lastRecorder () {
+    get lastRecorder() {
       return this.recorders[this.recorders.length - 1]
     }
   }
 
-  media.enumerateDevices = vi.fn(() => Promise.resolve(media.devices))
+  media.enumerateDevices = vi.fn(() =>
+    Promise.resolve(
+      hideDeviceIdsUntilPermission && media.streams.length === 0
+        ? media.devices.map((device) => ({
+            ...device,
+            deviceId: '',
+            label: ''
+          }))
+        : media.devices
+    )
+  )
   media.getUserMedia = vi.fn((constraints) => {
-    const stream = new FakeMediaStream(constraints)
+    const cameras = media.devices.filter(
+      (device) => device.kind === 'videoinput'
+    )
+    const exact = constraints.video && constraints.video.deviceId
+    const requestedId = exact && (exact.exact ?? exact)
+    const camera = requestedId
+      ? cameras.find((device) => device.deviceId === requestedId)
+      : cameras.find(
+          (device) => device.facingMode === constraints.video?.facingMode
+        ) || cameras[0]
+    if (constraints.video && !camera) {
+      return Promise.reject(
+        mediaError(requestedId ? 'OverconstrainedError' : 'NotFoundError')
+      )
+    }
+    const stream = new FakeMediaStream(
+      constraints,
+      camera ? { deviceId: camera.deviceId, facingMode: camera.facingMode } : {}
+    )
     media.streams.push(stream)
     return Promise.resolve(stream)
   })
 
   if (mediaDevices) {
+    const mediaDevicesTarget = Object.assign(new EventTarget(), {
+      enumerateDevices: (...args) => media.enumerateDevices(...args),
+      getUserMedia: (...args) => media.getUserMedia(...args)
+    })
+    // Like a camera being plugged in or out.
+    media.emitDeviceChange = () =>
+      mediaDevicesTarget.dispatchEvent(new Event('devicechange'))
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
-      value: {
-        enumerateDevices: (...args) => media.enumerateDevices(...args),
-        getUserMedia: (...args) => media.getUserMedia(...args)
-      }
+      value: mediaDevicesTarget
     })
   } else {
     delete navigator.mediaDevices
   }
+
+  if (permission !== undefined) {
+    const status = Object.assign(new EventTarget(), { state: permission })
+    media.permissionStatus = status
+    // Like the user changing the site's camera setting.
+    media.setPermission = (state) => {
+      status.state = state
+      status.dispatchEvent(new Event('change'))
+    }
+    Object.defineProperty(navigator, 'permissions', {
+      configurable: true,
+      value: {
+        query: vi.fn(({ name }) =>
+          name === 'camera'
+            ? Promise.resolve(status)
+            : Promise.reject(new TypeError(`Unknown permission ${name}`))
+        )
+      }
+    })
+  }
+
+  const streams = new WeakMap()
+  Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', {
+    configurable: true,
+    get() {
+      return streams.get(this) ?? null
+    },
+    set(stream) {
+      streams.set(this, stream)
+      if (stream && videoPlaysAfter !== null) {
+        setTimeout(
+          () => this.dispatchEvent(new Event('playing')),
+          videoPlaysAfter
+        )
+      }
+    }
+  })
 
   if (mediaRecorder) {
     media.MediaRecorder = createFakeMediaRecorder(media)
@@ -182,10 +270,10 @@ export function installFakeMedia ({
   if (inputCapture) {
     Object.defineProperty(HTMLInputElement.prototype, 'capture', {
       configurable: true,
-      get () {
+      get() {
         return this.getAttribute('capture') || ''
       },
-      set (value) {
+      set(value) {
         this.setAttribute('capture', value)
       }
     })
@@ -196,9 +284,11 @@ export function installFakeMedia ({
   return media
 }
 
-export function uninstallFakeMedia () {
+export function uninstallFakeMedia() {
   delete navigator.mediaDevices
   delete window.MediaRecorder
+  delete HTMLMediaElement.prototype.srcObject
+  delete navigator.permissions
   if (inputCaptureDescriptor) {
     Object.defineProperty(
       HTMLInputElement.prototype,

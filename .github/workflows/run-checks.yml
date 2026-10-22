@@ -4,14 +4,22 @@ on:
   push:
     branches:
       - main
+      - next
   pull_request:
     branches:
       - main
+      - next
 
 jobs:
   run-checks:
-    name: Run checks
+    name: Run checks (React ${{ matrix.react }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Development uses the lowest supported React; 19 is checked here.
+        react: [18, 19]
 
     steps:
       - name: Check out Git repository
@@ -19,44 +27,84 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Use React 19
+        if: matrix.react == 19
+        run: pnpm add --save-dev react@^19 react-dom@^19
 
       - name: Run commit message linter
-        uses: wagoid/commitlint-github-action@v4
+        if: matrix.react == 18
+        uses: wagoid/commitlint-github-action@v6
 
       - name: Run linter
-        run: yarn lint
+        run: pnpm lint
 
       - name: Type-check
-        run: yarn typecheck
+        run: pnpm typecheck
 
       - name: Run unit and package tests
-        run: yarn test
+        run: pnpm test
+
+      - name: Check the published package (publint, are-the-types-wrong)
+        if: matrix.react == 18
+        run: pnpm check:package
 
       - name: Install browsers for browser tests
-        run: yarn playwright install --with-deps chromium firefox
+        run: pnpm exec playwright install --with-deps chromium firefox
 
       - name: Run browser tests
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
       - name: Upload browser test traces
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-traces
+          name: playwright-traces-react-${{ matrix.react }}
           path: test-results
           retention-days: 7
 
+  release:
+    name: Release
+    needs: run-checks
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # tags and GitHub releases
+      issues: write # comments on the issues a release fixes
+      pull-requests: write # comments on the released pull requests
+      id-token: write # npm trusted publishing: no npm token to store
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Publishes from main, and prereleases (e.g. 4.0.0-next.1) from next.
       - name: Semantic Release
-        if: contains(github.ref, 'refs/heads/main')
-        uses: cycjimmy/semantic-release-action@v2
+        run: pnpm exec semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { act, screen } from '@testing-library/react'
 import fixWebmDuration from 'fix-webm-duration'
-import { installFakeMedia } from './fake-media'
+import { installFakeMedia, videoDevice } from './fake-media'
 import { takeConsole } from './console-capture'
 import {
   advance,
@@ -13,9 +13,8 @@ import {
   turnOnCamera
 } from './helpers'
 
-// These tests pin down what the component does today, including known bugs
-// (tests named "[known bug] ..."). They're the reference for the TypeScript
-// and hooks rewrites: a change in behavior should show up here first.
+// These tests describe the component's behavior in detail (callback order,
+// arguments, timing), so any change to it shows up here first.
 
 describe('recording a video inline', () => {
   it('goes from the disconnected view to a replay of the recording', async () => {
@@ -30,9 +29,7 @@ describe('recording a video inline', () => {
     expect(r.video().srcObject).toBe(media.lastStream)
     expect(r.video().autoplay).toBe(true)
     expect(r.video().muted).toBe(true)
-    // The record button waits 200ms after the stream arrives.
-    expect(r.byQa('start-recording')).toBeNull()
-    await advance(199)
+    // The record button waits for the camera video to play.
     expect(r.byQa('start-recording')).toBeNull()
     await advance(1)
     expect(r.byQa('start-recording').textContent).toBe('')
@@ -67,13 +64,8 @@ describe('recording a video inline', () => {
     expect(fixWebmDuration.mock.calls[0][1]).toBe(1000)
 
     expect(r.callbacks.onRecordingComplete).toHaveBeenCalledTimes(1)
-    const [
-      videoBlob,
-      startedAt,
-      thumbnail,
-      duration,
-      extension
-    ] = r.callbacks.onRecordingComplete.mock.calls[0]
+    const [videoBlob, startedAt, thumbnail, duration, extension] =
+      r.callbacks.onRecordingComplete.mock.calls[0]
     expect(videoBlob).toBe(fixWebmDuration.mock.calls[0][0])
     expect(videoBlob.type).toBe('video/webm;codecs="vp8,opus"')
     // 4 chunks at 250ms intervals plus the final one emitted on stop.
@@ -96,7 +88,7 @@ describe('recording a video inline', () => {
     ])
 
     const replay = r.video()
-    expect(replay.srcObject).toBeUndefined()
+    expect(replay.srcObject).toBeNull()
     expect(replay.getAttribute('src')).toBe('blob:fake/1')
     expect(URL.createObjectURL).toHaveBeenCalledWith(videoBlob)
     expect(replay.loop).toBe(true)
@@ -112,6 +104,55 @@ describe('recording a video inline', () => {
     expect(r.video()).toBeNull()
     expect(r.byQa('turn-on-camera')).not.toBeNull()
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
+  })
+
+  it('records without an onRecordingComplete callback', async () => {
+    installFakeMedia()
+    const r = renderRecorder({ onRecordingComplete: undefined })
+    await recordVideo(r)
+    expect(r.byQa('start-replaying')).not.toBeNull()
+  })
+
+  it('enables recording when the camera video starts playing', async () => {
+    installFakeMedia({ videoPlaysAfter: 600 })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.flags()).toMatchObject({ isCameraOn: true, isConnecting: true })
+    await advance(599)
+    expect(r.byQa('start-recording')).toBeNull()
+    await advance(1)
+    expect(r.byQa('start-recording')).not.toBeNull()
+    expect(r.flags()).toMatchObject({
+      isConnecting: false,
+      streamIsReady: true
+    })
+  })
+
+  it("enables recording after 1s if the camera video doesn't play", async () => {
+    installFakeMedia({ videoPlaysAfter: null })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    await advance(999)
+    expect(r.byQa('start-recording')).toBeNull()
+    await advance(1)
+    expect(r.byQa('start-recording')).not.toBeNull()
+  })
+
+  it('waits for the new camera to play after switching', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')],
+      videoPlaysAfter: 300
+    })
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    await advance(300)
+    await click(r.video().nextElementSibling)
+    expect(r.flags().isConnecting).toBe(true)
+    await advance(299)
+    expect(r.flags().isConnecting).toBe(true)
+    await advance(1)
+    expect(r.flags().isConnecting).toBe(false)
+    expect(r.video().srcObject).toBe(media.lastStream)
   })
 
   it('turns the camera back on after replaying when isOnInitially is set', async () => {
@@ -132,6 +173,21 @@ describe('recording a video inline', () => {
     ])
   })
 
+  it('reports the recording without the duration fix if that fails', async () => {
+    installFakeMedia()
+    const fixError = new Error('Could not parse the WebM')
+    fixWebmDuration.mockImplementationOnce(() => Promise.reject(fixError))
+    const r = renderRecorder()
+    await recordVideo(r)
+
+    const [videoBlob] = r.callbacks.onRecordingComplete.mock.calls[0]
+    expect(await videoBlob.text()).toBe('chunk-1chunk-2chunk-3chunk-4chunk-5')
+    expect(r.byQa('start-replaying')).not.toBeNull()
+    expect(takeConsole('warn')).toEqual([
+      ['Could not fix the WebM duration', fixError]
+    ])
+  })
+
   it('records a single-chunk video as that chunk, not a new Blob', async () => {
     installFakeMedia()
     const r = renderRecorder({ chunkSize: 10000, dataAvailableTimeout: null })
@@ -144,16 +200,14 @@ describe('recording a video inline', () => {
     expect(await videoBlob.text()).toBe('chunk-1')
   })
 
-  it('fails when chunkSize is longer than dataAvailableTimeout', async () => {
-    installFakeMedia()
+  it('waits for the first chunk before checking for data', async () => {
+    const media = installFakeMedia()
     const r = renderRecorder({ chunkSize: 1000 })
     await turnOnCamera(r)
     await startRecording(r)
-    await advance(500)
-    expect(r.callbacks.onError.mock.calls[0][0].name).toBe(
-      'ReactVideoRecorderDataAvailableTimeoutError'
-    )
-    takeConsole('error')
+    await advance(3000)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    expect(media.lastRecorder.state).toBe('recording')
   })
 
   it('passes chunkSize to MediaRecorder.start()', async () => {
@@ -174,6 +228,19 @@ describe('recording a video inline', () => {
     expect(media.recorders).toHaveLength(0)
     await advance(1)
     expect(media.recorders).toHaveLength(1)
+  })
+
+  it('cancels the countdown when the camera turns off', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await click(r.byQa('start-recording'))
+    await act(async () => r.actions().onTurnOffCamera())
+    expect(r.flags().isRunningCountdown).toBe(false)
+    await advance(5000)
+    expect(media.recorders).toHaveLength(0)
+    expect(r.callbacks.onError).not.toHaveBeenCalled()
+    expect(r.byQa('turn-on-camera')).not.toBeNull()
   })
 
   it('starts right away with countdownTime 0', async () => {
@@ -304,7 +371,7 @@ describe('pausing and resuming', () => {
     expect(r.callbacks.onRecordingComplete.mock.calls[0][3]).toBe(3500)
   })
 
-  it('[known bug] counts the time before a pause twice when stopping while paused', async () => {
+  it('writes only the recorded time when stopping while paused', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
@@ -314,19 +381,66 @@ describe('pausing and resuming', () => {
     await advance(2000)
     await stopRecording(r)
 
-    // Should be 1000.
-    expect(fixWebmDuration.mock.calls[0][1]).toBe(4000)
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(1000)
   })
 
-  it('[known bug] keeps the timer running while paused', async () => {
+  it('ignores pausing twice and resuming while recording', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onResumeRecording())
+    await act(async () => r.actions().onPauseRecording())
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    await advance(1000)
+    await act(async () => r.actions().onResumeRecording())
+    await advance(500)
+    await stopRecording(r)
+
+    expect(media.lastRecorder.calls).toEqual([
+      ['start', 250],
+      ['pause'],
+      ['resume'],
+      ['stop']
+    ])
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(1500)
+  })
+
+  it('stops the timer while paused', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
     await startRecording(r)
     await advance(1000)
     await act(async () => r.actions().onPauseRecording())
+    expect(r.flags().isPaused).toBe(true)
     await advance(2000)
-    expect(screen.getByText('3s')).toBeTruthy()
+    expect(screen.getByText('1s')).toBeTruthy()
+
+    await act(async () => r.actions().onResumeRecording())
+    expect(r.flags().isPaused).toBe(false)
+    await advance(1000)
+    expect(screen.getByText('2s')).toBeTruthy()
+  })
+
+  it('counts only recorded time toward timeLimit', async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder({ timeLimit: 2000 })
+    await turnOnCamera(r)
+    await startRecording(r)
+    await advance(1000)
+    await act(async () => r.actions().onPauseRecording())
+    await advance(5000)
+    expect(media.lastRecorder.state).toBe('paused')
+
+    await act(async () => r.actions().onResumeRecording())
+    await advance(999)
+    expect(media.lastRecorder.state).toBe('recording')
+    await advance(1)
+    expect(media.lastRecorder.calls.at(-1)).toEqual(['stop'])
+    expect(fixWebmDuration.mock.calls[0][1]).toBe(2000)
   })
 
   it('does not render pause or resume buttons by default', async () => {
@@ -339,21 +453,21 @@ describe('pausing and resuming', () => {
 })
 
 describe('recording errors', () => {
-  it('fails when no data arrives within dataAvailableTimeout', async () => {
+  it('fails when no data arrives chunkSize + dataAvailableTimeout ms into the recording', async () => {
     const media = installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder()
     await turnOnCamera(r)
     await startRecording(r)
-    await advance(499)
+    await advance(749)
     expect(r.callbacks.onError).not.toHaveBeenCalled()
     await advance(1)
 
     const [error] = r.callbacks.onError.mock.calls[0]
     expect(error.name).toBe('ReactVideoRecorderDataAvailableTimeoutError')
     expect(error.message).toBe(
-      "Method mediaRecorder.ondataavailable wasn't called after 500ms"
+      "Method mediaRecorder.ondataavailable wasn't called after 750ms"
     )
-    expect(error.dataAvailableTimeout).toBe(500)
+    expect(error.dataAvailableTimeout).toBe(750)
     expect(r.container.textContent).toContain('Oh snap!')
     expect(r.byQa('stop-recording')).toBeNull()
     expect(media.lastStream.isStopped).toBe(true)
@@ -361,22 +475,39 @@ describe('recording errors', () => {
     expect(takeConsole('error')).toEqual([['Captured error', error]])
   })
 
-  it('[known bug] leaves the MediaRecorder running after a data timeout', async () => {
+  it('stops the MediaRecorder after a data timeout', async () => {
     const media = installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder()
     await turnOnCamera(r)
     await startRecording(r)
     await advance(500)
+    await advance(1000)
     takeConsole('error')
-    expect(media.lastRecorder.state).toBe('recording')
+    expect(media.lastRecorder.state).toBe('inactive')
+    expect(r.callbacks.onError).toHaveBeenCalledTimes(1)
+    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
   })
 
-  it('honours a custom dataAvailableTimeout', async () => {
+  it("stops the MediaRecorder after the recorder's error event", async () => {
+    const media = installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await startRecording(r)
+    await act(async () => {
+      media.lastRecorder.emitError()
+    })
+    await advance(1000)
+    takeConsole('error')
+    expect(media.lastRecorder.state).toBe('inactive')
+    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
+  })
+
+  it('honours a custom dataAvailableTimeout after the first chunk', async () => {
     installFakeMedia({ recorderEmitsData: false })
     const r = renderRecorder({ dataAvailableTimeout: 2000 })
     await turnOnCamera(r)
     await startRecording(r)
-    await advance(1999)
+    await advance(2249)
     expect(r.callbacks.onError).not.toHaveBeenCalled()
     await advance(1)
     expect(r.callbacks.onError).toHaveBeenCalledTimes(1)

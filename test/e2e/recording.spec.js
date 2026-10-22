@@ -90,7 +90,7 @@ test('stops at timeLimit and turns the camera on again after replaying', async (
   ])
 })
 
-test('mirrors the live camera but not the replay', async ({ page }) => {
+test('mirrors a user-facing camera but not the replay', async ({ page }) => {
   await openHarness(page, { isOnInitially: true, countdownTime: 0 })
   const transform = () =>
     page
@@ -98,7 +98,19 @@ test('mirrors the live camera but not the replay', async ({ page }) => {
       .evaluate((element) => getComputedStyle(element).transform)
 
   await page.locator(qa('start-recording')).waitFor()
-  expect(await transform()).toMatch(/^matrix\(-1, 0, 0, 1,/)
+  // Chromium's fake camera reports no facingMode; Firefox's says it's a rear
+  // camera, which isn't mirrored.
+  const facingMode = await page
+    .locator('video')
+    .evaluate(
+      (element) =>
+        element.srcObject.getVideoTracks()[0].getSettings().facingMode
+    )
+  expect(await transform()).toMatch(
+    facingMode === 'environment'
+      ? /^matrix\(1, 0, 0, 1,/
+      : /^matrix\(-1, 0, 0, 1,/
+  )
 
   await page.click(qa('start-recording'))
   await page.locator(qa('stop-recording')).waitFor()

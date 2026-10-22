@@ -1,0 +1,7 @@
+lib
+storybook-static
+test-results
+playwright-report
+test/assets
+test/e2e/visual.spec.js-snapshots
+pnpm-lock.yaml

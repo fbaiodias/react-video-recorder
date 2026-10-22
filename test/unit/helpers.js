@@ -1,4 +1,3 @@
-import React from 'react'
 import { act, fireEvent, render } from '@testing-library/react'
 import { vi } from 'vitest'
 import VideoRecorder from '../../src/video-recorder'
@@ -26,7 +25,7 @@ export const CALLBACK_PROPS = [
 const ADVANCE_STEP_MS = 50
 
 // Runs due timers and the promise callbacks they trigger.
-export async function advance (ms = 0) {
+export async function advance(ms = 0) {
   let remaining = ms
   do {
     const step = Math.min(remaining, ADVANCE_STEP_MS)
@@ -37,14 +36,14 @@ export async function advance (ms = 0) {
   } while (remaining > 0)
 }
 
-export async function click (element) {
+export async function click(element) {
   if (!element) throw new Error('Tried to click a missing element')
   fireEvent.click(element)
   await advance(0)
 }
 
 // The non-function values of a renderActions call, i.e. the state it exposes.
-export function actionFlags (args) {
+export function actionFlags(args) {
   return Object.fromEntries(
     Object.entries(args)
       .filter(([, value]) => typeof value !== 'function')
@@ -52,13 +51,13 @@ export function actionFlags (args) {
   )
 }
 
-export function actionCallbackNames (args) {
+export function actionCallbackNames(args) {
   return Object.keys(args)
     .filter((key) => typeof args[key] === 'function')
     .sort()
 }
 
-export function renderRecorder (props = {}, options = {}) {
+export function renderRecorder(props = {}, options = {}) {
   const events = []
   const callbacks = {}
   for (const name of CALLBACK_PROPS) {
@@ -93,23 +92,23 @@ export function renderRecorder (props = {}, options = {}) {
 }
 
 // Flow shortcuts. Each one waits for the state the user would see next.
-export async function turnOnCamera (recorder) {
+export async function turnOnCamera(recorder) {
   await click(recorder.byQa('turn-on-camera'))
   // The record button only shows up 200ms after the stream arrives.
   await advance(200)
 }
 
-export async function startRecording (recorder, countdownTime = 3000) {
+export async function startRecording(recorder, countdownTime = 3000) {
   await click(recorder.byQa('start-recording'))
   await advance(countdownTime)
 }
 
-export async function stopRecording (recorder) {
+export async function stopRecording(recorder) {
   await click(recorder.byQa('stop-recording'))
   await advance(0)
 }
 
-export async function recordVideo (recorder, ms = 1000) {
+export async function recordVideo(recorder, ms = 1000) {
   await turnOnCamera(recorder)
   await startRecording(recorder)
   await advance(ms)

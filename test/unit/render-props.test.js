@@ -1,7 +1,11 @@
-import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen } from '@testing-library/react'
-import { FakeMediaStream, installFakeMedia, mediaError } from './fake-media'
+import {
+  FakeMediaStream,
+  installFakeMedia,
+  mediaError,
+  videoDevice
+} from './fake-media'
 import { takeConsole } from './console-capture'
 import {
   actionCallbackNames,
@@ -22,6 +26,7 @@ describe('renderActions', () => {
       'onOpenVideoInput',
       'onPauseRecording',
       'onResumeRecording',
+      'onSelectDevice',
       'onStartRecording',
       'onStopRecording',
       'onStopReplaying',
@@ -41,28 +46,36 @@ describe('renderActions', () => {
 
     states.firstRender = actionFlags(r.renderActions.mock.calls[0][0])
     await advance(0)
-    states.disconnected = r.flags()
+    states.disconnected = actionFlags(r.actions())
     await click(r.byQa('turn-on-camera'))
-    states.connecting = r.flags()
+    states.connecting = actionFlags(r.actions())
     await act(async () => pending.resolve(new FakeMediaStream({})))
-    states.cameraOnNotReady = r.flags()
+    states.cameraOnNotReady = actionFlags(r.actions())
     await advance(200)
-    states.ready = r.flags()
+    states.ready = actionFlags(r.actions())
     await click(r.byQa('start-recording'))
-    states.countdown = r.flags()
+    states.countdown = actionFlags(r.actions())
     await advance(3000)
-    states.recording = r.flags()
+    states.recording = actionFlags(r.actions())
     await advance(1000)
     await click(r.byQa('stop-recording'))
-    states.replaying = r.flags()
+    states.replaying = actionFlags(r.actions())
 
     expect(states).toMatchInlineSnapshot(`
       {
         "cameraOnNotReady": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -77,9 +90,17 @@ describe('renderActions', () => {
         },
         "connecting": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": false,
           "isConnecting": true,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -94,9 +115,17 @@ describe('renderActions', () => {
         },
         "countdown": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -111,9 +140,12 @@ describe('renderActions', () => {
         },
         "disconnected": {
           "countdownTime": 3000,
+          "currentDeviceId": null,
+          "devices": [],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -128,9 +160,12 @@ describe('renderActions', () => {
         },
         "firstRender": {
           "countdownTime": 3000,
+          "currentDeviceId": null,
+          "devices": [],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": null,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -145,9 +180,17 @@ describe('renderActions', () => {
         },
         "ready": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -162,9 +205,17 @@ describe('renderActions', () => {
         },
         "recording": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": true,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": true,
           "isReplayVideoMuted": true,
           "isReplayingVideo": false,
@@ -179,9 +230,17 @@ describe('renderActions', () => {
         },
         "replaying": {
           "countdownTime": 3000,
+          "currentDeviceId": "camera-1",
+          "devices": [
+            {
+              "deviceId": "camera-1",
+              "label": "camera-1",
+            },
+          ],
           "isCameraOn": false,
           "isConnecting": false,
           "isInlineRecordingSupported": true,
+          "isPaused": false,
           "isRecording": false,
           "isReplayVideoMuted": false,
           "isReplayingVideo": true,
@@ -209,9 +268,17 @@ describe('renderActions', () => {
     expect(r.flags()).toMatchInlineSnapshot(`
       {
         "countdownTime": 3000,
+        "currentDeviceId": "camera-1",
+        "devices": [
+          {
+            "deviceId": "camera-1",
+            "label": "camera-1",
+          },
+        ],
         "isCameraOn": false,
         "isConnecting": false,
         "isInlineRecordingSupported": true,
+        "isPaused": false,
         "isRecording": false,
         "isReplayVideoMuted": true,
         "isReplayingVideo": false,
@@ -267,7 +334,9 @@ describe('render*View props', () => {
     await click(r.byQa('turn-on-camera'))
 
     expect(screen.getByText('NotAllowedError')).toBeTruthy()
-    expect(renderErrorView.mock.lastCall).toEqual([{ error }])
+    expect(renderErrorView.mock.lastCall).toEqual([
+      { error, errorCode: 'permission-denied', t: expect.any(Function) }
+    ])
     takeConsole('error')
   })
 
@@ -300,6 +369,70 @@ describe('render*View props', () => {
   })
 })
 
+describe('accessibility', () => {
+  it('names the icon-only buttons', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBe(
+      r.byQa('start-recording')
+    )
+    await startRecording(r)
+    expect(screen.getByRole('button', { name: 'Stop recording' })).toBe(
+      r.byQa('stop-recording')
+    )
+  })
+
+  it('translates the names with t, falling back to English', async () => {
+    installFakeMedia()
+    const r = renderRecorder({
+      t: (text) => (text === 'Start recording' ? 'Gravar' : <b>{text}</b>)
+    })
+    await turnOnCamera(r)
+    expect(r.byQa('start-recording').getAttribute('aria-label')).toBe('Gravar')
+    await startRecording(r)
+    expect(r.byQa('stop-recording').getAttribute('aria-label')).toBe(
+      'Stop recording'
+    )
+  })
+
+  it('makes the camera switch a named button that works with the keyboard', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')]
+    })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    const toggle = screen.getByRole('button', { name: 'Switch camera' })
+    expect(toggle.tabIndex).toBe(0)
+
+    fireEvent.keyDown(toggle, { key: 'Enter' })
+    await advance(0)
+    expect(media.getUserMedia).toHaveBeenCalledTimes(2)
+    await advance(200)
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Switch camera' }), {
+      key: ' '
+    })
+    await advance(0)
+    expect(media.getUserMedia).toHaveBeenCalledTimes(3)
+    expect(r.events.filter((name) => name === 'onSwitchCamera')).toHaveLength(2)
+  })
+
+  it('hides the decorative icons from screen readers', async () => {
+    installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')]
+    })
+    const r = renderRecorder()
+    expect(r.container.querySelector('svg').getAttribute('aria-hidden')).toBe(
+      'true'
+    )
+    await turnOnCamera(r)
+    expect(r.container.querySelector('svg').getAttribute('aria-hidden')).toBe(
+      'true'
+    )
+  })
+})
+
 describe('the t prop', () => {
   it('translates every default label', async () => {
     installFakeMedia()
@@ -316,6 +449,8 @@ describe('the t prop', () => {
     expect([...new Set(t.mock.calls.map(([text]) => text))].sort()).toEqual([
       'PRESS',
       'REC',
+      'Start recording',
+      'Stop recording',
       'Turn my camera ON',
       'Use another video',
       'WHEN READY'
@@ -345,15 +480,17 @@ describe('class name props', () => {
     )
   })
 
-  it('[known bug] applies cameraViewClassName and videoClassName only to the replay', async () => {
+  it('applies cameraViewClassName and videoClassName to the camera and the replay', async () => {
     installFakeMedia()
     const r = renderRecorder({
       cameraViewClassName: 'my-camera-view',
       videoClassName: 'my-video'
     })
     await turnOnCamera(r)
-    expect(r.container.querySelector('.my-camera-view')).toBeNull()
-    expect(r.container.querySelector('.my-video')).toBeNull()
+    expect(r.video().classList.contains('my-video')).toBe(true)
+    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(
+      true
+    )
 
     await startRecording(r)
     await advance(500)
@@ -419,6 +556,25 @@ describe('the replay video', () => {
     await advance(0)
   })
 
+  it('warns when play() on click is rejected', async () => {
+    installFakeMedia()
+    const r = renderRecorder()
+    await recordVideo(r)
+    Object.defineProperty(r.video(), 'paused', {
+      value: true,
+      configurable: true
+    })
+    const blocked = mediaError('NotAllowedError')
+    HTMLMediaElement.prototype.play.mockImplementationOnce(() =>
+      Promise.reject(blocked)
+    )
+    fireEvent.click(r.video())
+    await advance(0)
+    expect(takeConsole('warn')).toEqual([
+      ['Could not play the replay video', blocked]
+    ])
+  })
+
   it('does not call play() on click with showReplayControls', async () => {
     installFakeMedia()
     const r = renderRecorder({ showReplayControls: true })
@@ -476,28 +632,36 @@ describe('the replay video', () => {
   })
 })
 
-describe('styles that depend on props', () => {
-  const transformOf = (element) => getComputedStyle(element).transform
+// jsdom ignores styles inside @layer, so these check the classes; the
+// browser and screenshot tests check how they render.
+describe('classes that depend on props', () => {
+  const classesOf = (element) => [...element.classList].sort()
 
   it('mirrors the camera by default', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%) scaleX(-1)')
+    expect(classesOf(r.video())).toEqual(['rvr-video', 'rvr-video--flipped'])
+  })
+
+  it('does not mirror a rear camera', async () => {
+    installFakeMedia({ devices: [videoDevice('back', 'Back', 'environment')] })
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(classesOf(r.video())).toEqual(['rvr-video'])
   })
 
   it('does not mirror the camera with isFlipped={false}', async () => {
     installFakeMedia()
     const r = renderRecorder({ isFlipped: false })
     await turnOnCamera(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
+    expect(classesOf(r.video())).toEqual(['rvr-video'])
   })
 
-  it('never mirrors the replay', async () => {
+  it('never mirrors the replay, which is clickable', async () => {
     installFakeMedia()
     const r = renderRecorder()
     await recordVideo(r)
-    expect(transformOf(r.video())).toBe('translate(-50%,-50%)')
-    expect(getComputedStyle(r.video()).cursor).toBe('pointer')
+    expect(classesOf(r.video())).toEqual(['rvr-video', 'rvr-video--clickable'])
   })
 })

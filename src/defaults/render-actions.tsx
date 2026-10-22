@@ -1,12 +1,12 @@
-import React from 'react'
+'use client'
+
 import type { ReactNode } from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import Button from './button'
-import RecordButton from './record-button'
-import StopButton from './stop-button'
-import Timer from './timer'
-import Countdown from './countdown'
+import Button from './button.tsx'
+import RecordButton from './record-button.tsx'
+import StopButton from './stop-button.tsx'
+import Timer from './timer.tsx'
+import Countdown from './countdown.tsx'
+import { translateText } from '../translate.ts'
 
 /** Localizes the default UI's texts, e.g. `t('Turn my camera ON')` */
 export type Translate = (text: string) => ReactNode
@@ -20,6 +20,7 @@ export interface RenderActionsProps {
   isInlineRecordingSupported: boolean | null
   thereWasAnError: boolean
   isRecording: boolean
+  isPaused: boolean
   isCameraOn: boolean
   streamIsReady: boolean
   isConnecting: boolean
@@ -32,9 +33,13 @@ export interface RenderActionsProps {
   showReplayControls: boolean | undefined
   replayVideoAutoplayAndLoopOff: boolean | undefined
   useVideoInput: boolean | undefined
+  /** The cameras, once camera access is granted (see VideoRecorderState) */
+  devices: { deviceId: string; label: string }[]
+  currentDeviceId: string | null
 
   onTurnOnCamera: () => void
   onSwitchCamera: () => void
+  onSelectDevice: (deviceId: string) => void
   onTurnOffCamera: () => void
   onOpenVideoInput: () => void
   onStartRecording: () => void
@@ -44,22 +49,13 @@ export interface RenderActionsProps {
   onStopReplaying: () => void
 }
 
-const ActionsWrapper = styled.div`
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
 const Actions = ({
   t,
   isVideoInputSupported,
   isInlineRecordingSupported,
   thereWasAnError,
   isRecording,
+  isPaused,
   isCameraOn,
   streamIsReady,
   isConnecting,
@@ -81,13 +77,17 @@ const Actions = ({
   onStopReplaying,
   onConfirm
 }: RenderActionsProps & { onConfirm?: () => void }) => {
+  // Called as a plain function by VideoRecorder (not rendered as a
+  // component), so no hooks here: VideoRecorder injects the styles.
   const renderContent = () => {
     const shouldUseVideoInput =
       !isInlineRecordingSupported && isVideoInputSupported
 
     if (
       (!isInlineRecordingSupported && !isVideoInputSupported) ||
-      thereWasAnError ||
+      // With a file input there's nothing to restart: picking another file
+      // is the way to retry, so its button stays.
+      (thereWasAnError && !useVideoInput && !shouldUseVideoInput) ||
       isConnecting ||
       isRunningCountdown
     ) {
@@ -110,6 +110,7 @@ const Actions = ({
       return (
         <StopButton
           type='button'
+          aria-label={translateText(t, 'Stop recording')}
           onClick={onStopRecording}
           data-qa='stop-recording'
         />
@@ -135,54 +136,24 @@ const Actions = ({
       )
     }
 
-    return shouldUseVideoInput
-      ? (
-          <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-            {t('Record a video')}
-          </Button>
-        )
-      : (
-          <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
-            {t('Turn my camera ON')}
-          </Button>
-        )
+    return shouldUseVideoInput ? (
+      <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
+        {t('Record a video')}
+      </Button>
+    ) : (
+      <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
+        {t('Turn my camera ON')}
+      </Button>
+    )
   }
 
   return (
     <div>
-      {isRecording && <Timer timeLimit={timeLimit} />}
+      {isRecording && <Timer timeLimit={timeLimit} isPaused={isPaused} />}
       {isRunningCountdown && <Countdown countdownTime={countdownTime} />}
-      <ActionsWrapper>{renderContent()}</ActionsWrapper>
+      <div className='rvr-actions'>{renderContent()}</div>
     </div>
   )
-}
-
-Actions.propTypes = {
-  t: PropTypes.func,
-  isVideoInputSupported: PropTypes.bool,
-  isInlineRecordingSupported: PropTypes.bool,
-  thereWasAnError: PropTypes.bool,
-  isRecording: PropTypes.bool,
-  isCameraOn: PropTypes.bool,
-  streamIsReady: PropTypes.bool,
-  isConnecting: PropTypes.bool,
-  isRunningCountdown: PropTypes.bool,
-  countdownTime: PropTypes.number,
-  timeLimit: PropTypes.number,
-  showReplayControls: PropTypes.bool,
-  replayVideoAutoplayAndLoopOff: PropTypes.bool,
-  isReplayingVideo: PropTypes.bool,
-  useVideoInput: PropTypes.bool,
-
-  onTurnOnCamera: PropTypes.func,
-  onTurnOffCamera: PropTypes.func,
-  onOpenVideoInput: PropTypes.func,
-  onStartRecording: PropTypes.func,
-  onStopRecording: PropTypes.func,
-  onPauseRecording: PropTypes.func,
-  onResumeRecording: PropTypes.func,
-  onStopReplaying: PropTypes.func,
-  onConfirm: PropTypes.func
 }
 
 export default Actions

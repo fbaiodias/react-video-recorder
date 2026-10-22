@@ -1,0 +1,16 @@
+# Dependencies whose install scripts may run (pnpm blocks them by default).
+allowBuilds:
+  esbuild: true
+  # core-js 2 (deep in semantic-release's tree) only prints a funding message.
+  core-js: false
+
+# One @types/react for the whole tree, matching the lowest supported React,
+# and a current Babel 7 for Storybook's docgen (older copies can't parse
+# `satisfies`).
+overrides:
+  '@types/react': '^18.3.31'
+  '@babel/parser': '^7.29.9'
+  '@babel/types': '^7.29.8'
+  '@babel/traverse': '^7.29.10'
+  '@babel/generator': '^7.29.8'
+  '@babel/template': '^7.29.7'

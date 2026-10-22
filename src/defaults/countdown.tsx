@@ -1,67 +1,25 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
+'use client'
 
-const Root = styled.div`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: Menlo, monospace;
-  font-size: 100px;
-  text-shadow: 1px 2px rgba(0, 0, 0, 0.5);
-`
+import { useEffect, useState } from 'react'
+import { useStyles } from '../styles.ts'
 
 export interface CountdownProps {
   /** In milliseconds */
   countdownTime: number
 }
 
-interface CountdownState {
-  number: number
+/** Counts down the seconds before recording starts. */
+const Countdown = ({ countdownTime }: CountdownProps) => {
+  useStyles()
+  const [number, setNumber] = useState(countdownTime / 1000)
+
+  useEffect(() => {
+    if (number === 0) return
+    const timeout = setTimeout(() => setNumber(number - 1), 1000)
+    return () => clearTimeout(timeout)
+  }, [number])
+
+  return <div className='rvr-countdown'>{number !== 0 ? number : null}</div>
 }
 
-export default class Countdown extends Component<
-  CountdownProps,
-  CountdownState
-> {
-  static propTypes = {
-    countdownTime: PropTypes.number
-  }
-
-  declare timeout: ReturnType<typeof setTimeout>
-
-  constructor (props: CountdownProps) {
-    super(props)
-
-    this.state = {
-      number: props.countdownTime / 1000
-    }
-  }
-
-  componentDidMount () {
-    this.timeout = setTimeout(this.updateNumber, 1000)
-  }
-
-  componentWillUnmount () {
-    clearInterval(this.timeout)
-  }
-
-  updateNumber = () => {
-    const nextNumber = this.state.number - 1
-    this.setState({
-      number: nextNumber
-    })
-    if (nextNumber !== 0) {
-      this.timeout = setTimeout(this.updateNumber, 1000)
-    }
-  }
-
-  render () {
-    return <Root>{this.state.number !== 0 ? this.state.number : null}</Root>
-  }
-}
+export default Countdown

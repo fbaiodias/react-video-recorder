@@ -6,7 +6,7 @@ import { advance, click, renderRecorder } from './helpers'
 
 // Simulates picking a file the way browsers do: `files` is set, and assigning
 // an empty value (or null) clears it again.
-function selectFile (input, file) {
+function selectFile(input, file) {
   let files = [file]
   Object.defineProperty(input, 'files', {
     configurable: true,
@@ -27,7 +27,7 @@ const videoFile = (name = 'clip.webm', type = 'video/webm') =>
 
 // getVideoInfo() reads duration and a thumbnail from a detached <video>.
 // jsdom never loads media, so tests drive that element by hand.
-function captureDetachedVideos () {
+function captureDetachedVideos() {
   const created = []
   const createElement = document.createElement.bind(document)
   vi.spyOn(document, 'createElement').mockImplementation((tag, options) => {
@@ -118,12 +118,8 @@ describe('falling back to the native camera (no MediaRecorder)', () => {
     Object.defineProperty(probe, 'duration', { value: 4.5 })
     await act(async () => probe.dispatchEvent(new Event('loadeddata')))
 
-    const [
-      ,
-      ,
-      thumbnail,
-      duration
-    ] = r.callbacks.onRecordingComplete.mock.calls[0]
+    const [, , thumbnail, duration] =
+      r.callbacks.onRecordingComplete.mock.calls[0]
     expect(duration).toBe(4500)
     expect(thumbnail.type).toBe('image/jpeg')
     expect(HTMLMediaElement.prototype.pause.mock.contexts).toContain(probe)
@@ -184,8 +180,9 @@ describe('falling back to the native camera (no MediaRecorder)', () => {
     expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
   })
 
-  it('[known bug] leaves no button to retry when reading the file fails', async () => {
+  it('shows the error and lets you pick another file when reading one fails', async () => {
     inlineUnsupported()
+    vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
     const detachedVideos = captureDetachedVideos()
     const r = renderRecorder()
     await advance(0)
@@ -197,13 +194,19 @@ describe('falling back to the native camera (no MediaRecorder)', () => {
     await act(async () => probe.dispatchEvent(new Event('loadeddata')))
 
     const [error] = r.callbacks.onError.mock.calls[0]
-    expect(error).toBeInstanceOf(TypeError)
-    expect(r.callbacks.onRecordingComplete).not.toHaveBeenCalled()
-    // The input view is still shown instead of the error view, and the
-    // actions hide every button because thereWasAnError is set.
-    expect(r.container.textContent).not.toContain('Oh snap!')
-    expect(r.container.querySelectorAll('button')).toHaveLength(0)
+    expect(r.container.textContent).toContain('Oh snap!')
+    expect(r.byQa('open-input').textContent).toBe('Record a video')
     expect(takeConsole('error')).toEqual([['Captured error', error]])
+
+    HTMLCanvasElement.prototype.getContext.mockImplementation(() => ({
+      drawImage: vi.fn()
+    }))
+    await click(r.byQa('open-input'))
+    await act(async () => selectFile(r.fileInput(), videoFile()))
+    expect(r.container.textContent).not.toContain('Oh snap!')
+    await advance(1000)
+    expect(r.callbacks.onRecordingComplete).toHaveBeenCalledTimes(1)
+    expect(r.video()).not.toBeNull()
   })
 
   it('opens the picker at mount with isOnInitially', async () => {

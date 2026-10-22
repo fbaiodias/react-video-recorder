@@ -33,7 +33,18 @@ describe('turning the camera on', () => {
     expect(r.events).toEqual(['onTurnOnCamera', 'onCameraOn'])
   })
 
-  it('[known bug] drops the selected deviceId when constraints.video is true (the default)', async () => {
+  it('uses the constraints as given when turning the camera on', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')]
+    })
+    const constraints = { audio: false, video: { width: 1280 } }
+    const r = renderRecorder({ constraints })
+    await turnOnCamera(r)
+    expect(media.getUserMedia).toHaveBeenCalledTimes(1)
+    expect(media.getUserMedia).toHaveBeenCalledWith(constraints)
+  })
+
+  it('asks for any camera with the default constraints', async () => {
     const media = installFakeMedia({
       devices: [videoDevice('camera-1'), videoDevice('camera-2')]
     })
@@ -45,27 +56,29 @@ describe('turning the camera on', () => {
     })
   })
 
-  it('adds the selected deviceId to object video constraints', async () => {
+  it('lets facingMode pick the camera', async () => {
     const media = installFakeMedia({
       devices: [
-        audioDevice('mic-1'),
-        videoDevice('camera-1'),
-        videoDevice('camera-2')
-      ]
+        videoDevice('front', 'Front', 'user'),
+        videoDevice('back', 'Back', 'environment')
+      ],
+      hideDeviceIdsUntilPermission: true
     })
-    const constraints = { audio: false, video: { width: 1280 } }
-    const r = renderRecorder({ constraints })
+    const r = renderRecorder({
+      constraints: { audio: true, video: { facingMode: 'environment' } }
+    })
     await turnOnCamera(r)
-    expect(media.getUserMedia).toHaveBeenCalledWith({
-      audio: false,
-      video: { width: 1280, deviceId: { exact: 'camera-1' } }
-    })
-    // The prop itself isn't mutated.
-    expect(constraints).toEqual({ audio: false, video: { width: 1280 } })
+    expect(media.getUserMedia).toHaveBeenCalledTimes(1)
+    expect(media.lastStream.getVideoTracks()[0].getSettings().deviceId).toBe(
+      'back'
+    )
+    expect(takeConsole('warn')).toEqual([])
   })
 
   it('lets a deviceId in the constraints win over the selected one', async () => {
-    const media = installFakeMedia()
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('my-camera')]
+    })
     const r = renderRecorder({
       constraints: { audio: true, video: { deviceId: 'my-camera' } }
     })
@@ -110,7 +123,7 @@ describe('turning the camera on', () => {
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
     expect(r.callbacks.onError).toHaveBeenCalledWith(error)
     expect(r.container.textContent).toContain(
-      'Oh snap! Your browser failed to record your video.Please restart it and try again 👍'
+      "Camera access is blocked. Allow it in your browser's site settings and try again."
     )
     expect(r.container.querySelectorAll('button')).toHaveLength(0)
     expect(r.events).toEqual(['onTurnOnCamera', 'onError'])
@@ -129,8 +142,59 @@ describe('turning the camera on', () => {
     await click(r.byQa('turn-on-camera'))
 
     expect(r.callbacks.onError).toHaveBeenCalledWith(fallbackError)
-    expect(r.container.textContent).toContain('Oh snap!')
+    expect(r.container.textContent).toContain('Camera access is blocked.')
     takeConsole('warn')
+    takeConsole('error')
+  })
+
+  it('says when the camera is in use by another app', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementation(() =>
+      Promise.reject(mediaError('NotReadableError'))
+    )
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain(
+      'The camera is in use by another app. Close it and try again.'
+    )
+    takeConsole('warn')
+    takeConsole('error')
+  })
+
+  it('keeps the general message for other errors', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('UnknownError'))
+    )
+    const r = renderRecorder()
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain(
+      'Oh snap! Your browser failed to record your video.Please restart it and try again 👍'
+    )
+    takeConsole('error')
+  })
+
+  it('translates the error messages with t, falling back to English', async () => {
+    const media = installFakeMedia()
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('NotFoundError'))
+    )
+    const dictionary = {
+      'No camera was found. Connect one and try again.': 'Nenhuma câmara.'
+    }
+    const r = renderRecorder({ t: (text) => dictionary[text] })
+    await click(r.byQa('turn-on-camera'))
+    expect(r.container.textContent).toContain('Nenhuma câmara.')
+
+    await act(async () => r.actions().onTurnOnCamera())
+    await advance(200)
+    media.getUserMedia.mockImplementationOnce(() =>
+      Promise.reject(mediaError('UnknownError'))
+    )
+    await act(async () => r.actions().onTurnOffCamera())
+    await act(async () => r.actions().onTurnOnCamera())
+    // No translation for these: English.
+    expect(r.container.textContent).toContain('Oh snap!')
     takeConsole('error')
   })
 
@@ -146,15 +210,17 @@ describe('turning the camera on', () => {
     takeConsole('error')
   })
 
-  it('[known bug] fails with a TypeError when there is no camera', async () => {
+  it("reports the browser's NotFoundError when there is no camera", async () => {
     const media = installFakeMedia({ devices: [audioDevice('mic-1')] })
     const r = renderRecorder()
     await click(r.byQa('turn-on-camera'))
 
-    expect(media.getUserMedia).not.toHaveBeenCalled()
+    expect(media.getUserMedia).toHaveBeenCalledTimes(1)
     const [error] = r.callbacks.onError.mock.calls[0]
-    expect(error).toBeInstanceOf(TypeError)
-    expect(r.container.textContent).toContain('Oh snap!')
+    expect(error.name).toBe('NotFoundError')
+    expect(r.container.textContent).toContain(
+      'No camera was found. Connect one and try again.'
+    )
     takeConsole('error')
   })
 
@@ -250,43 +316,148 @@ describe('switching cameras', () => {
     })
   })
 
-  it('[known bug] keeps showing the first, stopped stream after switching', async () => {
+  it('shows the new stream after switching', async () => {
     const media = twoCameras()
     const r = renderRecorder()
     await turnOnCamera(r)
-    const firstStream = media.lastStream
 
     await click(switchButton(r))
     await advance(200)
     expect(media.streams).toHaveLength(2)
-    expect(r.video().srcObject).toBe(firstStream)
+    expect(r.video().srcObject).toBe(media.streams[1])
   })
 
-  it('[known bug] asks for the default camera again when constraints.video is true', async () => {
+  it('asks for the next camera with the default constraints', async () => {
     const media = twoCameras()
     const r = renderRecorder()
     await turnOnCamera(r)
     await click(switchButton(r))
     expect(media.getUserMedia).toHaveBeenLastCalledWith({
       audio: true,
-      video: true
+      video: { deviceId: { exact: 'camera-2' } }
     })
+    await advance(200)
+    expect(r.video().srcObject.getVideoTracks()[0].getSettings().deviceId).toBe(
+      'camera-2'
+    )
   })
 
-  it('[known bug] never reports a missing camera when switching', async () => {
-    const media = twoCameras()
-    const r = renderRecorder({ constraints: { audio: true, video: {} } })
+  it('switches with the real camera ids once access is granted', async () => {
+    const media = installFakeMedia({
+      devices: [videoDevice('camera-1'), videoDevice('camera-2')],
+      hideDeviceIdsUntilPermission: true
+    })
+    const r = renderRecorder()
     await turnOnCamera(r)
-    media.devices = [videoDevice('camera-1')]
     await click(switchButton(r))
-
-    // The device check only looks for any camera with an id, so it asks for
-    // camera-2 even though it's gone.
-    expect(r.callbacks.onError).not.toHaveBeenCalled()
     expect(media.getUserMedia).toHaveBeenLastCalledWith({
       audio: true,
       video: { deviceId: { exact: 'camera-2' } }
     })
+  })
+
+  it('switches from the camera the constraints picked', async () => {
+    const media = installFakeMedia({
+      devices: [
+        videoDevice('front', 'Front', 'user'),
+        videoDevice('back', 'Back', 'environment')
+      ]
+    })
+    const r = renderRecorder({
+      constraints: { audio: true, video: { facingMode: 'environment' } }
+    })
+    await turnOnCamera(r)
+    await click(switchButton(r))
+    expect(media.getUserMedia).toHaveBeenLastCalledWith({
+      audio: true,
+      video: { facingMode: 'environment', deviceId: { exact: 'front' } }
+    })
+  })
+
+  it('reports a camera that disappeared when switching', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    media.devices = [videoDevice('camera-1')]
+    await click(switchButton(r))
+
+    const [error] = r.callbacks.onError.mock.calls[0]
+    expect(error.name).toBe('ReactVideoRecorderDeviceUnavailableError')
+    expect(media.getUserMedia).toHaveBeenCalledTimes(1)
+    takeConsole('error')
+  })
+
+  it('lists the cameras with labels once access is granted', async () => {
+    installFakeMedia({
+      devices: [
+        videoDevice('front', 'Front camera'),
+        audioDevice('mic-1'),
+        videoDevice('back', 'Back camera')
+      ],
+      hideDeviceIdsUntilPermission: true
+    })
+    const r = renderRecorder()
+    expect(r.flags().devices).toEqual([])
+    await turnOnCamera(r)
+
+    expect(r.flags().devices).toEqual([
+      { deviceId: 'front', label: 'Front camera' },
+      { deviceId: 'back', label: 'Back camera' }
+    ])
+    expect(r.flags().currentDeviceId).toBe('front')
+  })
+
+  it('switches to a camera picked from the list', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    await act(async () => r.actions().onSelectDevice('camera-2'))
+
+    expect(media.streams[0].isStopped).toBe(true)
+    expect(media.getUserMedia).toHaveBeenLastCalledWith({
+      audio: true,
+      video: { deviceId: { exact: 'camera-2' } }
+    })
+    await advance(200)
+    expect(r.flags().currentDeviceId).toBe('camera-2')
+    expect(r.events.slice(-3)).toEqual([
+      'onSwitchCamera',
+      'onTurnOnCamera',
+      'onCameraOn'
+    ])
+  })
+
+  it('updates the list when a camera is plugged in or out', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    expect(r.flags().devices).toHaveLength(2)
+
+    media.devices = [...media.devices, videoDevice('camera-3', 'USB camera')]
+    await act(async () => media.emitDeviceChange())
+    expect(r.flags().devices.map((device) => device.deviceId)).toEqual([
+      'camera-1',
+      'camera-2',
+      'camera-3'
+    ])
+
+    media.devices = [videoDevice('camera-1')]
+    await act(async () => media.emitDeviceChange())
+    expect(r.flags().devices).toEqual([
+      { deviceId: 'camera-1', label: 'camera-1' }
+    ])
+    // One camera left: no switch button.
+    expect(r.video().nextElementSibling).toBeNull()
+  })
+
+  it('stops listening for camera changes when unmounted', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+    r.unmount()
+    const calls = media.enumerateDevices.mock.calls.length
+    await act(async () => media.emitDeviceChange())
+    expect(media.enumerateDevices.mock.calls.length).toBe(calls)
   })
 
   it('also switches through the renderActions callback', async () => {

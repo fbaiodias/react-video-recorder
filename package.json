@@ -1,6 +1,56 @@
 {
   "name": "react-video-recorder",
-  "main": "lib",
+  "type": "commonjs",
+  "main": "./lib/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    },
+    "./styles.css": "./lib/styles.css",
+    "./lib": {
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    },
+    "./lib/*.js": {
+      "import": {
+        "types": "./lib/esm/*.d.ts",
+        "default": "./lib/esm/*.js"
+      },
+      "require": {
+        "types": "./lib/*.d.ts",
+        "default": "./lib/*.js"
+      }
+    },
+    "./lib/*": {
+      "import": {
+        "types": "./lib/esm/*.d.ts",
+        "default": "./lib/esm/*.js"
+      },
+      "require": {
+        "types": "./lib/*.d.ts",
+        "default": "./lib/*.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
   "files": [
     "lib",
     "README.md"
@@ -11,93 +61,58 @@
     "test:watch": "vitest --project unit",
     "test:e2e": "playwright test --project chromium --project firefox",
     "test:visual": "playwright test --project visual",
-    "lint": "eslint .",
+    "lint": "oxlint --type-aware && prettier --check .",
+    "format": "prettier --write .",
     "typecheck": "tsc",
-    "clean": "rimraf -rf lib",
-    "build": "babel src -d lib --extensions .ts,.tsx,.js --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
-    "build:watch": "babel --watch src -d lib --extensions .ts,.tsx,.js --copy-files --ignore **/*.stories.js,**/*.test.js,**/*.browser-test.js",
-    "prebuild": "yarn run clean",
-    "prepublish": "cross-env NODE_ENV=production yarn run build",
-    "start": "yarn run storybook",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
-    "semantic-release": "semantic-release"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && yarn test",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
+    "check:package": "pnpm run build && publint --pack npm && attw --pack . --exclude-entrypoints styles.css",
+    "clean": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.build.cjs.json && tsc -p tsconfig.build.esm.json && node scripts/finish-build.mjs",
+    "prebuild": "pnpm run clean",
+    "prepack": "pnpm run build",
+    "start": "pnpm run storybook",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "semantic-release": "semantic-release",
+    "prepare": "husky"
   },
   "lint-staged": {
-    "**/*.{js,mjs,ts,tsx}": [
-      "eslint --fix"
-    ],
-    "**/*.md": [
+    "*.{js,mjs,ts,tsx}": [
+      "oxlint --type-aware --fix",
       "prettier --write"
     ],
-    "**/*.yml": [
+    "*.{md,yml,json}": [
       "prettier --write"
-    ]
-  },
-  "release": {
-    "branches": [
-      "main"
     ]
   },
   "peerDependencies": {
-    "prop-types": "^15.7.2",
-    "react": "^16.8.3 || ^17.0.0",
-    "react-dom": "^16.8.3 || ^17.0.0",
-    "styled-components": "^4.1.1"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "fix-webm-duration": "^1.0.4",
-    "lodash.merge": "^4.5.0",
-    "react-svg-inline": "^2.1.0"
+    "fix-webm-duration": "^1.0.6"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.3.3",
-    "@babel/plugin-proposal-class-properties": "^7.3.3",
-    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
-    "@babel/plugin-transform-runtime": "^7.2.0",
-    "@babel/plugin-transform-typescript": "^7.28.6",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/preset-react": "^7.0.0",
-    "@commitlint/cli": "^8.3.5",
-    "@commitlint/config-conventional": "^8.3.4",
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@playwright/test": "^1.64.1",
-    "@storybook/addon-actions": "^6.0.21",
-    "@storybook/addon-info": "^5.3.21",
-    "@storybook/addon-knobs": "^6.0.21",
-    "@storybook/addon-options": "^5.3.21",
-    "@storybook/addons": "^6.0.21",
-    "@storybook/react": "^6.0.21",
+    "@storybook/addon-docs": "^10.6.3",
+    "@storybook/react-vite": "^10.6.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
-    "@types/lodash.merge": "^4.6.9",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@types/styled-components": "^5.1.36",
-    "@vitest/eslint-plugin": "^1.6.27",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-styled-components": "^1.10.6",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.39.5",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "husky": "^4.3.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^10.4.0",
-    "neostandard": "^0.14.1",
-    "prettier": "^2.1.2",
-    "prop-types": "^15.7.2",
+    "lint-staged": "^16.4.0",
+    "oxlint": "^1.89.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "prettier": "^3.9.10",
+    "publint": "^0.3.25",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "rimraf": "^3.0.2",
-    "semantic-release": "^17.2.3",
-    "styled-components": "4",
+    "semantic-release": "^25.0.9",
+    "storybook": "^10.6.3",
     "typescript": "~6.0.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
@@ -105,10 +120,8 @@
   "version": "0.0.0-development",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbaiodias/react-video-recorder.git"
+    "url": "git+https://github.com/fbaiodias/react-video-recorder.git"
   },
   "license": "MIT",
-  "resolutions": {
-    "@types/react": "^18.3.31"
-  }
+  "packageManager": "pnpm@12.15.0"
 }

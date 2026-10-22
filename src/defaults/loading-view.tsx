@@ -1,10 +1,10 @@
-import React from 'react'
-import styled from 'styled-components'
+'use client'
 
-const LoadingMessage = styled.div`
-  font-family: Arial;
-`
+import { useStyles } from '../styles.ts'
 
-const LoadingView = () => <LoadingMessage>Loading...</LoadingMessage>
+const LoadingView = () => {
+  useStyles()
+  return <div className='rvr-loading'>Loading...</div>
+}
 
 export default LoadingView

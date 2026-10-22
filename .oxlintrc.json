@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // Formatting is Prettier's job; this config is about bugs. `pnpm lint` runs
+  // it with --type-aware, which adds the TypeScript rules that need types.
+  "plugins": [
+    "typescript",
+    "react",
+    "vitest",
+    "import",
+    "unicorn",
+    "oxc",
+    "promise"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "env": { "browser": true, "es2022": true },
+  "settings": { "react": { "version": "18.3" } },
+  "rules": {
+    // Rules of Hooks and the React Compiler rules (refs, immutability, ...)
+    // come with the categories above.
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    "react/react-in-jsx-scope": "off",
+    "eslint/no-unused-vars": [
+      "error",
+      { "args": "none", "ignoreRestSiblings": true }
+    ],
+    "eslint/no-shadow": "off",
+    "unicorn/consistent-function-scoping": "off",
+    // Fire-and-forget .then() chains are the norm here (they update state).
+    "promise/always-return": "off",
+    // Casts mirror what browsers actually pass around (events, file inputs).
+    "typescript/no-unsafe-type-assertion": "off",
+    // Effects return a cleanup only sometimes.
+    "typescript/consistent-return": "off",
+    // get-video-info clears its one-off ontimeupdate handler on purpose.
+    "unicorn/prefer-add-event-listener": "off"
+  },
+  "overrides": [
+    {
+      "files": ["test/**", "**/*.stories.tsx"],
+      "rules": {
+        "eslint/no-underscore-dangle": "off",
+        "import/namespace": "off",
+        "unicorn/no-array-sort": "off",
+        "typescript/unbound-method": "off",
+        "typescript/require-array-sort-compare": "off",
+        "promise/no-callback-in-promise": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "lib",
+    "storybook-static",
+    "test-results",
+    "playwright-report"
+  ]
+}
