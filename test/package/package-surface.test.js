@@ -87,9 +87,6 @@ describe('published package', () => {
       'lib/get-video-info.js',
       'lib/index.js',
       'lib/video-recorder.js',
-      // [known bug] babel --copy-files copies the files --ignore skips, so the
-      // story ships as raw JSX. (3.19.4 also shipped the old test files.)
-      'lib/video-recorder.stories.js',
       'package.json'
     ])
   })
