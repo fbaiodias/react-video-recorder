@@ -1,5 +1,8 @@
 import type { ReactElement, ReactNode } from 'react'
-import type { RenderActionsProps, Translate } from './defaults/render-actions.tsx'
+import type {
+  RenderActionsProps,
+  Translate
+} from './defaults/render-actions.tsx'
 
 export type { RenderActionsProps, Translate }
 
@@ -69,7 +72,9 @@ export interface VideoRecorderProps extends UseVideoRecorderOptions {
 
   renderDisconnectedView?: () => ReactNode
   renderLoadingView?: () => ReactNode
-  renderVideoInputView?: (props: { videoInput: ReactElement | null }) => ReactNode
+  renderVideoInputView?: (props: {
+    videoInput: ReactElement | null
+  }) => ReactNode
   renderUnsupportedView?: () => ReactNode
   renderErrorView?: (props: { error: VideoRecorderError | null }) => ReactNode
   renderActions?: (props: RenderActionsProps) => ReactNode
@@ -149,7 +154,9 @@ export interface VideoRecorderController {
   /** Attach to the <input type="file"> used for picking or capturing a video */
   setVideoInput: (element: HTMLInputElement | null) => void
   /** The file input's onChange handler */
-  handleVideoInputChange: (event: Event | { target: EventTarget | null }) => void
+  handleVideoInputChange: (
+    event: Event | { target: EventTarget | null }
+  ) => void
   /** The replay video's onClick handler: toggles mute (and plays if paused) */
   handleReplayVideoClick: () => void
 }

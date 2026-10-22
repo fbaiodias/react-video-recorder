@@ -8,8 +8,17 @@ const logRecording = (
   thumbnailBlob: Blob | null,
   duration: number | null
 ) => {
-  console.log('Video Blob', videoBlob.size, videoBlob, URL.createObjectURL(videoBlob))
-  console.log('Thumb Blob', thumbnailBlob, thumbnailBlob && URL.createObjectURL(thumbnailBlob))
+  console.log(
+    'Video Blob',
+    videoBlob.size,
+    videoBlob,
+    URL.createObjectURL(videoBlob)
+  )
+  console.log(
+    'Thumb Blob',
+    thumbnailBlob,
+    thumbnailBlob && URL.createObjectURL(thumbnailBlob)
+  )
   console.log('Started:', startedAt)
   console.log('Duration:', duration)
 }

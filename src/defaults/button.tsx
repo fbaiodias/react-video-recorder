@@ -9,7 +9,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
   backgroundColor?: string
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button (
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   { color, backgroundColor, className, style, ...props },
   ref
 ) {

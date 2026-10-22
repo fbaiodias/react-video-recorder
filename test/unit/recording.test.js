@@ -66,13 +66,8 @@ describe('recording a video inline', () => {
     expect(fixWebmDuration.mock.calls[0][1]).toBe(1000)
 
     expect(r.callbacks.onRecordingComplete).toHaveBeenCalledTimes(1)
-    const [
-      videoBlob,
-      startedAt,
-      thumbnail,
-      duration,
-      extension
-    ] = r.callbacks.onRecordingComplete.mock.calls[0]
+    const [videoBlob, startedAt, thumbnail, duration, extension] =
+      r.callbacks.onRecordingComplete.mock.calls[0]
     expect(videoBlob).toBe(fixWebmDuration.mock.calls[0][0])
     expect(videoBlob.type).toBe('video/webm;codecs="vp8,opus"')
     // 4 chunks at 250ms intervals plus the final one emitted on stop.

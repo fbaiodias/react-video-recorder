@@ -14,7 +14,7 @@ import {
 const fakeStream = () => {
   const stream = {
     stopped: false,
-    getTracks () {
+    getTracks() {
       return [{ stop: () => (stream.stopped = true) }]
     }
   }
@@ -101,7 +101,11 @@ describe('React.StrictMode', () => {
     expect(r.video().srcObject).toBe(media.lastStream)
     // The simulated unmount turns the camera "off" before the real mount
     // turns it on.
-    expect(r.events).toEqual(['onTurnOffCamera', 'onTurnOnCamera', 'onCameraOn'])
+    expect(r.events).toEqual([
+      'onTurnOffCamera',
+      'onTurnOnCamera',
+      'onCameraOn'
+    ])
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
   })
 

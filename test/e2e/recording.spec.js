@@ -102,9 +102,14 @@ test('mirrors a user-facing camera but not the replay', async ({ page }) => {
   // camera, which isn't mirrored.
   const facingMode = await page
     .locator('video')
-    .evaluate((element) => element.srcObject.getVideoTracks()[0].getSettings().facingMode)
+    .evaluate(
+      (element) =>
+        element.srcObject.getVideoTracks()[0].getSettings().facingMode
+    )
   expect(await transform()).toMatch(
-    facingMode === 'environment' ? /^matrix\(1, 0, 0, 1,/ : /^matrix\(-1, 0, 0, 1,/
+    facingMode === 'environment'
+      ? /^matrix\(1, 0, 0, 1,/
+      : /^matrix\(-1, 0, 0, 1,/
   )
 
   await page.click(qa('start-recording'))

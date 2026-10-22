@@ -73,7 +73,7 @@ const mergeState = (
   patch: Partial<VideoRecorderState>
 ): VideoRecorderState => ({ ...state, ...patch })
 
-export function getStatus (state: VideoRecorderState): VideoRecorderStatus {
+export function getStatus(state: VideoRecorderState): VideoRecorderStatus {
   if (state.isInlineRecordingSupported === null) return 'initializing'
   if (state.thereWasAnError) return 'error'
   if (state.isReplayingVideo) return 'replaying'
@@ -90,7 +90,7 @@ export function getStatus (state: VideoRecorderState): VideoRecorderStatus {
 type Timeout = ReturnType<typeof setTimeout>
 
 // The constraints, asking for this exact camera.
-function withDevice (
+function withDevice(
   constraints: MediaStreamConstraints,
   deviceId: string
 ): MediaStreamConstraints {
@@ -105,7 +105,7 @@ function withDevice (
   }
 }
 
-function getVideoSettings (stream: MediaStream): MediaTrackSettings {
+function getVideoSettings(stream: MediaStream): MediaTrackSettings {
   const track = stream.getVideoTracks && stream.getVideoTracks()[0]
   return (track && track.getSettings && track.getSettings()) || {}
 }
@@ -137,7 +137,7 @@ interface Internals {
 // The recorder's logic. It's created once per component and keeps the latest
 // options and rendered state (see update()), so its functions stay stable and
 // read current values when called, like a class component's methods.
-function createRecorder (
+function createRecorder(
   setState: (patch: Partial<VideoRecorderState>) => void
 ) {
   let options = withDefaults({})
@@ -165,7 +165,7 @@ function createRecorder (
   const stopStream = (stream: MediaStream | undefined) =>
     stream && stream.getTracks().forEach((track) => track.stop())
 
-  function turnOnCamera (deviceId: string | null = null) {
+  function turnOnCamera(deviceId: string | null = null) {
     const { onTurnOnCamera } = getOptions()
     if (onTurnOnCamera) {
       onTurnOnCamera()
@@ -228,7 +228,7 @@ function createRecorder (
       .catch((err) => isCurrent(generation) && handleError(err))
   }
 
-  function switchCamera () {
+  function switchCamera() {
     const { onSwitchCamera } = getOptions()
     if (onSwitchCamera) {
       onSwitchCamera()
@@ -248,7 +248,7 @@ function createRecorder (
     return turnOnCamera(availableDeviceIds[index + 1])
   }
 
-  function turnOffCamera () {
+  function turnOffCamera() {
     const { onTurnOffCamera } = getOptions()
     if (onTurnOffCamera) {
       onTurnOffCamera()
@@ -263,7 +263,7 @@ function createRecorder (
     })
   }
 
-  function handleSuccess (stream: MediaStream, generation: number) {
+  function handleSuccess(stream: MediaStream, generation: number) {
     // The component unmounted while waiting for the camera.
     if (!isCurrent(generation)) {
       stopStream(stream)
@@ -307,7 +307,7 @@ function createRecorder (
     }, 200)
   }
 
-  function handleError (err: VideoRecorderError) {
+  function handleError(err: VideoRecorderError) {
     const { onError } = getOptions()
 
     if (onError) {
@@ -337,27 +337,27 @@ function createRecorder (
     }
   }
 
-  function handleDataIssue (event: Event) {
+  function handleDataIssue(event: Event) {
     const error = new ReactVideoRecorderDataIssueError(event)
     console.error(error.message, event)
     handleError(error)
     return false
   }
 
-  function getMimeType () {
+  function getMimeType() {
     const { mimeType: forcedMimeType } = getOptions()
     if (forcedMimeType) {
       return forcedMimeType
     }
 
     const mimeType = window.MediaRecorder.isTypeSupported
-      ? MIME_TYPES.find(window.MediaRecorder.isTypeSupported)
+      ? MIME_TYPES.find((type) => window.MediaRecorder.isTypeSupported(type))
       : 'video/webm'
 
     return (r.mediaRecorder && r.mediaRecorder.mimeType) || mimeType || ''
   }
 
-  function isDataHealthOK (event: BlobEvent) {
+  function isDataHealthOK(event: BlobEvent) {
     if (!event.data) return handleDataIssue(event)
 
     const { chunkSize } = getOptions()
@@ -377,7 +377,7 @@ function createRecorder (
     return true
   }
 
-  function tryToUnmuteReplayVideo () {
+  function tryToUnmuteReplayVideo() {
     const video = r.replayVideo
     if (!video) return
     video.muted = false
@@ -407,7 +407,7 @@ function createRecorder (
       })
   }
 
-  function handleDataAvailable (event: BlobEvent) {
+  function handleDataAvailable(event: BlobEvent) {
     if (isDataHealthOK(event)) {
       r.recordedBlobs.push(event.data)
     }
@@ -416,7 +416,7 @@ function createRecorder (
   const getTotalEllapsedTimeInMs = () =>
     Date.now() - r.lastRecordingTimestamp + r.recordingDuration
 
-  function stopRecording () {
+  function stopRecording() {
     const { onStopRecording } = getOptions()
     if (onStopRecording) {
       onStopRecording()
@@ -433,7 +433,7 @@ function createRecorder (
     r.paused = false
   }
 
-  function pauseRecording () {
+  function pauseRecording() {
     const { onPauseRecording } = getOptions()
     if (onPauseRecording) {
       onPauseRecording()
@@ -453,7 +453,7 @@ function createRecorder (
     setState({ isPaused: true })
   }
 
-  function resumeRecording () {
+  function resumeRecording() {
     const { onResumeRecording } = getOptions()
     if (onResumeRecording) {
       onResumeRecording()
@@ -477,7 +477,7 @@ function createRecorder (
     setState({ isPaused: false })
   }
 
-  function startRecording () {
+  function startRecording() {
     const { onStartRecording, countdownTime } = getOptions()
     if (onStartRecording) {
       onStartRecording()
@@ -491,7 +491,7 @@ function createRecorder (
     r.countdownTimeout = setTimeout(() => recordAfterCountdown(), countdownTime)
   }
 
-  function recordAfterCountdown () {
+  function recordAfterCountdown() {
     // Rejects when the camera <video> is gone; handleError reports it.
     captureThumb(r.cameraVideo!).then((thumbnail) => {
       r.thumbnail = thumbnail
@@ -542,7 +542,7 @@ function createRecorder (
     }, handleError)
   }
 
-  function handleStop (event: Event) {
+  function handleStop(event: Event) {
     const endedAt = new Date().getTime()
 
     if (!r.recordedBlobs || r.recordedBlobs.length <= 0) {
@@ -558,8 +558,8 @@ function createRecorder (
       r.recordedBlobs.length === 1
         ? r.recordedBlobs[0]
         : new window.Blob(r.recordedBlobs, {
-          type: getMimeType()
-        })
+            type: getMimeType()
+          })
 
     const thumbnailBlob = r.thumbnail
     const startedAt = r.startedAt
@@ -588,12 +588,13 @@ function createRecorder (
   }
 
   // see https://bugs.chromium.org/p/chromium/issues/detail?id=642012
-  function fixVideoMetadata (rawVideoBlob: Blob): Promise<Blob> {
+  function fixVideoMetadata(rawVideoBlob: Blob): Promise<Blob> {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
       return Promise.resolve(rawVideoBlob)
     }
     // see https://stackoverflow.com/a/63568311
+    // oxlint-disable-next-line typescript/unbound-method -- only checks it exists
     Blob.prototype.arrayBuffer ??= function (this: Blob) {
       return new Response(this).arrayBuffer()
     }
@@ -603,7 +604,7 @@ function createRecorder (
 
   // Called with React's change event, and with the native one from the
   // listener openVideoInput() adds.
-  function handleVideoInputChange (e: Event | { target: EventTarget | null }) {
+  function handleVideoInputChange(e: Event | { target: EventTarget | null }) {
     if (getState().isReplayingVideo) {
       setState({
         isReplayingVideo: false
@@ -649,7 +650,7 @@ function createRecorder (
       })
   }
 
-  function openVideoInput () {
+  function openVideoInput() {
     const { onOpenVideoInput } = getOptions()
     if (onOpenVideoInput) {
       onOpenVideoInput()
@@ -662,7 +663,7 @@ function createRecorder (
     r.videoInput!.addEventListener('change', handleVideoInputChange)
   }
 
-  function stopReplaying () {
+  function stopReplaying() {
     const { onStopReplaying, useVideoInput, isOnInitially } = getOptions()
     if (onStopReplaying) {
       onStopReplaying()
@@ -684,7 +685,7 @@ function createRecorder (
     }
   }
 
-  function handleReplayVideoClick () {
+  function handleReplayVideoClick() {
     const { showReplayControls, replayVideoAutoplayAndLoopOff } = getOptions()
     if (r.replayVideo!.paused && !showReplayControls) {
       r.replayVideo!.play()
@@ -698,7 +699,7 @@ function createRecorder (
     }
   }
 
-  function mount () {
+  function mount() {
     r.mounted = true
     r.initialActionPending = true
     setState({
@@ -711,7 +712,7 @@ function createRecorder (
 
   // Runs once the support flags from mount() have been rendered, so that the
   // file input exists when the picker has to open.
-  function runInitialAction () {
+  function runInitialAction() {
     if (!r.initialActionPending) return
     r.initialActionPending = false
 
@@ -726,7 +727,7 @@ function createRecorder (
     }
   }
 
-  function unmount () {
+  function unmount() {
     turnOffCamera()
     r.mounted = false
     r.generation += 1
@@ -737,7 +738,7 @@ function createRecorder (
   }
 
   // Cancels the countdown and stops any recording without reporting it.
-  function discardRecording () {
+  function discardRecording() {
     clearTimeout(r.countdownTimeout)
     clearTimeout(r.timeLimitTimeout)
     clearTimeout(r.dataAvailableTimeout)
@@ -753,7 +754,7 @@ function createRecorder (
   }
 
   // Shows the stream in the camera <video>.
-  function showStream (stream: MediaStream | undefined) {
+  function showStream(stream: MediaStream | undefined) {
     // Only if the cameraVideo ref is available
     if (window.URL && r.cameraVideo) {
       r.cameraVideo.srcObject = stream!
@@ -765,7 +766,7 @@ function createRecorder (
 
   return {
     // Called after every render with the options and state it used.
-    update (nextOptions: Options, nextState: VideoRecorderState) {
+    update(nextOptions: Options, nextState: VideoRecorderState) {
       options = nextOptions
       state = nextState
     },
@@ -807,7 +808,7 @@ const useIsomorphicLayoutEffect =
  * The recorder without UI: state, actions and the refs to attach to your own
  * <video> and <input type="file"> elements. <VideoRecorder> is built on it.
  */
-export function useVideoRecorder (
+export function useVideoRecorder(
   options: UseVideoRecorderOptions = {}
 ): VideoRecorderController {
   const [state, setState] = useReducer(mergeState, initialState)

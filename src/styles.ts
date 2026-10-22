@@ -193,7 +193,7 @@ export const STYLES = `
 const STYLE_ELEMENT_ID = 'react-video-recorder-styles'
 
 /** Adds the default styles to the document, once. */
-export function injectStyles () {
+export function injectStyles() {
   if (typeof document === 'undefined') return
   if (document.getElementById(STYLE_ELEMENT_ID)) return
   const style = document.createElement('style')
@@ -203,7 +203,7 @@ export function injectStyles () {
   document.head.prepend(style)
 }
 
-export function useStyles () {
+export function useStyles() {
   useInsertionEffect(injectStyles, [])
 }
 

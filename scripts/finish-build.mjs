@@ -11,7 +11,10 @@ for (const entry of readdirSync('lib', { recursive: true })) {
   if (!entry.endsWith('.d.ts')) continue
   const path = join('lib', entry)
   const source = readFileSync(path, 'utf8')
-  writeFileSync(path, source.replace(/(from '\.{1,2}\/[^']+)\.tsx?'/g, "$1.js'"))
+  writeFileSync(
+    path,
+    source.replace(/(from '\.{1,2}\/[^']+)\.tsx?'/g, "$1.js'")
+  )
 }
 
 // The stylesheet the components inject, for apps that load it themselves.

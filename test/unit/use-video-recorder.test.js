@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import { describe, expect, it } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
 import { useVideoRecorder } from '../../src/use-video-recorder'
@@ -9,14 +10,18 @@ import { advance } from './helpers'
 let controller
 const CustomRecorder = (options) => {
   const recorder = useVideoRecorder(options)
-  controller = recorder
+  useLayoutEffect(() => {
+    controller = recorder
+  })
   const { status, state, setCameraVideo, setReplayVideo } = recorder
   return (
     <div>
       <p data-testid='status'>{status}</p>
-      {status === 'replaying'
-        ? <video ref={setReplayVideo} src={state.videoUrl} />
-        : <video ref={setCameraVideo} />}
+      {status === 'replaying' ? (
+        <video ref={setReplayVideo} src={state.videoUrl} />
+      ) : (
+        <video ref={setCameraVideo} />
+      )}
     </div>
   )
 }
@@ -28,13 +33,20 @@ describe('useVideoRecorder', () => {
   it('reports its status through a recording', async () => {
     const media = installFakeMedia()
     const onRecordingComplete = () => {}
-    render(<CustomRecorder countdownTime={1000} onRecordingComplete={onRecordingComplete} />)
+    render(
+      <CustomRecorder
+        countdownTime={1000}
+        onRecordingComplete={onRecordingComplete}
+      />
+    )
     await advance(0)
     expect(status()).toBe('idle')
 
     await run(() => controller.turnOnCamera())
     expect(status()).toBe('connecting')
-    expect(screen.getByTestId('status').nextSibling.srcObject).toBe(media.lastStream)
+    expect(screen.getByTestId('status').nextSibling.srcObject).toBe(
+      media.lastStream
+    )
     await advance(200)
     expect(status()).toBe('ready')
 
@@ -91,6 +103,8 @@ describe('useVideoRecorder', () => {
     const functionNames = Object.keys(first).filter(
       (key) => typeof first[key] === 'function'
     )
-    expect(functionNames.filter((key) => controller[key] !== first[key])).toEqual([])
+    expect(
+      functionNames.filter((key) => controller[key] !== first[key])
+    ).toEqual([])
   })
 })

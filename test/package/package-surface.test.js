@@ -57,7 +57,11 @@ beforeAll(() => {
   // Resolve the package by name, as an app with it in node_modules would.
   consumerDir = mkdtempSync(join(tmpdir(), 'rvr-consumer-'))
   mkdirSync(join(consumerDir, 'node_modules'))
-  symlinkSync(root, join(consumerDir, 'node_modules', 'react-video-recorder'), 'dir')
+  symlinkSync(
+    root,
+    join(consumerDir, 'node_modules', 'react-video-recorder'),
+    'dir'
+  )
   requireFromConsumer = createRequire(join(consumerDir, 'index.js'))
 })
 
@@ -67,7 +71,7 @@ afterAll(() => {
 
 // Imports each path in a separate Node process, so it goes through Node's
 // own ES module resolution and the package's "exports" conditions.
-function importFromConsumer (subpaths) {
+function importFromConsumer(subpaths) {
   const script = join(consumerDir, 'import.mjs')
   writeFileSync(
     script,
@@ -78,7 +82,9 @@ for (const subpath of ${JSON.stringify(subpaths)}) {
 }
 console.log(JSON.stringify(result))`
   )
-  return JSON.parse(execFileSync('node', [script], { cwd: consumerDir, encoding: 'utf8' }))
+  return JSON.parse(
+    execFileSync('node', [script], { cwd: consumerDir, encoding: 'utf8' })
+  )
 }
 
 describe('published package', () => {
@@ -147,7 +153,9 @@ describe('published package', () => {
   it.each(PUBLIC_MODULES)(
     'require("react-video-recorder%s") gets CommonJS with ES module interop',
     (subpath) => {
-      const resolved = requireFromConsumer.resolve(`react-video-recorder${subpath}`)
+      const resolved = requireFromConsumer.resolve(
+        `react-video-recorder${subpath}`
+      )
       expect(resolved).not.toContain('/lib/esm/')
       const mod = requireFromConsumer(`react-video-recorder${subpath}`)
       expect(mod.__esModule).toBe(true)
@@ -254,8 +262,9 @@ describe('published package', () => {
     const fromRequire = Object.fromEntries(
       PUBLIC_MODULES.map((subpath) => [
         subpath,
-        describeExports(requireFromConsumer(`react-video-recorder${subpath}`))
-          .filter((entry) => !entry.startsWith('__esModule'))
+        describeExports(
+          requireFromConsumer(`react-video-recorder${subpath}`)
+        ).filter((entry) => !entry.startsWith('__esModule'))
       ])
     )
     expect(importFromConsumer(PUBLIC_MODULES)).toEqual(fromRequire)
@@ -263,7 +272,9 @@ describe('published package', () => {
 
   it('exports the hooks component from the main entry', () => {
     const main = requireFromConsumer('react-video-recorder')
-    const direct = requireFromConsumer('react-video-recorder/lib/video-recorder')
+    const direct = requireFromConsumer(
+      'react-video-recorder/lib/video-recorder'
+    )
     expect(main.default).toBe(direct.default)
     expect(main.VideoRecorder).toBe(main.default)
     expect(main.ReactVideoRecorder).toBe(main.default)
@@ -276,7 +287,9 @@ describe('published package', () => {
   })
 
   it('ships declarations next to every module', () => {
-    for (const subpath of PUBLIC_MODULES.filter((path) => path.startsWith('/lib/'))) {
+    for (const subpath of PUBLIC_MODULES.filter((path) =>
+      path.startsWith('/lib/')
+    )) {
       const js = requireFromConsumer.resolve(`react-video-recorder${subpath}`)
       expect(readFileSync(js.replace(/\.js$/, '.d.ts'), 'utf8')).not.toBe('')
     }
@@ -286,7 +299,9 @@ describe('published package', () => {
     const lib = join(root, 'lib')
     const withModernSyntax = readdirSync(lib, { recursive: true })
       .filter((file) => file.endsWith('.js'))
-      .filter((file) => /\?\.[\w([]|\?\?/.test(readFileSync(join(lib, file), 'utf8')))
+      .filter((file) =>
+        /\?\.[\w([]|\?\?/.test(readFileSync(join(lib, file), 'utf8'))
+      )
     expect(withModernSyntax).toEqual([])
   })
 })

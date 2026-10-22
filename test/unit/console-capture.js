@@ -6,7 +6,7 @@ import { vi } from 'vitest'
 // go unnoticed.
 const consoleCalls = { error: [], warn: [] }
 
-export function captureConsole () {
+export function captureConsole() {
   for (const method of Object.keys(consoleCalls)) {
     consoleCalls[method] = []
     vi.spyOn(console, method).mockImplementation((...args) => {
@@ -15,11 +15,11 @@ export function captureConsole () {
   }
 }
 
-export function takeConsole (method) {
+export function takeConsole(method) {
   return consoleCalls[method].splice(0)
 }
 
-export function assertNoConsoleLeft () {
+export function assertNoConsoleLeft() {
   const leftover = [...takeConsole('error'), ...takeConsole('warn')]
   if (leftover.length > 0) {
     throw new Error(

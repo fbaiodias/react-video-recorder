@@ -25,7 +25,7 @@ export const mediaError = (name, message = name) =>
   Object.assign(new Error(message), { name })
 
 export class FakeMediaStreamTrack {
-  constructor (kind, settings = {}) {
+  constructor(kind, settings = {}) {
     this.kind = kind
     this.settings = settings
     this.readyState = 'live'
@@ -34,13 +34,13 @@ export class FakeMediaStreamTrack {
     })
   }
 
-  getSettings () {
+  getSettings() {
     return this.settings
   }
 }
 
 export class FakeMediaStream {
-  constructor (constraints, videoSettings = {}) {
+  constructor(constraints, videoSettings = {}) {
     this.constraints = constraints
     this.tracks = [
       new FakeMediaStreamTrack('video', videoSettings),
@@ -48,26 +48,26 @@ export class FakeMediaStream {
     ]
   }
 
-  getTracks () {
+  getTracks() {
     return this.tracks
   }
 
-  getVideoTracks () {
+  getVideoTracks() {
     return this.tracks.filter((track) => track.kind === 'video')
   }
 
-  get isStopped () {
+  get isStopped() {
     return this.tracks.every((track) => track.readyState === 'ended')
   }
 }
 
-export function createFakeMediaRecorder (media) {
+export function createFakeMediaRecorder(media) {
   return class FakeMediaRecorder extends EventTarget {
     static isTypeSupported = vi.fn((type) =>
       media.supportedMimeTypes.includes(type)
     )
 
-    constructor (stream, options = {}) {
+    constructor(stream, options = {}) {
       super()
       if (media.createRecorderError) throw media.createRecorderError
       this.stream = stream
@@ -79,11 +79,11 @@ export function createFakeMediaRecorder (media) {
       media.recorders.push(this)
     }
 
-    get emitsData () {
+    get emitsData() {
       return media.recorderEmitsData
     }
 
-    start (timeslice) {
+    start(timeslice) {
       this.calls.push(['start', timeslice])
       this.state = 'recording'
       this.interval = setInterval(() => {
@@ -91,29 +91,29 @@ export function createFakeMediaRecorder (media) {
       }, timeslice)
     }
 
-    pause () {
+    pause() {
       this.calls.push(['pause'])
       this.state = 'paused'
     }
 
-    resume () {
+    resume() {
       this.calls.push(['resume'])
       this.state = 'recording'
     }
 
-    stop () {
+    stop() {
       this.calls.push(['stop'])
       this.state = 'inactive'
       clearInterval(this.interval)
       // Browsers fire these in a later task. A microtask keeps durations exact
       // under fake timers, which turn a 0ms timeout set mid-tick into 1ms.
-      Promise.resolve().then(() => {
+      void Promise.resolve().then(() => {
         this.emitChunk()
         this.dispatchEvent(new Event('stop'))
       })
     }
 
-    emitChunk () {
+    emitChunk() {
       if (!this.emitsData) return
       this.chunkCount += 1
       const event = new Event('dataavailable')
@@ -121,7 +121,7 @@ export function createFakeMediaRecorder (media) {
       this.dispatchEvent(event)
     }
 
-    emitError () {
+    emitError() {
       const event = new Event('error')
       this.dispatchEvent(event)
       return event
@@ -134,7 +134,7 @@ const inputCaptureDescriptor = Object.getOwnPropertyDescriptor(
   'capture'
 )
 
-export function installFakeMedia ({
+export function installFakeMedia({
   devices = [videoDevice('camera-1'), audioDevice('mic-1')],
   mediaRecorder = true,
   mediaDevices = true,
@@ -158,10 +158,10 @@ export function installFakeMedia ({
     recorders: [],
     createRecorderError: null,
     makeChunk: (count, type) => new Blob([`chunk-${count}`], { type }),
-    get lastStream () {
+    get lastStream() {
       return this.streams[this.streams.length - 1]
     },
-    get lastRecorder () {
+    get lastRecorder() {
       return this.recorders[this.recorders.length - 1]
     }
   }
@@ -174,13 +174,16 @@ export function installFakeMedia ({
     )
   )
   media.getUserMedia = vi.fn((constraints) => {
-    const cameras = media.devices.filter((device) => device.kind === 'videoinput')
+    const cameras = media.devices.filter(
+      (device) => device.kind === 'videoinput'
+    )
     const exact = constraints.video && constraints.video.deviceId
     const requestedId = exact && (exact.exact ?? exact)
     const camera = requestedId
       ? cameras.find((device) => device.deviceId === requestedId)
-      : cameras.find((device) => device.facingMode === constraints.video?.facingMode) ||
-        cameras[0]
+      : cameras.find(
+          (device) => device.facingMode === constraints.video?.facingMode
+        ) || cameras[0]
     if (constraints.video && !camera) {
       return Promise.reject(
         mediaError(requestedId ? 'OverconstrainedError' : 'NotFoundError')
@@ -216,10 +219,10 @@ export function installFakeMedia ({
   if (inputCapture) {
     Object.defineProperty(HTMLInputElement.prototype, 'capture', {
       configurable: true,
-      get () {
+      get() {
         return this.getAttribute('capture') || ''
       },
-      set (value) {
+      set(value) {
         this.setAttribute('capture', value)
       }
     })
@@ -230,7 +233,7 @@ export function installFakeMedia ({
   return media
 }
 
-export function uninstallFakeMedia () {
+export function uninstallFakeMedia() {
   delete navigator.mediaDevices
   delete window.MediaRecorder
   if (inputCaptureDescriptor) {

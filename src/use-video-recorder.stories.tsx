@@ -26,25 +26,23 @@ const CustomRecorder = (options: UseVideoRecorderOptions) => {
         Status: <strong>{status}</strong>
       </p>
 
-      {status === 'replaying'
-        ? (
-            <video
-              ref={setReplayVideo}
-              src={state.videoUrl}
-              controls
-              playsInline
-              style={{ width: 480 }}
-            />
-          )
-        : (
-            <video
-              ref={setCameraVideo}
-              autoPlay
-              muted
-              playsInline
-              style={{ width: 480, background: '#000', transform: 'scaleX(-1)' }}
-            />
-          )}
+      {status === 'replaying' ? (
+        <video
+          ref={setReplayVideo}
+          src={state.videoUrl}
+          controls
+          playsInline
+          style={{ width: 480 }}
+        />
+      ) : (
+        <video
+          ref={setCameraVideo}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: 480, background: '#000', transform: 'scaleX(-1)' }}
+        />
+      )}
 
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         {status === 'idle' && (
@@ -88,7 +86,14 @@ const CustomRecorder = (options: UseVideoRecorderOptions) => {
             Record another
           </button>
         )}
-        {status === 'error' && <span>Something went wrong: {String(state.error)}</span>}
+        {status === 'error' && (
+          <span>
+            Something went wrong:{' '}
+            {state.error instanceof Error
+              ? state.error.message
+              : 'recording failed'}
+          </span>
+        )}
       </div>
     </div>
   )

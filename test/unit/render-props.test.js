@@ -366,13 +366,17 @@ describe('class name props', () => {
     })
     await turnOnCamera(r)
     expect(r.video().classList.contains('my-video')).toBe(true)
-    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(true)
+    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(
+      true
+    )
 
     await startRecording(r)
     await advance(500)
     await click(r.byQa('stop-recording'))
     expect(r.video().classList.contains('my-video')).toBe(true)
-    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(true)
+    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(
+      true
+    )
   })
 })
 

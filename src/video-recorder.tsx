@@ -23,7 +23,7 @@ const defaultRenderLoadingView = () => <LoadingView />
 const defaultT = (x: string) => x
 
 const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
-  function VideoRecorder (props, ref) {
+  function VideoRecorder(props, ref) {
     const {
       renderUnsupportedView = defaultRenderUnsupportedView,
       renderErrorView = defaultRenderErrorView,
@@ -87,19 +87,17 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       const shouldUseVideoInput =
         useVideoInput || (!isInlineRecordingSupported && isVideoInputSupported)
 
-      const videoInput = shouldUseVideoInput
-        ? (
-            <input
-              ref={recorder.setVideoInput}
-              key='videoInput'
-              type='file'
-              accept='video/*'
-              capture={useVideoInput ? undefined : 'user'}
-              style={{ display: 'none' }}
-              onChange={recorder.handleVideoInputChange}
-            />
-          )
-        : null
+      const videoInput = shouldUseVideoInput ? (
+        <input
+          ref={recorder.setVideoInput}
+          key='videoInput'
+          type='file'
+          accept='video/*'
+          capture={useVideoInput ? undefined : 'user'}
+          style={{ display: 'none' }}
+          onChange={recorder.handleVideoInputChange}
+        />
+      ) : null
 
       if (isReplayingVideo) {
         return (
@@ -109,7 +107,11 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
           >
             <video
               ref={recorder.setReplayVideo}
-              className={cx('rvr-video', 'rvr-video--clickable', videoClassName)}
+              className={cx(
+                'rvr-video',
+                'rvr-video--clickable',
+                videoClassName
+              )}
               src={state.videoUrl}
               loop
               muted={isReplayVideoMuted}
@@ -150,11 +152,11 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
       if (isCameraOn) {
         // Enable switch camera button, only if not recording and multiple video sources available
         const switchCameraControl =
-          availableDeviceIds && availableDeviceIds.length >= 2 && !isRecording
-            ? (
-                <SwitchCameraView onClick={recorder.switchCamera} />
-              )
-            : null
+          availableDeviceIds &&
+          availableDeviceIds.length >= 2 &&
+          !isRecording ? (
+            <SwitchCameraView onClick={recorder.switchCamera} />
+          ) : null
 
         return (
           <div
@@ -165,7 +167,9 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
               className={cx(
                 'rvr-video',
                 // Mirror like a mirror: a camera facing away shows the scene as is.
-                isFlipped && facingMode !== 'environment' && 'rvr-video--flipped',
+                isFlipped &&
+                  facingMode !== 'environment' &&
+                  'rvr-video--flipped',
                 videoClassName
               )}
               ref={recorder.setCameraVideo}

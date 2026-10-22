@@ -225,7 +225,8 @@ yarn start         # Storybook on http://localhost:6006
 ### Checks
 
 ```sh
-yarn lint            # ESLint (neostandard)
+yarn lint            # Oxlint (with type information) and Prettier's check
+yarn format          # format everything with Prettier
 yarn typecheck       # TypeScript
 yarn test            # unit tests (jsdom with a fake camera) and checks of the built package
 yarn check:package   # publint and are-the-types-wrong on the packed tarball

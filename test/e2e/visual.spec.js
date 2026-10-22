@@ -81,7 +81,7 @@ test('native camera fallback', async ({ page }) => {
     delete window.MediaRecorder
     Object.defineProperty(HTMLInputElement.prototype, 'capture', {
       configurable: true,
-      get () {
+      get() {
         return this.getAttribute('capture') || ''
       }
     })

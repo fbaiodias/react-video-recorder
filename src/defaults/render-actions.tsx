@@ -128,17 +128,15 @@ const Actions = ({
       )
     }
 
-    return shouldUseVideoInput
-      ? (
-          <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
-            {t('Record a video')}
-          </Button>
-        )
-      : (
-          <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
-            {t('Turn my camera ON')}
-          </Button>
-        )
+    return shouldUseVideoInput ? (
+      <Button type='button' onClick={onOpenVideoInput} data-qa='open-input'>
+        {t('Record a video')}
+      </Button>
+    ) : (
+      <Button type='button' onClick={onTurnOnCamera} data-qa='turn-on-camera'>
+        {t('Turn my camera ON')}
+      </Button>
+    )
   }
 
   return (

@@ -50,7 +50,10 @@ describe('turning the camera on', () => {
     })
     const r = renderRecorder()
     await turnOnCamera(r)
-    expect(media.getUserMedia).toHaveBeenCalledWith({ audio: true, video: true })
+    expect(media.getUserMedia).toHaveBeenCalledWith({
+      audio: true,
+      video: true
+    })
   })
 
   it('lets facingMode pick the camera', async () => {
@@ -66,7 +69,9 @@ describe('turning the camera on', () => {
     })
     await turnOnCamera(r)
     expect(media.getUserMedia).toHaveBeenCalledTimes(1)
-    expect(media.lastStream.getVideoTracks()[0].getSettings().deviceId).toBe('back')
+    expect(media.lastStream.getVideoTracks()[0].getSettings().deviceId).toBe(
+      'back'
+    )
     expect(takeConsole('warn')).toEqual([])
   })
 
@@ -279,7 +284,9 @@ describe('switching cameras', () => {
       video: { deviceId: { exact: 'camera-2' } }
     })
     await advance(200)
-    expect(r.video().srcObject.getVideoTracks()[0].getSettings().deviceId).toBe('camera-2')
+    expect(r.video().srcObject.getVideoTracks()[0].getSettings().deviceId).toBe(
+      'camera-2'
+    )
   })
 
   it('switches with the real camera ids once access is granted', async () => {
