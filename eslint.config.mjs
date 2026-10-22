@@ -4,10 +4,11 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import vitest from '@vitest/eslint-plugin'
 
 export default [
+  // Global ignores, so they cover the configs added below neostandard's too.
+  { ignores: resolveIgnoresFromGitignore() },
   ...neostandard({
     ts: true,
-    env: ['browser'],
-    ignores: resolveIgnoresFromGitignore()
+    env: ['browser']
   }),
   // neostandard leaves out React's logic rules for now, so add them back.
   {

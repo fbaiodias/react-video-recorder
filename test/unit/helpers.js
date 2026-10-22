@@ -1,8 +1,14 @@
 import React from 'react'
 import { act, fireEvent, render } from '@testing-library/react'
 import { vi } from 'vitest'
-import VideoRecorder from '../../src/video-recorder'
+import HooksVideoRecorder from '../../src/video-recorder'
+import LegacyVideoRecorder from '../../src/video-recorder.legacy'
 import defaultRenderActions from '../../src/defaults/render-actions'
+
+// The suite runs twice (see vitest.config.mjs): against the hooks rewrite and
+// against the original class, which stays until 4.0.0 as the reference.
+export const IS_LEGACY = process.env.RVR_IMPLEMENTATION === 'legacy'
+const VideoRecorder = IS_LEGACY ? LegacyVideoRecorder : HooksVideoRecorder
 
 export const CALLBACK_PROPS = [
   'onCameraOn',

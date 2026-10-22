@@ -13,15 +13,16 @@ export default defineConfig({
       if (String(error?.message).includes("reading 'videoWidth'")) return false
     },
     projects: [
-      {
+      ...['hooks', 'legacy'].map((implementation) => ({
         extends: true,
         test: {
-          name: 'unit',
+          name: `unit-${implementation}`,
           environment: 'jsdom',
           include: ['test/unit/**/*.test.js'],
-          setupFiles: ['test/unit/setup.js']
+          setupFiles: ['test/unit/setup.js'],
+          env: { RVR_IMPLEMENTATION: implementation }
         }
-      },
+      })),
       {
         extends: true,
         test: {

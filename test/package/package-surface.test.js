@@ -86,6 +86,8 @@ describe('published package', () => {
       'lib/defaults/unsupported-view.js',
       'lib/get-video-info.js',
       'lib/index.js',
+      'lib/types.js',
+      'lib/use-video-recorder.js',
       'lib/video-recorder.js',
       'package.json'
     ])
@@ -108,8 +110,7 @@ describe('published package', () => {
     )
     expect(main.default).toBe(direct.default)
     expect(Object.keys(main)).toEqual(['default'])
-    expect(typeof main.default).toBe('function')
-    expect(main.default.prototype.isReactComponent).toBeTruthy()
+    expect(main.default.$$typeof).toBe(Symbol.for('react.forward_ref'))
   })
 
   it('exports these named modules', () => {
@@ -173,10 +174,10 @@ describe('published package', () => {
           "default: function",
         ],
         "/lib/index": [
-          "default: function",
+          "default: object",
         ],
         "/lib/video-recorder": [
-          "default: function",
+          "default: object",
         ],
       }
     `)
