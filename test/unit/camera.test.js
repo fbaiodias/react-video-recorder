@@ -8,6 +8,7 @@ import {
 } from './fake-media'
 import { takeConsole } from './console-capture'
 import {
+  IS_LEGACY,
   advance,
   click,
   renderRecorder,
@@ -250,7 +251,7 @@ describe('switching cameras', () => {
     })
   })
 
-  it('[known bug] keeps showing the first, stopped stream after switching', async () => {
+  it.runIf(IS_LEGACY)('[known bug] keeps showing the first, stopped stream after switching', async () => {
     const media = twoCameras()
     const r = renderRecorder()
     await turnOnCamera(r)
@@ -260,6 +261,17 @@ describe('switching cameras', () => {
     await advance(200)
     expect(media.streams).toHaveLength(2)
     expect(r.video().srcObject).toBe(firstStream)
+  })
+
+  it.skipIf(IS_LEGACY)('shows the new stream after switching', async () => {
+    const media = twoCameras()
+    const r = renderRecorder()
+    await turnOnCamera(r)
+
+    await click(switchButton(r))
+    await advance(200)
+    expect(media.streams).toHaveLength(2)
+    expect(r.video().srcObject).toBe(media.streams[1])
   })
 
   it('[known bug] asks for the default camera again when constraints.video is true', async () => {

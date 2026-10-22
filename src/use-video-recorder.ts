@@ -780,11 +780,9 @@ export function useVideoRecorder (
     if (state.isReplayingVideo) recorder.tryToUnmuteReplayVideo()
   }, [recorder, state.isReplayingVideo])
 
-  // [known bug] Only runs when the camera turns on, so a new stream from
-  // switching cameras never reaches the <video>.
   useIsomorphicLayoutEffect(() => {
     if (state.isCameraOn) recorder.showStream(state.stream)
-  }, [recorder, state.isCameraOn])
+  }, [recorder, state.isCameraOn, state.stream])
 
   return {
     state,
