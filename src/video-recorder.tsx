@@ -158,12 +158,16 @@ const VideoRecorder = forwardRef<VideoRecorderHandle, VideoRecorderProps>(
             : null
 
         return (
-          <div key='camera' className='rvr-camera-view'>
+          <div
+            key='camera'
+            className={cx('rvr-camera-view', cameraViewClassName)}
+          >
             <video
               className={cx(
                 'rvr-video',
                 // Mirror like a mirror: a camera facing away shows the scene as is.
-                isFlipped && facingMode !== 'environment' && 'rvr-video--flipped'
+                isFlipped && facingMode !== 'environment' && 'rvr-video--flipped',
+                videoClassName
               )}
               ref={recorder.setCameraVideo}
               autoPlay

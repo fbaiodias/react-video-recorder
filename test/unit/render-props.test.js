@@ -360,7 +360,7 @@ describe('class name props', () => {
     )
   })
 
-  it('[known bug] applies cameraViewClassName and videoClassName only to the replay', async () => {
+  it.runIf(IS_LEGACY)('[known bug] applies cameraViewClassName and videoClassName only to the replay', async () => {
     installFakeMedia()
     const r = renderRecorder({
       cameraViewClassName: 'my-camera-view',
@@ -377,6 +377,23 @@ describe('class name props', () => {
     expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(
       true
     )
+  })
+
+  it.skipIf(IS_LEGACY)('applies cameraViewClassName and videoClassName to the camera and the replay', async () => {
+    installFakeMedia()
+    const r = renderRecorder({
+      cameraViewClassName: 'my-camera-view',
+      videoClassName: 'my-video'
+    })
+    await turnOnCamera(r)
+    expect(r.video().classList.contains('my-video')).toBe(true)
+    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(true)
+
+    await startRecording(r)
+    await advance(500)
+    await click(r.byQa('stop-recording'))
+    expect(r.video().classList.contains('my-video')).toBe(true)
+    expect(r.video().parentElement.classList.contains('my-camera-view')).toBe(true)
   })
 })
 
